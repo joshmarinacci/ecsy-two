@@ -1,10 +1,6 @@
 import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js"
 const $ = (sel) => document.querySelector(sel)
-
 import {SpriteLocation, Canvas, ECSYTwoSystem, Sprite, startWorld, Viewport} from "./ecsytwo.js"
-
-
-
 
 let world = new World()
 world.registerSystem(ECSYTwoSystem)
@@ -60,7 +56,8 @@ class PlayerControlSystem extends System {
     execute(delta, time) {
         this.queries.player.results.forEach(ent => {
             let kb = ent.getComponent(KeyboardState)
-            let loc = ent.getMutableComponent(Location)
+            let loc = ent.getMutableComponent(SpriteLocation)
+
             if (kb.isPressed('ArrowRight')) loc.x += 1
             if (kb.isPressed('ArrowLeft')) loc.x -= 1
             if (kb.isPressed('ArrowUp')) loc.y -= 1
@@ -70,7 +67,7 @@ class PlayerControlSystem extends System {
 }
 PlayerControlSystem.queries = {
     player: {
-        components: [Player, KeyboardState, Location]
+        components: [Player, KeyboardState, SpriteLocation]
     }
 }
 world.registerSystem(PlayerControlSystem)
@@ -196,7 +193,7 @@ class GameLogic extends System {
             let map = ent.getComponent(TileMap)
             this.queries.players.forEach(ent => {
                 let player = ent.getComponent(Player)
-                let loc = ent.getComponent(Location)
+                let loc = ent.getComponent(SpriteLocation)
                 let inter = player.overlapsTileKind(map,EGG)
                 if(inter.overlaps === true) {
                     map.setTileAt(GROUND, inter.tile_position)
