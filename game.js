@@ -2,7 +2,7 @@ import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js
 import {SpriteLocation, Canvas, ECSYTwoSystem, Sprite, startWorld, SpriteSystem, BackgroundFill} from "./ecsytwo.js"
 import {KeyboardSystem, KeyboardState} from './keyboard.js'
 import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
-import {make_sprite_from_url} from './sprite.js'
+import {load_image_from_url} from './sprite.js'
 
 let world = new World()
 
@@ -70,7 +70,12 @@ world.registerSystem(PlayerControlSystem)
 world.registerSystem(TileMapSystem)
 world.registerSystem(SpriteSystem)
 
-
+let TILE_SIZE = 8
+let EMPTY = 0
+let EGG = 1
+let GROUND = 2
+let WALL = 3
+let TUBE = 4
 let PALETTE = [
     'transparent',//'#000000',
     '#1D2B53', //1
@@ -89,26 +94,52 @@ let PALETTE = [
     '#FF77A8', //E
     '#FFCCAA', //F
 ]
+let TILE_INDEX = {}
 
-make_sprite_from_url("./imgs/rainbow@1x.png").then((img)=>{
-    console.log("loaded the real image",img)
+class SpriteSheet {
+    constructor(img,tw,th,w,h) {
+        this.image = img
+        this.tw = tw
+        this.th = th
+        this.ssw = w
+        this.ssh = h
+    }
+
+    sprite_to_image(x, y) {
+        let canvas = document.createElement('canvas')
+        canvas.width = this.tw
+        canvas.height = this.th
+        let ctx = canvas.getContext('2d')
+        ctx.drawImage(this.image,
+            x*this.tw,
+            y*this.th,
+            this.tw,
+            this.th,
+            0,0,this.tw,this.th)
+        return canvas
+    }
+}
+
+let prom1 = load_image_from_url("./imgs/blocks@1x.png").then(blocks_img=>{
+    let sheet = new SpriteSheet(blocks_img,8,8,4,2)
+    TILE_INDEX[WALL] = sheet.sprite_to_image(0,0)
+    TILE_INDEX[TUBE] = sheet.sprite_to_image(1,0)
+})
+let prom2 = load_image_from_url("./imgs/rainbow@1x.png").then((img)=>{
     let player = world.createEntity()
         .addComponent(Player)
         .addComponent(SpriteLocation, { x: 8, y: 8 })
         .addComponent(Sprite, {image:img, width:8, height:8})
         .addComponent(KeyboardState)
 })
+let prom3 = load_image_from_url("imgs/lucky_block@1x.png").then(img =>{
+    TILE_INDEX[EGG] = img
+})
 
+Promise.all([prom1,prom2,prom3]).then(()=>{
+    console.log('all images loaded')
 
-let EMPTY = 0
-let EGG = 1
-let GROUND = 2
-let WALL = 3
-
-let TILE_INDEX = {}
-let TILE_SIZE = 8
-
-TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
+    TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
    00000000
    00000000
    00000000
@@ -118,46 +149,31 @@ TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
    00000000
    00000000
    `)
-TILE_INDEX[GROUND] = make_tile(TILE_SIZE, PALETTE, `
+    TILE_INDEX[GROUND] = make_tile(TILE_SIZE, PALETTE, `
    1010
    0101
    1010
    0101
-    `)
-TILE_INDEX[WALL] = make_tile(TILE_SIZE, PALETTE,`
-  77777777
-  87888888
-  77777777
-  88878888
-  77777777
-  87888888
-  77777777
-  88878888
     `)
 
-let TILE_MAP = {
-    width:10,
-    height:8,
-    data:[]
-}
-TILE_MAP.data.fill(0,0,TILE_MAP.width*TILE_MAP.height)
-for(let i=0; i<TILE_MAP.width;i++) {
-    for(let j=0; j<TILE_MAP.height;j++) {
-        let n = j*TILE_MAP.width+i
-        let v = 1
-        if(i===0 || i===TILE_MAP.width-1) v = 3
-        if(j===0 || j===TILE_MAP.height-1) v = 3
-        TILE_MAP.data[n] = v
+    let TILE_MAP = {
+        width:10,
+        height:8,
+        data:[]
     }
-}
+    TILE_MAP.data.fill(0,0,TILE_MAP.width*TILE_MAP.height)
+    for(let i=0; i<TILE_MAP.width;i++) {
+        for(let j=0; j<TILE_MAP.height;j++) {
+            let n = j*TILE_MAP.width+i
+            let v = 1
+            if(i===0 || i===TILE_MAP.width-1) v = 3
+            if(j===0 || j===TILE_MAP.height-1) v = 3
+            TILE_MAP.data[n] = v
+        }
+    }
 
+    TILE_MAP.data[4+4*TILE_MAP.width] = TUBE
 
-let view = world.createEntity()
-    .addComponent(Canvas, { scale: 10, width:TILE_SIZE*10, height: TILE_SIZE*8})
-    .addComponent(BackgroundFill, {color: PALETTE[1]})
-    // .addComponent(CameraFollowsPlayer, { player:player})
-make_sprite_from_url("imgs/lucky_block@1x.png").then(img =>{
-    TILE_INDEX[EGG] = img
     view.addComponent(TileMap, {
         tileSize:TILE_SIZE,
         width:TILE_MAP.width,
@@ -166,5 +182,13 @@ make_sprite_from_url("imgs/lucky_block@1x.png").then(img =>{
         index:TILE_INDEX,
     })
 })
+
+
+
+
+let view = world.createEntity()
+    .addComponent(Canvas, { scale: 10, width:TILE_SIZE*10, height: TILE_SIZE*8})
+    .addComponent(BackgroundFill, {color: PALETTE[1]})
+    // .addComponent(CameraFollowsPlayer, { player:player})
 
 startWorld(world)
