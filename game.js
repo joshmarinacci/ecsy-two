@@ -39,7 +39,7 @@ class PlayerControlSystem extends System {
                 let map = ent.getComponent(TileMap)
                 //don't enter if type is wall
                 let bounds = make_bounds(loc.x,loc.y,sprite.width,sprite.height)
-                let cols = map.collide_bounds(bounds, [WALL,EGG])
+                let cols = map.collide_bounds(bounds, [WALL,EGG, TUBE])
                 cols.forEach(col=>{
                     // console.log("collision ",col)
                     if(col.tile_type === WALL) {
@@ -50,6 +50,9 @@ class PlayerControlSystem extends System {
                     if(col.tile_type === EGG) {
                         //clear the egg
                         map.set_tile_at(col.tile_coords,EMPTY)
+                    }
+                    if(col.tile_type === TUBE) {
+                        console.log("need to go into the tube")
                     }
                 })
             })
@@ -172,7 +175,7 @@ Promise.all([prom1,prom2,prom3]).then(()=>{
         }
     }
 
-    TILE_MAP.data[4+4*TILE_MAP.width] = TUBE
+    TILE_MAP.data[4+7*TILE_MAP.width] = TUBE
 
     view.addComponent(TileMap, {
         tileSize:TILE_SIZE,
