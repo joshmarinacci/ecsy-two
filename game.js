@@ -100,7 +100,7 @@ let player_sprite_image = make_player_sprite(3,4,PALETTE,`
 let player = world.createEntity()
     .addComponent(Player)
     .addComponent(SpriteLocation, { x: 5, y: 10 })
-    .addComponent(Sprite, {image:player_sprite_image, width:4, height:4})
+    .addComponent(Sprite, {image:player_sprite_image, width:3, height:4})
     .addComponent(KeyboardState)
 
 let EMPTY = 0
