@@ -3,6 +3,7 @@ import {SpriteLocation, Canvas, ECSYTwoSystem, Sprite, startWorld, SpriteSystem,
 import {KeyboardSystem, KeyboardState} from './keyboard.js'
 import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {load_image_from_url} from './sprite.js'
+import {BackgroundMusic, MusicSystem} from './music.js'
 
 let world = new World()
 
@@ -72,6 +73,7 @@ world.registerSystem(KeyboardSystem)
 world.registerSystem(PlayerControlSystem)
 world.registerSystem(TileMapSystem)
 world.registerSystem(SpriteSystem)
+world.registerSystem(MusicSystem)
 
 let TILE_SIZE = 8
 let EMPTY = 0
@@ -195,3 +197,17 @@ let view = world.createEntity()
     // .addComponent(CameraFollowsPlayer, { player:player})
 
 startWorld(world)
+
+document.addEventListener('mousedown',()=>{
+    view.addComponent(BackgroundMusic, {notes:[
+            "C3","D3","E3",
+            "C3","D3","E3",
+            "C3","D3","E3",
+            "C3","D3","E3",
+
+            "D3","E3","F3",
+            "D3","E3","F3",
+            "D3","E3","F3",
+            "D3","E3","F3",
+        ]})
+})

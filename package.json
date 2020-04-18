@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ecsy": "^0.2.3"
+    "ecsy": "^0.2.3",
+    "tone": "^13.8.25"
   }
 }
