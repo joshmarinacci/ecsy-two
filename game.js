@@ -11,6 +11,16 @@ class Player extends Component {
 }
 
 
+function make_bounds(x, y, width, height) {
+    return {
+        x:x,
+        y:y,
+        width:width,
+        height:height,
+        type:'screen'
+    }
+}
+
 class PlayerControlSystem extends System {
     execute(delta, time) {
         this.queries.player.results.forEach(ent => {
@@ -28,13 +38,20 @@ class PlayerControlSystem extends System {
             this.queries.map.results.forEach(ent => {
                 let map = ent.getComponent(TileMap)
                 //don't enter if type is wall
-                if(map.sprite_intersects_tile_of(sprite,loc,[WALL])) {
-                    loc.x = oldx
-                    loc.y = oldy
-                }
-                if(map.sprite_intersects_tile_of(sprite,loc,[EGG])) {
-                    console.log("got an egg!")
-                }
+                let bounds = make_bounds(loc.x,loc.y,sprite.width,sprite.height)
+                let cols = map.collide_bounds(bounds, [WALL,EGG])
+                cols.forEach(col=>{
+                    // console.log("collision ",col)
+                    if(col.tile_type === WALL) {
+                        //go back to previous position
+                        loc.x = oldx
+                        loc.y = oldy
+                    }
+                    if(col.tile_type === EGG) {
+                        //clear the egg
+                        map.set_tile_at(col.tile_coords,EMPTY)
+                    }
+                })
             })
         })
     }

@@ -46,44 +46,70 @@ export class TileMap extends Component {
         this.map = []
         this.index = []
     }
-    tile_at(x,y) {
-        return this.map[y*this.width+x]
+    tile_at(tile_coords) {
+        return this.map[tile_coords.y*this.width+tile_coords.x]
     }
-    set_tile_at(x,y,v) {
-        this.map[y*this.width+x] = v
+    set_tile_at(coords,v) {
+        this.map[coords.y*this.width+coords.x] = v
     }
-    sprite_intersects_tile_of(sprite, location, types) {
-        let ul = this.tile_at(
-            Math.floor(location.x/this.tileSize),
-            Math.floor(location.y/this.tileSize),
-        )
-        if(types.indexOf(ul)>=0) return true
-        let ll = this.tile_at(
-            Math.floor(location.x/this.tileSize),
-            Math.floor((location.y+sprite.height)/this.tileSize)
-        )
-        if(types.indexOf(ll)>=0) return true
-        let ur = this.tile_at(
-            Math.floor((location.x+sprite.width)/this.tileSize),
-            Math.floor((location.y)/this.tileSize)
-        )
-        if(types.indexOf(ur)>=0) return true
-        let lr = this.tile_at(
-            Math.floor((location.x+sprite.width)/this.tileSize),
-            Math.floor((location.y+sprite.height)/this.tileSize)
-        )
-        if(types.indexOf(lr)>=0) return true
-        return false
+    collide_bounds(bounds, types) {
+        let cols = []
+
+        {
+            // upper left
+            let coords = {
+                x: Math.floor(bounds.x / this.tileSize),
+                y: Math.floor(bounds.y / this.tileSize),
+            }
+            let tile = this.tile_at(coords);
+            if (types.indexOf(tile) >= 0) {
+                cols.push(this.make_collision(tile, coords))
+            }
+        }
+
+        {
+            // lower left
+            let coords = {
+                x: Math.floor(bounds.x / this.tileSize),
+                y: Math.floor((bounds.y+bounds.height) / this.tileSize),
+            }
+            let tile = this.tile_at(coords);
+            if (types.indexOf(tile) >= 0) {
+                cols.push(this.make_collision(tile, coords))
+            }
+        }
+
+        {
+            // upper right
+            let coords = {
+                x: Math.floor((bounds.x+bounds.width) / this.tileSize),
+                y: Math.floor((bounds.y) / this.tileSize),
+            }
+            let tile = this.tile_at(coords);
+            if (types.indexOf(tile) >= 0) {
+                cols.push(this.make_collision(tile, coords))
+            }
+        }
+        {
+            //lower right
+            let coords = {
+                x: Math.floor((bounds.x+bounds.width) / this.tileSize),
+                y: Math.floor((bounds.y+bounds.height) / this.tileSize),
+            }
+            let tile = this.tile_at(coords);
+            if (types.indexOf(tile) >= 0) {
+                cols.push(this.make_collision(tile, coords))
+            }
+        }
+        return cols
     }
-    tile_index_at_screen(x,y) {
-        x = Math.floor(x/this.tileSize)
-        y = Math.floor(y/this.tileSize)
-        if(x<0) return -1
-        if(y<0) return -1
-        if(x>=this.width-1) return -1
-        if(y>=this.height-1) return -1
-        let tile = this.map[y*this.width+x]
-        return tile
+
+    make_collision(tile, coords) {
+        return {
+            type:'collision',
+            tile_type:tile,
+            tile_coords:coords,
+        }
     }
 }
 
