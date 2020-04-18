@@ -1,18 +1,15 @@
 import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js"
-const $ = (sel) => document.querySelector(sel)
 import {SpriteLocation, Canvas, ECSYTwoSystem, Sprite, startWorld} from "./ecsytwo.js"
 import {KeyboardSystem, KeyboardState} from './keyboard.js'
-import {is_whitespace, make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
+import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {make_player_sprite} from './sprite.js'
 
 let world = new World()
-world.registerSystem(ECSYTwoSystem)
 
 class Player extends Component {
 
 }
 
-world.registerSystem(KeyboardSystem)
 
 class PlayerControlSystem extends System {
     execute(delta, time) {
@@ -20,34 +17,53 @@ class PlayerControlSystem extends System {
             let kb = ent.getComponent(KeyboardState)
             let loc = ent.getMutableComponent(SpriteLocation)
 
-            if (kb.isPressed('ArrowRight')) loc.x += 1
-            if (kb.isPressed('ArrowLeft')) loc.x -= 1
-            if (kb.isPressed('ArrowUp')) loc.y -= 1
-            if (kb.isPressed('ArrowDown')) loc.y += 1
+            let newx = loc.x
+            let newy = loc.y
+            if (kb.isPressed('ArrowRight')) newx += 1
+            if (kb.isPressed('ArrowLeft')) newx -= 1
+            if (kb.isPressed('ArrowUp')) newy -= 1
+            if (kb.isPressed('ArrowDown')) newy += 1
+
+            this.queries.map.results.forEach(ent => {
+                let map = ent.getComponent(TileMap)
+                let tile = map.tile_index_at_screen(newx,newy)
+                if(tile !== 0) {
+                    newx = loc.x
+                    newy = loc.y
+                }
+            })
+            loc.x = newx
+            loc.y = newy
         })
     }
 }
 PlayerControlSystem.queries = {
     player: {
         components: [Player, KeyboardState, SpriteLocation]
+    },
+    map: {
+        components: [TileMap]
     }
 }
+world.registerSystem(ECSYTwoSystem)
+world.registerSystem(KeyboardSystem)
+world.registerSystem(TileMapSystem)
 world.registerSystem(PlayerControlSystem)
 
 
 
 let PALETTE = ['transparent','red','green','blue']
 let player_sprite_image = make_player_sprite(5,5,PALETTE,`
-    00100 
-    11111 
-    00100
-    01010
-    01010
+    00200 
+    02220 
+    00200
+    03030
+    03030
     `)
 
 let player = world.createEntity()
     .addComponent(Player)
-    .addComponent(SpriteLocation, { x: 50, y: 30 })
+    .addComponent(SpriteLocation, { x: 5, y: 3 })
     .addComponent(Sprite, {image:player_sprite_image, width:5, height:5})
     // .addComponent(SpriteAnimation, { frames: idle })
     .addComponent(KeyboardState)
@@ -89,15 +105,14 @@ TILE_INDEX[WALL] = make_tile(TILE_SIZE, PALETTE,`
 let TILE_MAP = make_map(10,8, `
    3333333333
    3000000003
-   3222222223
-   3221222223
-   3222222223
-   3222222213
-   3222122223
+   3000000003
+   3001000003
+   3000000003
+   3000000013
+   3000100003
    3333333333
 `)
 
-world.registerSystem(TileMapSystem)
 
 let view = world.createEntity()
     .addComponent(Canvas, { scale: 5, width:TILE_SIZE*10, height: TILE_SIZE*8})

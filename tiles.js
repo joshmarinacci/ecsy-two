@@ -1,4 +1,4 @@
-import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js"
+import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
 import {Canvas} from './ecsytwo.js'
 
 export function make_tile(size, palette, data) {
@@ -45,6 +45,16 @@ export class TileMap extends Component {
         this.height = -1
         this.map = []
         this.index = []
+    }
+    tile_index_at_screen(x,y) {
+        x = Math.floor(x/this.tileSize)
+        y = Math.floor(y/this.tileSize)
+        if(x<0) return -1
+        if(y<0) return -1
+        if(x>=this.width-1) return -1
+        if(y>=this.height-1) return -1
+        let tile = this.map[y*this.width+x]
+        return tile
     }
 }
 
