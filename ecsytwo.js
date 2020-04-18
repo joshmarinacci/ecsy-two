@@ -21,7 +21,12 @@ export class SpriteLocation extends Component {
         this.y = 0
     }
 }
-
+export class BackgroundFill extends Component {
+    constructor() {
+        super()
+        this.color = 'white'
+    }
+}
 export class ECSYTwoSystem extends  System {
     execute(delta, time) {
         this.queries.canvas.added.forEach(ent => {
@@ -37,8 +42,11 @@ export class ECSYTwoSystem extends  System {
             ctx.imageSmoothingEnabled = false
             ctx.save()
             ctx.scale(canvas.scale,canvas.scale)
-            ctx.fillStyle = 'black'
-            ctx.fillRect(0,0,canvas.dom.width,canvas.dom.height)
+            this.queries.background.results.forEach(ent => {
+                let bg = ent.getComponent(BackgroundFill)
+                ctx.fillStyle = bg.color
+                ctx.fillRect(0,0,canvas.dom.width,canvas.dom.height)
+            })
             ctx.restore()
         })
     }
@@ -50,6 +58,9 @@ ECSYTwoSystem.queries = {
             added:true,
         }
     },
+    background: {
+        components: [BackgroundFill]
+    }
 }
 
 export class SpriteSystem extends System {

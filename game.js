@@ -1,5 +1,5 @@
 import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js"
-import {SpriteLocation, Canvas, ECSYTwoSystem, Sprite, startWorld, SpriteSystem} from "./ecsytwo.js"
+import {SpriteLocation, Canvas, ECSYTwoSystem, Sprite, startWorld, SpriteSystem, BackgroundFill} from "./ecsytwo.js"
 import {KeyboardSystem, KeyboardState} from './keyboard.js'
 import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {make_player_sprite} from './sprite.js'
@@ -133,6 +133,7 @@ let TILE_MAP = make_map(10,8, `
 
 let view = world.createEntity()
     .addComponent(Canvas, { scale: 10, width:TILE_SIZE*10, height: TILE_SIZE*8})
+    .addComponent(BackgroundFill, {color: PALETTE[1]})
     // .addComponent(CameraFollowsPlayer, { player:player})
     .addComponent(TileMap, {
         tileSize:4,
