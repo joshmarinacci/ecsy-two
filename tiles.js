@@ -46,6 +46,35 @@ export class TileMap extends Component {
         this.map = []
         this.index = []
     }
+    tile_at(x,y) {
+        return this.map[y*this.width+x]
+    }
+    set_tile_at(x,y,v) {
+        this.map[y*this.width+x] = v
+    }
+    sprite_intersects_tile_of(sprite, location, types) {
+        let ul = this.tile_at(
+            Math.floor(location.x/this.tileSize),
+            Math.floor(location.y/this.tileSize),
+        )
+        if(types.indexOf(ul)>=0) return true
+        let ll = this.tile_at(
+            Math.floor(location.x/this.tileSize),
+            Math.floor((location.y+sprite.height)/this.tileSize)
+        )
+        if(types.indexOf(ll)>=0) return true
+        let ur = this.tile_at(
+            Math.floor((location.x+sprite.width)/this.tileSize),
+            Math.floor((location.y)/this.tileSize)
+        )
+        if(types.indexOf(ur)>=0) return true
+        let lr = this.tile_at(
+            Math.floor((location.x+sprite.width)/this.tileSize),
+            Math.floor((location.y+sprite.height)/this.tileSize)
+        )
+        if(types.indexOf(lr)>=0) return true
+        return false
+    }
     tile_index_at_screen(x,y) {
         x = Math.floor(x/this.tileSize)
         y = Math.floor(y/this.tileSize)

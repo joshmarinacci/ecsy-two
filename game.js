@@ -16,24 +16,26 @@ class PlayerControlSystem extends System {
         this.queries.player.results.forEach(ent => {
             let kb = ent.getComponent(KeyboardState)
             let loc = ent.getMutableComponent(SpriteLocation)
+            let sprite = ent.getComponent(Sprite)
 
-            let newx = loc.x
-            let newy = loc.y
-            if (kb.isPressed('ArrowRight')) newx += 1
-            if (kb.isPressed('ArrowLeft')) newx -= 1
-            if (kb.isPressed('ArrowUp')) newy -= 1
-            if (kb.isPressed('ArrowDown')) newy += 1
+            let oldx = loc.x
+            let oldy = loc.y
+            if (kb.isPressed('ArrowRight')) loc.x += 1
+            if (kb.isPressed('ArrowLeft')) loc.x -= 1
+            if (kb.isPressed('ArrowUp')) loc.y -= 1
+            if (kb.isPressed('ArrowDown')) loc.y += 1
 
             this.queries.map.results.forEach(ent => {
                 let map = ent.getComponent(TileMap)
-                let tile = map.tile_index_at_screen(newx,newy)
-                if(tile !== 0) {
-                    newx = loc.x
-                    newy = loc.y
+                //don't enter if type is wall
+                if(map.sprite_intersects_tile_of(sprite,loc,[WALL])) {
+                    loc.x = oldx
+                    loc.y = oldy
+                }
+                if(map.sprite_intersects_tile_of(sprite,loc,[EGG])) {
+                    console.log("got an egg!")
                 }
             })
-            loc.x = newx
-            loc.y = newy
         })
     }
 }
@@ -70,11 +72,11 @@ let PALETTE = [
     '#FFCCAA', //F
 ]
 
-let player_sprite_image = make_player_sprite(4,4,PALETTE,`
-    0070 
-    0888 
-    0080
-    0C0C
+let player_sprite_image = make_player_sprite(3,4,PALETTE,`
+    070 
+    888 
+    080
+    C0C
     `)
 
 let player = world.createEntity()
