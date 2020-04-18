@@ -37,7 +37,7 @@ export class ECSYTwoSystem extends  System {
             ctx.imageSmoothingEnabled = false
             ctx.save()
             ctx.scale(canvas.scale,canvas.scale)
-            ctx.fillStyle = 'white'
+            ctx.fillStyle = 'black'
             ctx.fillRect(0,0,canvas.dom.width,canvas.dom.height)
 
             this.queries.sprites.results.forEach(ent => {
