@@ -27,8 +27,8 @@ export class ECSYTwoSystem extends  System {
         this.queries.canvas.added.forEach(ent => {
             let canvas = ent.getMutableComponent(Canvas)
             canvas.dom = document.createElement('canvas')
-            canvas.dom.width = 10*16*canvas.scale
-            canvas.dom.height = 8*16*canvas.scale
+            canvas.dom.width = canvas.width*canvas.scale
+            canvas.dom.height = canvas.height*canvas.scale
             document.body.append(canvas.dom)
         })
         this.queries.canvas.results.forEach(ent => {

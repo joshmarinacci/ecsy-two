@@ -51,23 +51,37 @@ world.registerSystem(TileMapSystem)
 world.registerSystem(PlayerControlSystem)
 
 
+let PALETTE = [
+    'transparent',//'#000000',
+    '#1D2B53', //1
+    '#7E2553', //2
+    '#008751', //3
+    '#AB5236', //4
+    '#5F574F', //5
+    '#C2C3C7', //6
+    '#FFF1E8', //7
+    '#FF004D', //8
+    '#FFA300', //9
+    '#FFEC27', //A
+    '#00E436', //B
+    '#29ADFF', //C
+    '#83769C', //D
+    '#FF77A8', //E
+    '#FFCCAA', //F
+]
 
-let PALETTE = ['transparent','red','green','blue']
-let player_sprite_image = make_player_sprite(5,5,PALETTE,`
-    00200 
-    02220 
-    00200
-    03030
-    03030
+let player_sprite_image = make_player_sprite(4,4,PALETTE,`
+    0070 
+    0888 
+    0080
+    0C0C
     `)
 
 let player = world.createEntity()
     .addComponent(Player)
-    .addComponent(SpriteLocation, { x: 5, y: 3 })
-    .addComponent(Sprite, {image:player_sprite_image, width:5, height:5})
-    // .addComponent(SpriteAnimation, { frames: idle })
+    .addComponent(SpriteLocation, { x: 5, y: 10 })
+    .addComponent(Sprite, {image:player_sprite_image, width:4, height:4})
     .addComponent(KeyboardState)
-    // .addComponent(Score)
 
 let EMPTY = 0
 let EGG = 1
@@ -84,10 +98,10 @@ TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
    0000
    `)
 TILE_INDEX[EGG] = make_tile(TILE_SIZE,PALETTE,`
-   0330
-   3233
-   3323
-   0330
+   0EE0
+   EFEE
+   EEEE
+   0EE0
     `)
 TILE_INDEX[GROUND] = make_tile(TILE_SIZE, PALETTE, `
    1010
@@ -96,11 +110,11 @@ TILE_INDEX[GROUND] = make_tile(TILE_SIZE, PALETTE, `
    0101
     `)
 TILE_INDEX[WALL] = make_tile(TILE_SIZE, PALETTE,`
-  1111
-  1111
-  1111
-  1111
-`)
+  7777
+  8788
+  7777
+  8887
+    `)
 
 let TILE_MAP = make_map(10,8, `
    3333333333
@@ -115,7 +129,7 @@ let TILE_MAP = make_map(10,8, `
 
 
 let view = world.createEntity()
-    .addComponent(Canvas, { scale: 5, width:TILE_SIZE*10, height: TILE_SIZE*8})
+    .addComponent(Canvas, { scale: 10, width:TILE_SIZE*10, height: TILE_SIZE*8})
     // .addComponent(CameraFollowsPlayer, { player:player})
     .addComponent(TileMap, {
         tileSize:4,
