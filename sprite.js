@@ -22,3 +22,13 @@ export function make_player_sprite(width,height,palette,data) {
     }
     return canvas
 }
+
+export function make_sprite_from_url(src) {
+    return new Promise((res,rej)=>{
+        let img = document.createElement('img')
+        img.onload = ()=>  res(img)
+        img.onerror =() => rej(img)
+        img.src = src
+    })
+}
+

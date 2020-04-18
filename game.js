@@ -2,7 +2,7 @@ import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js
 import {SpriteLocation, Canvas, ECSYTwoSystem, Sprite, startWorld, SpriteSystem, BackgroundFill} from "./ecsytwo.js"
 import {KeyboardSystem, KeyboardState} from './keyboard.js'
 import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
-import {make_player_sprite} from './sprite.js'
+import {make_sprite_from_url} from './sprite.js'
 
 let world = new World()
 
@@ -90,18 +90,15 @@ let PALETTE = [
     '#FFCCAA', //F
 ]
 
-let player_sprite_image = make_player_sprite(3,4,PALETTE,`
-    070 
-    888 
-    080
-    C0C
-    `)
+make_sprite_from_url("./imgs/rainbow@1x.png").then((img)=>{
+    console.log("loaded the real image",img)
+    let player = world.createEntity()
+        .addComponent(Player)
+        .addComponent(SpriteLocation, { x: 8, y: 8 })
+        .addComponent(Sprite, {image:img, width:8, height:8})
+        .addComponent(KeyboardState)
+})
 
-let player = world.createEntity()
-    .addComponent(Player)
-    .addComponent(SpriteLocation, { x: 5, y: 10 })
-    .addComponent(Sprite, {image:player_sprite_image, width:3, height:4})
-    .addComponent(KeyboardState)
 
 let EMPTY = 0
 let EGG = 1
@@ -109,20 +106,18 @@ let GROUND = 2
 let WALL = 3
 
 let TILE_INDEX = {}
-let TILE_SIZE = 4
+let TILE_SIZE = 8
 
 TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
-   0000
-   0000
-   0000
-   0000
+   00000000
+   00000000
+   00000000
+   00000000
+   00000000
+   00000000
+   00000000
+   00000000
    `)
-TILE_INDEX[EGG] = make_tile(TILE_SIZE,PALETTE,`
-   0EE0
-   EFEE
-   EEEE
-   0EE0
-    `)
 TILE_INDEX[GROUND] = make_tile(TILE_SIZE, PALETTE, `
    1010
    0101
@@ -130,34 +125,46 @@ TILE_INDEX[GROUND] = make_tile(TILE_SIZE, PALETTE, `
    0101
     `)
 TILE_INDEX[WALL] = make_tile(TILE_SIZE, PALETTE,`
-  7777
-  8788
-  7777
-  8887
+  77777777
+  87888888
+  77777777
+  88878888
+  77777777
+  87888888
+  77777777
+  88878888
     `)
 
-let TILE_MAP = make_map(10,8, `
-   3333333333
-   3000000003
-   3000000003
-   3001000003
-   3000000003
-   3000000013
-   3000100003
-   3333333333
-`)
+let TILE_MAP = {
+    width:10,
+    height:8,
+    data:[]
+}
+TILE_MAP.data.fill(0,0,TILE_MAP.width*TILE_MAP.height)
+for(let i=0; i<TILE_MAP.width;i++) {
+    for(let j=0; j<TILE_MAP.height;j++) {
+        let n = j*TILE_MAP.width+i
+        let v = 1
+        if(i===0 || i===TILE_MAP.width-1) v = 3
+        if(j===0 || j===TILE_MAP.height-1) v = 3
+        TILE_MAP.data[n] = v
+    }
+}
 
 
 let view = world.createEntity()
     .addComponent(Canvas, { scale: 10, width:TILE_SIZE*10, height: TILE_SIZE*8})
     .addComponent(BackgroundFill, {color: PALETTE[1]})
     // .addComponent(CameraFollowsPlayer, { player:player})
-    .addComponent(TileMap, {
-        tileSize:4,
+make_sprite_from_url("imgs/lucky_block@1x.png").then(img =>{
+    TILE_INDEX[EGG] = img
+    view.addComponent(TileMap, {
+        tileSize:TILE_SIZE,
         width:TILE_MAP.width,
         height:TILE_MAP.height,
         map:TILE_MAP.data,
         index:TILE_INDEX,
     })
+})
 
 startWorld(world)
