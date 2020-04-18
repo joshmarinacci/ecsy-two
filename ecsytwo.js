@@ -39,16 +39,6 @@ export class ECSYTwoSystem extends  System {
             ctx.scale(canvas.scale,canvas.scale)
             ctx.fillStyle = 'black'
             ctx.fillRect(0,0,canvas.dom.width,canvas.dom.height)
-
-            this.queries.sprites.results.forEach(ent => {
-                let sprite = ent.getComponent(Sprite)
-                let loc = ent.getComponent(SpriteLocation)
-                ctx.save()
-                ctx.translate(loc.x, loc.y)
-                ctx.drawImage(sprite.image,0,0)
-                ctx.restore()
-            })
-
             ctx.restore()
         })
     }
@@ -59,6 +49,33 @@ ECSYTwoSystem.queries = {
         listen: {
             added:true,
         }
+    },
+}
+
+export class SpriteSystem extends System {
+    execute(delta, time) {
+        this.queries.canvas.results.forEach(ent => {
+            let canvas = ent.getComponent(Canvas)
+            let ctx = canvas.dom.getContext('2d')
+            ctx.imageSmoothingEnabled = false
+            ctx.save()
+            ctx.scale(canvas.scale,canvas.scale)
+            this.queries.sprites.results.forEach(ent => {
+                let sprite = ent.getComponent(Sprite)
+                let loc = ent.getComponent(SpriteLocation)
+                ctx.save()
+                ctx.translate(loc.x, loc.y)
+                ctx.drawImage(sprite.image,0,0)
+                ctx.restore()
+            })
+            ctx.restore()
+        })
+    }
+}
+
+SpriteSystem.queries = {
+    canvas: {
+        components: [Canvas],
     },
     sprites: {
         components: [Sprite, SpriteLocation]

@@ -1,5 +1,5 @@
 import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js"
-import {SpriteLocation, Canvas, ECSYTwoSystem, Sprite, startWorld} from "./ecsytwo.js"
+import {SpriteLocation, Canvas, ECSYTwoSystem, Sprite, startWorld, SpriteSystem} from "./ecsytwo.js"
 import {KeyboardSystem, KeyboardState} from './keyboard.js'
 import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {make_player_sprite} from './sprite.js'
@@ -49,8 +49,9 @@ PlayerControlSystem.queries = {
 }
 world.registerSystem(ECSYTwoSystem)
 world.registerSystem(KeyboardSystem)
-world.registerSystem(TileMapSystem)
 world.registerSystem(PlayerControlSystem)
+world.registerSystem(TileMapSystem)
+world.registerSystem(SpriteSystem)
 
 
 let PALETTE = [
@@ -140,32 +141,5 @@ let view = world.createEntity()
         map:TILE_MAP.data,
         index:TILE_INDEX,
     })
-/*
-class GameLogic extends System {
-    execute(delta, time) {
-        this.queries.players.forEach(ent => {
-            let player = ent.getComponent(Player)
-            let loc = ent.getMutableComponent(SpriteLocation)
-            this.queries.tilemaps.forEach(ent => {
-                let map = ent.getComponent(TileMap)
-                // let loc = ent.getComponent(SpriteLocation)
-                // let inter = player.overlapsTileKind(map,EGG)
-                // if(inter.overlaps === true) {
-                //     map.setTileAt(GROUND, inter.tile_position)
-                //     ent.getMutableComponent(Score).changeBy(1)
-                // }
-            })
-        })
-    }
-}
-GameLogic.queries = {
-    tilemaps: {
-        components: [TileMap],
-    },
-    players: {
-        components: [Player],
-    }
-}
-*/
 
 startWorld(world)
