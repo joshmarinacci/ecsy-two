@@ -47,10 +47,10 @@ function make_bounds(x, y, width, height) {
 
 class PlayerControlSystem extends System {
     execute(delta, time) {
-        this.queries.player.results.forEach(ent => {
-            let kb = ent.getComponent(KeyboardState)
-            let loc = ent.getMutableComponent(SpriteLocation)
-            let sprite = ent.getComponent(SpriteBounds)
+        this.queries.player.results.forEach(player => {
+            let kb = player.getComponent(KeyboardState)
+            let loc = player.getMutableComponent(SpriteLocation)
+            let sprite = player.getComponent(SpriteBounds)
 
             let oldx = loc.x
             let oldy = loc.y
@@ -58,6 +58,12 @@ class PlayerControlSystem extends System {
             if (kb.isPressed('ArrowLeft')) loc.x -= 1
             if (kb.isPressed('ArrowUp')) loc.y -= 1
             if (kb.isPressed('ArrowDown')) loc.y += 1
+            if(kb.isPressed('ArrowRight')) {
+                player.getMutableComponent(AnimatedSprite).flipY = false
+            }
+            if(kb.isPressed('ArrowLeft')) {
+                player.getMutableComponent(AnimatedSprite).flipY = true
+            }
 
             this.queries.map.results.forEach(ent => {
                 let map = ent.getComponent(TileMap)
@@ -222,12 +228,6 @@ let prom1 = load_image_from_url("./imgs/blocks@1x.png").then(blocks_img=>{
     TILE_INDEX[WALL] = sheet.sprite_to_image(0,0)
     TILE_INDEX[TUBE] = sheet.sprite_to_image(1,0)
 })
-// let prom2 = load_image_from_url("./imgs/rainbow@1x.png").then((img)=>{
-        // player.addComponent(Player)
-        // .addComponent(SpriteLocation, { x: 8, y: 8 })
-        // .addComponent(Sprite, {image:img, width:8, height:8})
-        // .addComponent(KeyboardState)
-// })
 let prom3 = load_image_from_url("imgs/lucky_block@1x.png").then(img =>{
     TILE_INDEX[EGG] = img
 })
