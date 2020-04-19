@@ -65,6 +65,16 @@ class PlayerControlSystem extends System {
                     }
                     if(col.tile_type === TUBE) {
                         console.log("need to go into the tube")
+                        ent.removeComponent(TileMap)
+                        if(map.name === 'area1') {
+                            ent.addComponent(TileMap, make_area_2())
+                            loc.x = 3
+                            loc.y = 5
+                        } else {
+                            ent.addComponent(TileMap, make_area_1())
+                            loc.x = 3
+                            loc.y = 5
+                        }
                     }
                 })
             })
@@ -223,6 +233,7 @@ function make_area_1() {
     TILE_MAP.data[4+7*TILE_MAP.width] = TUBE
 
     return {
+        name:'area1',
         tileSize:TILE_SIZE,
         width:TILE_MAP.width,
         height:TILE_MAP.height,
@@ -242,7 +253,7 @@ function make_area_2() {
         for(let j=0; j<TILE_MAP.height;j++) {
             let n = j*TILE_MAP.width+i
             let v = 0
-            if(i===0 || i===TILE_MAP.width-1) v = j%2==0?SEAWEED1:SEAWEED2
+            if(i===0 || i===TILE_MAP.width-1) v = j%2===0?SEAWEED1:SEAWEED2
             if(j===0 || j===TILE_MAP.height-1) v = FLOOR
             TILE_MAP.data[n] = v
         }
@@ -252,6 +263,7 @@ function make_area_2() {
     TILE_MAP.data[4+5*TILE_MAP.width] = FISH1
 
     return {
+        name:'area2',
         tileSize:TILE_SIZE,
         width:TILE_MAP.width,
         height:TILE_MAP.height,
@@ -261,7 +273,7 @@ function make_area_2() {
 }
 Promise.all([prom1,prom2,prom3, prom4]).then(()=>{
     console.log('all images loaded')
-    view.addComponent(TileMap,make_area_2())
+    view.addComponent(TileMap,make_area_1())
 })
 
 
