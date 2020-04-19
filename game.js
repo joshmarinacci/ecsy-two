@@ -63,17 +63,20 @@ class PlayerControlSystem extends System {
                         map.set_tile_at(col.tile_coords,EMPTY)
                         ent.addComponent(Sound, {notes:["A4","E5"], noteLength:'16n'})
                     }
+                })
+                cols = map.collide_bounds(bounds, [TUBE])
+                cols.forEach(col => {
                     if(col.tile_type === TUBE) {
-                        console.log("need to go into the tube")
+                        console.log("need to go into the tube", loc)
                         ent.removeComponent(TileMap)
                         if(map.name === 'area1') {
                             ent.addComponent(TileMap, make_area_2())
-                            loc.x = 3
-                            loc.y = 5
+                            loc.y -= TILE_SIZE*1
+                            console.log("new y = ",loc.y)
                         } else {
                             ent.addComponent(TileMap, make_area_1())
-                            loc.x = 3
-                            loc.y = 5
+                            loc.y -= TILE_SIZE*1
+                            console.log("new y = ",loc.y)
                         }
                     }
                 })
