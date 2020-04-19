@@ -21,13 +21,19 @@ export class SpriteLocation extends Component {
         this.y = 0
     }
 }
+export class SpriteBounds extends Component {
+    constructor() {
+        super();
+        this.width = 1
+        this.height = 1
+    }
+}
 export class BackgroundFill extends Component {
     constructor() {
         super()
         this.color = 'white'
     }
 }
-
 export class Camera extends Component {
     constructor() {
         super();
@@ -35,14 +41,23 @@ export class Camera extends Component {
         this.y = 0
     }
 }
-
 export class CameraFollowsSprite extends Component {
     constructor() {
         super();
         this.target = null
     }
 }
-
+export class AnimatedSprite extends Component {
+    constructor() {
+        super();
+        this.frames = []
+        this.current_frame = 0
+        this.width = -1
+        this.height = -1
+        this.frame_duration = 250
+        this.last_frame_time = 0
+    }
+}
 
 export class ECSYTwoSystem extends  System {
     execute(delta, time) {
@@ -100,6 +115,19 @@ export class SpriteSystem extends System {
                 ctx.drawImage(sprite.image,0,0)
                 ctx.restore()
             })
+            this.queries.animated_sprites.results.forEach(ent => {
+                let sprite = ent.getMutableComponent(AnimatedSprite)
+                let diff = time - sprite.last_frame_time
+                if(diff > sprite.frame_duration) {
+                    sprite.current_frame = (sprite.current_frame + 1) % sprite.frames.length
+                    sprite.last_frame_time = time
+                }
+                let loc = ent.getComponent(SpriteLocation)
+                ctx.save()
+                ctx.translate(loc.x, loc.y)
+                ctx.drawImage(sprite.frames[sprite.current_frame],0,0)
+                ctx.restore()
+            })
             ctx.restore()
         })
 
@@ -126,8 +154,12 @@ SpriteSystem.queries = {
     },
     camera_move: {
         components: [CameraFollowsSprite]
-    }
+    },
+    animated_sprites: {
+        components: [AnimatedSprite]
+    },
 }
+
 export function startWorld(world) {
     let lastTime = performance.now()
     function run() {

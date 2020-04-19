@@ -4,10 +4,11 @@ import {
     Canvas,
     ECSYTwoSystem,
     Sprite,
+    AnimatedSprite,
     startWorld,
     SpriteSystem,
     BackgroundFill,
-    Camera, CameraFollowsSprite
+    Camera, CameraFollowsSprite, SpriteBounds
 } from "./ecsytwo.js"
 import {KeyboardSystem, KeyboardState} from './keyboard.js'
 import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
@@ -36,7 +37,7 @@ class PlayerControlSystem extends System {
         this.queries.player.results.forEach(ent => {
             let kb = ent.getComponent(KeyboardState)
             let loc = ent.getMutableComponent(SpriteLocation)
-            let sprite = ent.getComponent(Sprite)
+            let sprite = ent.getComponent(SpriteBounds)
 
             let oldx = loc.x
             let oldy = loc.y
@@ -72,7 +73,7 @@ class PlayerControlSystem extends System {
 }
 PlayerControlSystem.queries = {
     player: {
-        components: [Player, KeyboardState, SpriteLocation]
+        components: [Player, KeyboardState, SpriteLocation, SpriteBounds]
     },
     map: {
         components: [TileMap]
@@ -133,6 +134,10 @@ class SpriteSheet {
             0,0,this.tw,this.th)
         return canvas
     }
+
+    sprites_to_frames(x, y, w) {
+
+    }
 }
 
 let player = world.createEntity()
@@ -143,13 +148,31 @@ let prom1 = load_image_from_url("./imgs/blocks@1x.png").then(blocks_img=>{
     TILE_INDEX[TUBE] = sheet.sprite_to_image(1,0)
 })
 let prom2 = load_image_from_url("./imgs/rainbow@1x.png").then((img)=>{
-        player.addComponent(Player)
-        .addComponent(SpriteLocation, { x: 8, y: 8 })
-        .addComponent(Sprite, {image:img, width:8, height:8})
-        .addComponent(KeyboardState)
+        // player.addComponent(Player)
+        // .addComponent(SpriteLocation, { x: 8, y: 8 })
+        // .addComponent(Sprite, {image:img, width:8, height:8})
+        // .addComponent(KeyboardState)
 })
 let prom3 = load_image_from_url("imgs/lucky_block@1x.png").then(img =>{
     TILE_INDEX[EGG] = img
+})
+let prom4 = load_image_from_url("imgs/seaman_sheet.png").then(img => {
+    let sheet = new SpriteSheet(img,8,8,4,2)
+    player.addComponent(Player)
+        .addComponent(SpriteLocation, { x: 8, y: 8 })
+        .addComponent(SpriteBounds, { width: 8, height: 8})
+        .addComponent(AnimatedSprite, {
+            frames:[
+                sheet.sprite_to_image(0,1),
+                sheet.sprite_to_image(1,1),
+                sheet.sprite_to_image(2,1),
+                sheet.sprite_to_image(3,1),
+            ],
+            width:8,
+            height:8,
+            frame_duration: 250,
+        })
+        .addComponent(KeyboardState)
 })
 
 TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
@@ -225,7 +248,7 @@ function make_area_2() {
         index:TILE_INDEX,
     }
 }
-Promise.all([prom1,prom2,prom3]).then(()=>{
+Promise.all([prom1,prom2,prom3, prom4]).then(()=>{
     console.log('all images loaded')
     view.addComponent(TileMap,make_area_2())
 })
@@ -235,7 +258,7 @@ Promise.all([prom1,prom2,prom3]).then(()=>{
 
 let view = world.createEntity()
     .addComponent(Canvas, { scale: 10, width:TILE_SIZE*10, height: TILE_SIZE*8})
-    .addComponent(BackgroundFill, {color: PALETTE[1]})
+    .addComponent(BackgroundFill, {color: PALETTE[0xC]})
     .addComponent(Camera, { x:1*TILE_SIZE, y:0*TILE_SIZE})
     .addComponent(CameraFollowsSprite, { target: player})
 
