@@ -152,10 +152,7 @@ let prom3 = load_image_from_url("imgs/lucky_block@1x.png").then(img =>{
     TILE_INDEX[EGG] = img
 })
 
-Promise.all([prom1,prom2,prom3]).then(()=>{
-    console.log('all images loaded')
-
-    TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
+TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
    00000000
    00000000
    00000000
@@ -165,12 +162,14 @@ Promise.all([prom1,prom2,prom3]).then(()=>{
    00000000
    00000000
    `)
-    TILE_INDEX[GROUND] = make_tile(TILE_SIZE, PALETTE, `
+TILE_INDEX[GROUND] = make_tile(TILE_SIZE, PALETTE, `
    1010
    0101
    1010
    0101
     `)
+
+function make_area_1() {
 
     let TILE_MAP = {
         width:20,
@@ -190,13 +189,45 @@ Promise.all([prom1,prom2,prom3]).then(()=>{
 
     TILE_MAP.data[4+7*TILE_MAP.width] = TUBE
 
-    view.addComponent(TileMap, {
+    return {
         tileSize:TILE_SIZE,
         width:TILE_MAP.width,
         height:TILE_MAP.height,
         map:TILE_MAP.data,
         index:TILE_INDEX,
-    })
+    }
+}
+
+function make_area_2() {
+    let TILE_MAP = {
+        width:8,
+        height:8,
+        data:[]
+    }
+    TILE_MAP.data.fill(0,0,TILE_MAP.width*TILE_MAP.height)
+    for(let i=0; i<TILE_MAP.width;i++) {
+        for(let j=0; j<TILE_MAP.height;j++) {
+            let n = j*TILE_MAP.width+i
+            let v = 0
+            if(i===0 || i===TILE_MAP.width-1) v = 3
+            if(j===0 || j===TILE_MAP.height-1) v = 3
+            TILE_MAP.data[n] = v
+        }
+    }
+
+    TILE_MAP.data[4+7*TILE_MAP.width] = TUBE
+
+    return {
+        tileSize:TILE_SIZE,
+        width:TILE_MAP.width,
+        height:TILE_MAP.height,
+        map:TILE_MAP.data,
+        index:TILE_INDEX,
+    }
+}
+Promise.all([prom1,prom2,prom3]).then(()=>{
+    console.log('all images loaded')
+    view.addComponent(TileMap,make_area_2())
 })
 
 
