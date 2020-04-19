@@ -12,9 +12,9 @@ import {
 } from "./ecsytwo.js"
 import {KeyboardSystem, KeyboardState} from './keyboard.js'
 import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
-import {load_image_from_url} from './sprite.js'
 import {BackgroundMusic, MusicSystem, Sound} from './music.js'
 import {Emitter, ParticleSystem} from './particles.js'
+import {load_image_from_url} from './image.js'
 
 let world = new World()
 
