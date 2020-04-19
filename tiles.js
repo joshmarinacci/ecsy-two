@@ -1,5 +1,5 @@
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
-import {Canvas} from './ecsytwo.js'
+import {Camera, Canvas} from './ecsytwo.js'
 
 export function make_tile(size, palette, data) {
     if(!palette || !palette.length) throw new Error("make_tile: palette must be an array of colors")
@@ -117,10 +117,15 @@ export class TileMapSystem extends System {
     execute(delta, time) {
         this.queries.maps.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
+            let camera = ent.getComponent(Camera)
             let map = ent.getComponent(TileMap)
             let ctx = canvas.dom.getContext('2d')
             ctx.save()
             ctx.scale(canvas.scale,canvas.scale)
+            ctx.translate(
+                -camera.x + canvas.width/2,
+                -camera.y + canvas.height/2
+            )
             for(let y=0; y<map.height; y++) {
                 for(let x=0; x<map.width; x++) {
                     let n = y*map.width+x
@@ -136,7 +141,7 @@ export class TileMapSystem extends System {
 
 TileMapSystem.queries = {
     maps: {
-        components:[TileMap, Canvas],
+        components:[TileMap, Canvas, Camera],
     }
 }
 export function make_map(width, height, data) {

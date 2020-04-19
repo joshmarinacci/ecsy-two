@@ -1,5 +1,14 @@
 import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js"
-import {SpriteLocation, Canvas, ECSYTwoSystem, Sprite, startWorld, SpriteSystem, BackgroundFill} from "./ecsytwo.js"
+import {
+    SpriteLocation,
+    Canvas,
+    ECSYTwoSystem,
+    Sprite,
+    startWorld,
+    SpriteSystem,
+    BackgroundFill,
+    Camera, CameraFollowsSprite
+} from "./ecsytwo.js"
 import {KeyboardSystem, KeyboardState} from './keyboard.js'
 import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {load_image_from_url} from './sprite.js'
@@ -126,14 +135,15 @@ class SpriteSheet {
     }
 }
 
+let player = world.createEntity()
+
 let prom1 = load_image_from_url("./imgs/blocks@1x.png").then(blocks_img=>{
     let sheet = new SpriteSheet(blocks_img,8,8,4,2)
     TILE_INDEX[WALL] = sheet.sprite_to_image(0,0)
     TILE_INDEX[TUBE] = sheet.sprite_to_image(1,0)
 })
 let prom2 = load_image_from_url("./imgs/rainbow@1x.png").then((img)=>{
-    let player = world.createEntity()
-        .addComponent(Player)
+        player.addComponent(Player)
         .addComponent(SpriteLocation, { x: 8, y: 8 })
         .addComponent(Sprite, {image:img, width:8, height:8})
         .addComponent(KeyboardState)
@@ -163,7 +173,7 @@ Promise.all([prom1,prom2,prom3]).then(()=>{
     `)
 
     let TILE_MAP = {
-        width:10,
+        width:20,
         height:8,
         data:[]
     }
@@ -195,7 +205,8 @@ Promise.all([prom1,prom2,prom3]).then(()=>{
 let view = world.createEntity()
     .addComponent(Canvas, { scale: 10, width:TILE_SIZE*10, height: TILE_SIZE*8})
     .addComponent(BackgroundFill, {color: PALETTE[1]})
-    // .addComponent(CameraFollowsPlayer, { player:player})
+    .addComponent(Camera, { x:1*TILE_SIZE, y:0*TILE_SIZE})
+    .addComponent(CameraFollowsSprite, { target: player})
 
 startWorld(world)
 

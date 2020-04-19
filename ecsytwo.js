@@ -27,6 +27,23 @@ export class BackgroundFill extends Component {
         this.color = 'white'
     }
 }
+
+export class Camera extends Component {
+    constructor() {
+        super();
+        this.x = 0
+        this.y = 0
+    }
+}
+
+export class CameraFollowsSprite extends Component {
+    constructor() {
+        super();
+        this.target = null
+    }
+}
+
+
 export class ECSYTwoSystem extends  System {
     execute(delta, time) {
         this.queries.canvas.added.forEach(ent => {
@@ -67,10 +84,14 @@ export class SpriteSystem extends System {
     execute(delta, time) {
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
+            let camera = ent.getComponent(Camera)
             let ctx = canvas.dom.getContext('2d')
             ctx.imageSmoothingEnabled = false
             ctx.save()
             ctx.scale(canvas.scale,canvas.scale)
+            ctx.translate(
+                -camera.x + canvas.width/2,
+                -camera.y + canvas.height/2)
             this.queries.sprites.results.forEach(ent => {
                 let sprite = ent.getComponent(Sprite)
                 let loc = ent.getComponent(SpriteLocation)
@@ -81,15 +102,30 @@ export class SpriteSystem extends System {
             })
             ctx.restore()
         })
+
+        this.queries.camera_move.results.forEach(ent => {
+            let cfs = ent.getComponent(CameraFollowsSprite)
+            if(!cfs.target) return
+            let loc = cfs.target.getComponent(SpriteLocation)
+            if(!loc) return
+            this.queries.canvas.results.forEach(ent => {
+                let camera = ent.getMutableComponent(Camera)
+                camera.x = loc.x
+                camera.y = loc.y
+            })
+        })
     }
 }
 
 SpriteSystem.queries = {
     canvas: {
-        components: [Canvas],
+        components: [Canvas,Camera],
     },
     sprites: {
         components: [Sprite, SpriteLocation]
+    },
+    camera_move: {
+        components: [CameraFollowsSprite]
     }
 }
 export function startWorld(world) {
