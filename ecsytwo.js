@@ -12,6 +12,8 @@ export class Sprite extends  Component {
         this.image = null
         this.width = -1
         this.height = -1
+        this.flipX = false
+        this.flipY = false
     }
 }
 export class SpriteLocation extends Component {
@@ -112,7 +114,13 @@ export class SpriteSystem extends System {
                 let loc = ent.getComponent(SpriteLocation)
                 ctx.save()
                 ctx.translate(loc.x, loc.y)
-                ctx.drawImage(sprite.image,0,0)
+                if(sprite.flipY) {
+                    ctx.scale(-1,1)
+                    ctx.translate(-sprite.width,0)
+                    ctx.drawImage(sprite.image, 0, 0, sprite.width, sprite.height)
+                } else {
+                    ctx.drawImage(sprite.image, 0, 0)
+                }
                 ctx.restore()
             })
             this.queries.animated_sprites.results.forEach(ent => {

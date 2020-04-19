@@ -21,6 +21,18 @@ class Player extends Component {
 
 }
 
+class Point {
+    constructor(x,y) {
+        this.x = x
+        this.y = y
+    }
+}
+class Size {
+    constructor(w,h) {
+        this.w = w
+        this.h = h
+    }
+}
 
 function make_bounds(x, y, width, height) {
     return {
@@ -72,11 +84,9 @@ class PlayerControlSystem extends System {
                         if(map.name === 'area1') {
                             ent.addComponent(TileMap, make_area_2())
                             loc.y -= TILE_SIZE*1
-                            console.log("new y = ",loc.y)
                         } else {
                             ent.addComponent(TileMap, make_area_1())
                             loc.y -= TILE_SIZE*1
-                            console.log("new y = ",loc.y)
                         }
                     }
                 })
@@ -92,12 +102,54 @@ PlayerControlSystem.queries = {
         components: [TileMap]
     }
 }
+
+class Fish extends Component {
+    constructor() {
+        super();
+        this.start = new Point(0,30)
+        this.end = new Point(10,30)
+        this.duration = 1000
+        this.start_time = 0
+        this.forward = true
+    }
+}
+
+const fract = (n) => n - Math.floor(n)
+
+class FishSystem extends System {
+    execute(delta, time) {
+        this.queries.fish.results.forEach(ent => {
+            let fish = ent.getComponent(Fish)
+            let loc = ent.getMutableComponent(SpriteLocation)
+            let diff = time - fish.start_time
+            let t = fract(diff/fish.duration)
+            if(diff > fish.duration) {
+                fish.start_time = time
+                fish.forward = !fish.forward
+            }
+            if(!fish.forward) {
+                t = 1-t
+            }
+            loc.x = fish.start.x + (fish.end.x - fish.start.x)*t
+            loc.y = fish.start.y + (fish.end.y - fish.start.y)*t
+            let sprite = ent.getComponent(Sprite)
+            sprite.flipY = fish.forward
+        })
+    }
+}
+FishSystem.queries = {
+    fish: {
+        components:[Fish, Sprite, SpriteLocation]
+    }
+}
+
 world.registerSystem(ECSYTwoSystem)
 world.registerSystem(KeyboardSystem)
 world.registerSystem(PlayerControlSystem)
 world.registerSystem(TileMapSystem)
 world.registerSystem(SpriteSystem)
 world.registerSystem(MusicSystem)
+world.registerSystem(FishSystem)
 
 let TILE_SIZE = 8
 let EMPTY = 0
@@ -168,12 +220,12 @@ let prom1 = load_image_from_url("./imgs/blocks@1x.png").then(blocks_img=>{
     TILE_INDEX[WALL] = sheet.sprite_to_image(0,0)
     TILE_INDEX[TUBE] = sheet.sprite_to_image(1,0)
 })
-let prom2 = load_image_from_url("./imgs/rainbow@1x.png").then((img)=>{
+// let prom2 = load_image_from_url("./imgs/rainbow@1x.png").then((img)=>{
         // player.addComponent(Player)
         // .addComponent(SpriteLocation, { x: 8, y: 8 })
         // .addComponent(Sprite, {image:img, width:8, height:8})
         // .addComponent(KeyboardState)
-})
+// })
 let prom3 = load_image_from_url("imgs/lucky_block@1x.png").then(img =>{
     TILE_INDEX[EGG] = img
 })
@@ -196,6 +248,11 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
     TILE_INDEX[SEAWEED2] = sheet.sprite_to_image(3,1)
     TILE_INDEX[FLOOR]    = sheet.sprite_to_image(3, 2)
     TILE_INDEX[FISH1]    = sheet.sprite_to_image(0, 0)
+
+    let fish = world.createEntity()
+        .addComponent(Sprite, { image:sheet.sprite_to_image(0,0), width: 8, height: 8})
+        .addComponent(SpriteLocation)
+        .addComponent(Fish, {start: new Point(8,32), end: new Point(50,32), duration: 5000})
 })
 
 TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
@@ -274,7 +331,7 @@ function make_area_2() {
         index:TILE_INDEX,
     }
 }
-Promise.all([prom1,prom2,prom3, prom4]).then(()=>{
+Promise.all([prom1,prom3, prom4, prom5]).then(()=>{
     console.log('all images loaded')
     view.addComponent(TileMap,make_area_1())
 })
