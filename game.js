@@ -50,10 +50,10 @@ class PlayerControlSystem extends System {
                 let map = ent.getComponent(TileMap)
                 //don't enter if type is wall
                 let bounds = make_bounds(loc.x,loc.y,sprite.width,sprite.height)
-                let cols = map.collide_bounds(bounds, [WALL,EGG, TUBE])
+                let cols = map.collide_bounds(bounds, [WALL,EGG, TUBE, FLOOR, SEAWEED1, SEAWEED2])
                 cols.forEach(col=>{
                     // console.log("collision ",col)
-                    if(col.tile_type === WALL) {
+                    if([WALL, FLOOR, SEAWEED1, SEAWEED2].indexOf(col.tile_type) >= 0) {
                         //go back to previous position
                         loc.x = oldx
                         loc.y = oldy
@@ -92,6 +92,10 @@ let EGG = 1
 let GROUND = 2
 let WALL = 3
 let TUBE = 4
+let SEAWEED1 = 5
+let SEAWEED2 = 6
+let FLOOR = 7
+let FISH1 = 8
 let PALETTE = [
     'transparent',//'#000000',
     '#1D2B53', //1
@@ -173,6 +177,13 @@ let prom4 = load_image_from_url("imgs/seaman_sheet.png").then(img => {
         })
         .addComponent(KeyboardState)
 })
+let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
+    let sheet = new SpriteSheet(img,8,8,4,2)
+    TILE_INDEX[SEAWEED1] = sheet.sprite_to_image(3,0)
+    TILE_INDEX[SEAWEED2] = sheet.sprite_to_image(3,1)
+    TILE_INDEX[FLOOR]    = sheet.sprite_to_image(3, 2)
+    TILE_INDEX[FISH1]    = sheet.sprite_to_image(0, 0)
+})
 
 TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
    00000000
@@ -231,13 +242,14 @@ function make_area_2() {
         for(let j=0; j<TILE_MAP.height;j++) {
             let n = j*TILE_MAP.width+i
             let v = 0
-            if(i===0 || i===TILE_MAP.width-1) v = 3
-            if(j===0 || j===TILE_MAP.height-1) v = 3
+            if(i===0 || i===TILE_MAP.width-1) v = j%2==0?SEAWEED1:SEAWEED2
+            if(j===0 || j===TILE_MAP.height-1) v = FLOOR
             TILE_MAP.data[n] = v
         }
     }
 
     TILE_MAP.data[4+7*TILE_MAP.width] = TUBE
+    TILE_MAP.data[4+5*TILE_MAP.width] = FISH1
 
     return {
         tileSize:TILE_SIZE,
