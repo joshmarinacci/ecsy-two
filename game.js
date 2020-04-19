@@ -14,6 +14,7 @@ import {KeyboardSystem, KeyboardState} from './keyboard.js'
 import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {load_image_from_url} from './sprite.js'
 import {BackgroundMusic, MusicSystem, Sound} from './music.js'
+import {Emitter, ParticleSystem} from './particles.js'
 
 let world = new World()
 
@@ -150,6 +151,7 @@ world.registerSystem(TileMapSystem)
 world.registerSystem(SpriteSystem)
 world.registerSystem(MusicSystem)
 world.registerSystem(FishSystem)
+world.registerSystem(ParticleSystem)
 
 let TILE_SIZE = 8
 let EMPTY = 0
@@ -253,6 +255,15 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
         .addComponent(Sprite, { image:sheet.sprite_to_image(0,0), width: 8, height: 8})
         .addComponent(SpriteLocation)
         .addComponent(Fish, {start: new Point(8,32), end: new Point(50,32), duration: 5000})
+
+    player.addComponent(Emitter, {
+            image:sheet.sprite_to_image(2,1),
+            velocityStart: new Point(0,100), // move down and to the right, pixels per second
+            velocityJitter: 0.1, //jitter the velocity
+            accelerationStart: new Point(0,-1), //move them up, pixels per second per second
+            rate:1, // one sprite per second
+            lifetime:2, //lifetime in seconds
+        })
 })
 
 TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
