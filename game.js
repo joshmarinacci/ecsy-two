@@ -3,7 +3,7 @@ import {SpriteLocation, Canvas, ECSYTwoSystem, Sprite, startWorld, SpriteSystem,
 import {KeyboardSystem, KeyboardState} from './keyboard.js'
 import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {load_image_from_url} from './sprite.js'
-import {BackgroundMusic, MusicSystem} from './music.js'
+import {BackgroundMusic, MusicSystem, Sound} from './music.js'
 
 let world = new World()
 
@@ -51,6 +51,7 @@ class PlayerControlSystem extends System {
                     if(col.tile_type === EGG) {
                         //clear the egg
                         map.set_tile_at(col.tile_coords,EMPTY)
+                        ent.addComponent(Sound, {notes:["A4","E5"], noteLength:'16n'})
                     }
                     if(col.tile_type === TUBE) {
                         console.log("need to go into the tube")
@@ -198,7 +199,7 @@ let view = world.createEntity()
 
 startWorld(world)
 
-document.addEventListener('mousedown',()=>{
+// document.addEventListener('mousedown',()=>{
     view.addComponent(BackgroundMusic, {notes:[
             "C3","D3","E3",
             "C3","D3","E3",
@@ -210,4 +211,4 @@ document.addEventListener('mousedown',()=>{
             "D3","E3","F3",
             "D3","E3","F3",
         ]})
-})
+// })
