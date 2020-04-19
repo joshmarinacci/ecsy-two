@@ -136,7 +136,11 @@ class SpriteSheet {
     }
 
     sprites_to_frames(x, y, w) {
-
+        let arr = []
+        for(let i=0; i<w; i++) {
+            arr.push(this.sprite_to_image(x+i,y))
+        }
+        return arr
     }
 }
 
@@ -162,12 +166,7 @@ let prom4 = load_image_from_url("imgs/seaman_sheet.png").then(img => {
         .addComponent(SpriteLocation, { x: 8, y: 8 })
         .addComponent(SpriteBounds, { width: 8, height: 8})
         .addComponent(AnimatedSprite, {
-            frames:[
-                sheet.sprite_to_image(0,1),
-                sheet.sprite_to_image(1,1),
-                sheet.sprite_to_image(2,1),
-                sheet.sprite_to_image(3,1),
-            ],
+            frames:sheet.sprites_to_frames(0,0,4),
             width:8,
             height:8,
             frame_duration: 250,
