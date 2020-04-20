@@ -212,7 +212,10 @@ function make_area_1() {
         ay: 200,
         max_vx:50,
         max_vy:50,
-        jump_y: 100
+        jump_y: 100,
+        ground_friction: 0.95,
+        h_accel: 3,
+        debug:false,
     })
 
     let TILE_MAP = {
