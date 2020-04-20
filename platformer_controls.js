@@ -47,7 +47,7 @@ export class PlatformerPhysicsSystem extends System {
 
             // update velocity with friction
             if(player.on_ground) {
-                player.vx *= 0.90
+                player.vx *= 0.99
             }
             // increase velocity in the correct direction
             if (kb.isPressed('ArrowRight')) player.vx += 1
@@ -141,17 +141,24 @@ export class PlatformerPhysicsSystem extends System {
                     if (player.vy > player.max_vy) player.vy = player.max_vy
                     //check below tile below
                     let bounds = make_bounds(loc.x, loc.y, sprite_bounds.width, sprite_bounds.height)
-                    let ty = Math.floor((bounds.y + bounds.height) / map.tileSize)
-                    let tx = Math.floor((bounds.x) / map.tileSize)
-                    let tpt = make_point(tx, ty)
-                    this._draw_tile_overlay(tpt, map, 'blue')
-                    let tile = map.tile_at(tpt)
-                    // if blocked, stop the player and set ground flag
-                    if (tile === 3) {
-                        player.vy = 0
-                        loc.y = ((ty - 1) * map.tileSize)
-                        player.on_ground = true
-                    }
+                    let tc1 = make_point(
+                        Math.floor((bounds.x) / map.tileSize),
+                        Math.floor((bounds.y + bounds.height) / map.tileSize)
+                    )
+                    let tc2 = make_point(
+                        Math.floor((bounds.x+bounds.width-1) / map.tileSize),
+                        Math.floor((bounds.y + bounds.height) / map.tileSize)
+                    );
+                    [tc1,tc2].forEach((tpt)=>{
+                        this._draw_tile_overlay(tpt, map, 'blue')
+                        let tile = map.tile_at(tpt)
+                        // if blocked, stop the player and set ground flag
+                        if (tile === 3) {
+                            player.vy = 0
+                            loc.y = ((tpt.y - 1) * map.tileSize)
+                            player.on_ground = true
+                        }
+                    })
                 }
 
                 // if moving up

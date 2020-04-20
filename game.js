@@ -209,10 +209,10 @@ TILE_INDEX[GROUND] = make_tile(TILE_SIZE, PALETTE, `
 
 function make_area_1() {
     player.addComponent(PlayerPhysics, {
-        ay: 80,
+        ay: 200,
         max_vx:50,
         max_vy:50,
-        jump_y: 50
+        jump_y: 100
     })
 
     let TILE_MAP = {
