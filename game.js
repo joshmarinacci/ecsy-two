@@ -14,8 +14,9 @@ import {KeyboardSystem, KeyboardState} from './keyboard.js'
 import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {BackgroundMusic, MusicSystem, Sound} from './music.js'
 import {Emitter, ParticleSystem} from './particles.js'
-import {load_image_from_url} from './image.js'
+import {load_image_from_url, SpriteSheet} from './image.js'
 import {Player, PlayerControlSystem} from './overhead_controls.js'
+import {PlatformerPhysicsSystem, PlayerPhysics} from './platformer_controls.js'
 
 let world = new World()
 
@@ -32,51 +33,7 @@ class Size {
     }
 }
 
-class Jumping extends Component {
 
-}
-class PlayerPhysics extends Component {
-    constructor() {
-        super();
-        this.vx = 0
-        this.vy = 0
-        this.ax = 0
-        this.ay = 0
-    }
-
-}
-
-
-class PlatformerPhysicsSystem extends System {
-    execute(delta, time) {
-        this.queries.jump.added.forEach(ent => {
-            let player_physics = ent.getComponent(PlayerPhysics)
-            let jump = ent.getComponent(Jumping)
-            player_physics.vy = -10
-            player_physics.vx = 0
-        })
-        this.queries.player.results.forEach(ent => {
-            let player_physics = ent.getComponent(PlayerPhysics)
-            let loc = ent.getComponent(SpriteLocation)
-            player_physics.vx += player_physics.ax*delta/1000
-            player_physics.vy += player_physics.ay*delta/1000
-            loc.x += player_physics.vx*delta/1000
-            loc.y += player_physics.vy*delta/1000
-        })
-    }
-}
-PlatformerPhysicsSystem.queries = {
-    jump: {
-        components:[Jumping, PlayerPhysics],
-        listen: {
-            added:true,
-            removed:true,
-        }
-    },
-    player: {
-        components:[PlayerPhysics, SpriteLocation]
-    }
-}
 
 class Fish extends Component {
     constructor() {
@@ -120,13 +77,13 @@ FishSystem.queries = {
 
 world.registerSystem(ECSYTwoSystem)
 world.registerSystem(KeyboardSystem)
-world.registerSystem(PlayerControlSystem)
 world.registerSystem(TileMapSystem)
 world.registerSystem(SpriteSystem)
 world.registerSystem(MusicSystem)
 world.registerSystem(FishSystem)
 world.registerSystem(ParticleSystem)
-// world.registerSystem(PlatformerPhysicsSystem)
+// world.registerSystem(PlayerControlSystem)
+world.registerSystem(PlatformerPhysicsSystem)
 
 let TILE_SIZE = 8
 let EMPTY = 0
@@ -157,38 +114,6 @@ let PALETTE = [
     '#FFCCAA', //F
 ]
 let TILE_INDEX = {}
-
-class SpriteSheet {
-    constructor(img,tw,th,w,h) {
-        this.image = img
-        this.tw = tw
-        this.th = th
-        this.ssw = w
-        this.ssh = h
-    }
-
-    sprite_to_image(x, y) {
-        let canvas = document.createElement('canvas')
-        canvas.width = this.tw
-        canvas.height = this.th
-        let ctx = canvas.getContext('2d')
-        ctx.drawImage(this.image,
-            x*this.tw,
-            y*this.th,
-            this.tw,
-            this.th,
-            0,0,this.tw,this.th)
-        return canvas
-    }
-
-    sprites_to_frames(x, y, w) {
-        let arr = []
-        for(let i=0; i<w; i++) {
-            arr.push(this.sprite_to_image(x+i,y))
-        }
-        return arr
-    }
-}
 
 let player = world.createEntity()
 player.addComponent(PlayerPhysics, { ay: 1})
