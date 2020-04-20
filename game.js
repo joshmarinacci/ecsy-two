@@ -178,7 +178,6 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
         .addComponent(SpriteLocation)
         .addComponent(Fish, {start: new Point(8,32), end: new Point(50,32), duration: 5000})
 
-    /*
     player.addComponent(Emitter, {
             image:sheet.sprite_to_image(2,1),
             velocityStart: new Point(0,100), // move down and to the right, pixels per second
@@ -187,7 +186,6 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
             rate:1, // one sprite per second
             lifetime:2, //lifetime in seconds
         })
-     */
 })
 
 TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
@@ -287,44 +285,24 @@ let prom6 = load_image_from_url("./imgs/castle@1x.png").then(img=>{
     // TILE_INDEX[TUBE] = sheet.sprite_to_image(1,0)
     fetch("./maps/simple.json").then(res => res.json()).then(data => {
         console.log("data is ",data)
-        console.log("map width is",data.width)
-        console.log("map height is", data.height)
-        data.layers.forEach(layer => {
-            console.log("layer ",layer)
-            let tile1 = layer.data[0]
-            console.log("tile1 is",tile1)
-        })
-        data.tilesets.forEach(tileset => {
-            console.log("tileset",tileset)
-        })
-
         let ts = data.tilesets[0]
         let TILE_MAP = {
             width:data.width,
             height:data.height,
             data:data.layers[0].data
         }
-        console.log("tilemap is",TILE_MAP)
 
         let TILE_INDEX = []
+        let start = ts.firstgid
         for(let i=0; i<ts.tilecount; i++) {
-            TILE_INDEX[i+1] = sheet.sprite_to_image(i%8, Math.floor(i/8))
+            TILE_INDEX[start] = sheet.sprite_to_image(i%8, Math.floor(i/8))
+            start++
         }
         let blocking = []
         ts.tiles.forEach(tile=>{
-            console.log("tile customization is",tile)
             if(tile.type === 'floor') blocking.push(tile.id+1)
-            if(tile.type === 'wall') blocking.push(tile.id+1)
+            if(tile.type === 'wall')  blocking.push(tile.id+1)
             if(tile.type === 'block') blocking.push(tile.id+1)
-            /*
-            if(tile.properties) {
-                tile.properties.forEach(prop => {
-                    console.log("props are",tile,prop)
-                    if(prop.name === 'blocking' && prop.value === true) {
-                        blocking.push(tile.id+1)
-                    }
-                })
-            }*/
         })
 
         player.addComponent(PlayerPhysics, {
