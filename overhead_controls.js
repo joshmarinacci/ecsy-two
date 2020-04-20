@@ -1,21 +1,11 @@
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
 import {KeyboardState} from './keyboard.js'
 import {AnimatedSprite, SpriteBounds, SpriteLocation} from './ecsytwo.js'
-import {TileMap} from './tiles.js'
+import {make_bounds, TileMap} from './tiles.js'
 import {Sound} from './music.js'
 
 export class Player extends Component {
 
-}
-
-function make_bounds(x, y, width, height) {
-    return {
-        x:x,
-        y:y,
-        width:width,
-        height:height,
-        type:'screen'
-    }
 }
 
 

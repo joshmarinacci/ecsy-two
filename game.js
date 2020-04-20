@@ -11,7 +11,7 @@ import {
     Camera, CameraFollowsSprite, SpriteBounds
 } from "./ecsytwo.js"
 import {KeyboardSystem, KeyboardState} from './keyboard.js'
-import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
+import {make_bounds, make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {BackgroundMusic, MusicSystem, Sound} from './music.js'
 import {Emitter, ParticleSystem} from './particles.js'
 import {load_image_from_url, SpriteSheet} from './image.js'
@@ -116,7 +116,35 @@ let PALETTE = [
 let TILE_INDEX = {}
 
 let player = world.createEntity()
-player.addComponent(PlayerPhysics, { ay: 1})
+player.addComponent(PlayerPhysics, { ay: 5})
+
+class EggSystem extends System {
+    execute(delta, time) {
+        this.queries.player.results.forEach(player => {
+            let sprite_location = player.getComponent(SpriteLocation)
+            let sprite_bounds = player.getComponent(SpriteBounds)
+            this.queries.map.results.forEach(ent => {
+                let map = ent.getComponent(TileMap)
+                //don't enter if type is wall
+                let bounds = make_bounds(sprite_location.x, sprite_location.y, sprite_bounds.width, sprite_bounds.height)
+                let cols = map.collide_bounds(bounds, [EGG])
+                cols.forEach(col => {
+                    map.set_tile_at(col.tile_coords,EMPTY)
+                    ent.addComponent(Sound, {notes:["A4","E5"], noteLength:'16n'})
+                })
+            })
+        })
+    }
+}
+EggSystem.queries = {
+    player: {
+        components:[Player]
+    },
+    map: {
+        components: [TileMap]
+    }
+}
+world.registerSystem(EggSystem)
 
 let prom1 = load_image_from_url("./imgs/blocks@1x.png").then(blocks_img=>{
     let sheet = new SpriteSheet(blocks_img,8,8,4,2)
@@ -129,10 +157,10 @@ let prom3 = load_image_from_url("imgs/lucky_block@1x.png").then(img =>{
 let prom4 = load_image_from_url("imgs/seaman_sheet.png").then(img => {
     let sheet = new SpriteSheet(img,8,8,4,2)
     player.addComponent(Player)
-        .addComponent(SpriteLocation, { x: 8, y: 8 })
+        .addComponent(SpriteLocation, { x: 8, y: 40 })
         .addComponent(SpriteBounds, { width: 8, height: 8})
         .addComponent(AnimatedSprite, {
-            frames:sheet.sprites_to_frames(0,0,4),
+            frames:sheet.sprites_to_frames(0,1,4),
             width:8,
             height:8,
             frame_duration: 250,

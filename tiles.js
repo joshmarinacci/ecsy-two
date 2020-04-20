@@ -37,6 +37,18 @@ export function is_whitespace(ch) {
     return false
 }
 
+
+export function make_bounds(x, y, width, height) {
+    return {
+        x:x,
+        y:y,
+        width:width,
+        height:height,
+        type:'screen'
+    }
+}
+
+
 export class TileMap extends Component {
     constructor() {
         super();
