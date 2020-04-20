@@ -79,7 +79,7 @@ world.registerSystem(ECSYTwoSystem)
 world.registerSystem(KeyboardSystem)
 world.registerSystem(TileMapSystem)
 world.registerSystem(SpriteSystem)
-world.registerSystem(MusicSystem)
+// world.registerSystem(MusicSystem)
 world.registerSystem(FishSystem)
 world.registerSystem(ParticleSystem)
 // world.registerSystem(PlayerControlSystem)
@@ -156,7 +156,7 @@ let prom3 = load_image_from_url("imgs/lucky_block@1x.png").then(img =>{
 let prom4 = load_image_from_url("imgs/seaman_sheet.png").then(img => {
     let sheet = new SpriteSheet(img,8,8,4,2)
     player.addComponent(Player)
-        .addComponent(SpriteLocation, { x: 8, y: 40 })
+        .addComponent(SpriteLocation, { x: 20, y: 30 })
         .addComponent(SpriteBounds, { width: 8, height: 8})
         .addComponent(AnimatedSprite, {
             frames:sheet.sprites_to_frames(0,0,4),
@@ -209,8 +209,10 @@ TILE_INDEX[GROUND] = make_tile(TILE_SIZE, PALETTE, `
 
 function make_area_1() {
     player.addComponent(PlayerPhysics, {
-        ay: 50,
-        max_vx:40,
+        ay: 80,
+        max_vx:50,
+        max_vy:50,
+        jump_y: 50
     })
 
     let TILE_MAP = {
@@ -230,6 +232,8 @@ function make_area_1() {
     }
 
     TILE_MAP.data[4+7*TILE_MAP.width] = TUBE
+    TILE_MAP.data[4+6*TILE_MAP.width] = WALL
+    TILE_MAP.data[5+5*TILE_MAP.width] = WALL
 
     return {
         name:'area1',
