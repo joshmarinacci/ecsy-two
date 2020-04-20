@@ -143,7 +143,7 @@ EggSystem.queries = {
         components: [TileMap]
     }
 }
-world.registerSystem(EggSystem)
+// world.registerSystem(EggSystem)
 
 let prom1 = load_image_from_url("./imgs/blocks@1x.png").then(blocks_img=>{
     let sheet = new SpriteSheet(blocks_img,8,8,4,2)
@@ -280,9 +280,79 @@ function make_area_2() {
         wall_types: [WALL, TUBE, FLOOR, SEAWEED1, SEAWEED2]
     }
 }
-Promise.all([prom1,prom3, prom4, prom5]).then(()=>{
+
+let prom6 = load_image_from_url("./imgs/castle@1x.png").then(img=>{
+    let sheet = new SpriteSheet(img,8,8,8,8)
+    // TILE_INDEX[WALL] = sheet.sprite_to_image(0,0)
+    // TILE_INDEX[TUBE] = sheet.sprite_to_image(1,0)
+    fetch("./maps/simple.json").then(res => res.json()).then(data => {
+        console.log("data is ",data)
+        console.log("map width is",data.width)
+        console.log("map height is", data.height)
+        data.layers.forEach(layer => {
+            console.log("layer ",layer)
+            let tile1 = layer.data[0]
+            console.log("tile1 is",tile1)
+        })
+        data.tilesets.forEach(tileset => {
+            console.log("tileset",tileset)
+        })
+
+        let ts = data.tilesets[0]
+        let TILE_MAP = {
+            width:data.width,
+            height:data.height,
+            data:data.layers[0].data
+        }
+        console.log("tilemap is",TILE_MAP)
+
+        let TILE_INDEX = []
+        for(let i=0; i<ts.tilecount; i++) {
+            TILE_INDEX[i+1] = sheet.sprite_to_image(i%8, Math.floor(i/8))
+        }
+        let blocking = []
+        ts.tiles.forEach(tile=>{
+            console.log("tile customization is",tile)
+            if(tile.type === 'floor') blocking.push(tile.id+1)
+            if(tile.type === 'wall') blocking.push(tile.id+1)
+            if(tile.type === 'block') blocking.push(tile.id+1)
+            /*
+            if(tile.properties) {
+                tile.properties.forEach(prop => {
+                    console.log("props are",tile,prop)
+                    if(prop.name === 'blocking' && prop.value === true) {
+                        blocking.push(tile.id+1)
+                    }
+                })
+            }*/
+        })
+
+        player.addComponent(PlayerPhysics, {
+            ay: 200,
+            max_vx:50,
+            max_vy:50,
+            jump_y: 100,
+            ground_friction: 0.95,
+            h_accel: 3,
+            debug:false,
+        })
+
+        // blocking = [2]
+        console.log("blocking numbers are",blocking)
+        view.addComponent(TileMap, {
+            name:'area3',
+            tileSize:ts.tilewidth,
+            width:TILE_MAP.width,
+            height:TILE_MAP.height,
+            map:TILE_MAP.data,
+            index:TILE_INDEX,
+            wall_types:blocking,
+        })
+    })
+})
+
+Promise.all([prom1,prom3, prom4, prom5, prom6]).then(()=>{
     console.log('all images loaded')
-    view.addComponent(TileMap,make_area_1())
 })
 
 

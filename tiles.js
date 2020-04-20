@@ -144,7 +144,7 @@ export class TileMapSystem extends System {
                     let n = y*map.width+x
                     let tile_index = map.map[n]
                     let tile = map.index[tile_index]
-                    ctx.drawImage(tile,x*map.tileSize, y*map.tileSize)
+                    if(tile)  ctx.drawImage(tile,x*map.tileSize, y*map.tileSize)
                 }
             }
             ctx.restore()

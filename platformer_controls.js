@@ -81,7 +81,7 @@ export class PlatformerPhysicsSystem extends System {
                     // this._draw_tile_overlay(tpt, map, 'red')
                     let tile = map.tile_at(tpt)
                     // if blocked, stop the player
-                    if (tile === 3) {
+                    if(map.wall_types.indexOf(tile) >= 0) {
                         player.vx = 0
                         loc.x = ((tx + 1) * map.tileSize)
                     }
@@ -93,7 +93,7 @@ export class PlatformerPhysicsSystem extends System {
                     // this._draw_tile_overlay(tpt, map, 'red')
                     let tile = map.tile_at(tpt)
                     // if blocked, stop the player
-                    if (tile === 3) {
+                    if(map.wall_types.indexOf(tile) >= 0) {
                         player.vx = 0
                         loc.x = ((tx + 1) * map.tileSize)
                     }
@@ -112,7 +112,7 @@ export class PlatformerPhysicsSystem extends System {
                     if(player.debug) this._draw_tile_overlay(tpt, map, 'yellow')
                     let tile = map.tile_at(tpt)
                     // if blocked, stop the player
-                    if (tile === 3) {
+                    if(map.wall_types.indexOf(tile) >= 0) {
                         player.vx = 0
                         loc.x = ((tx - 1) * map.tileSize)
                     }
@@ -124,7 +124,7 @@ export class PlatformerPhysicsSystem extends System {
                     if(player.debug) this._draw_tile_overlay(tpt, map, 'yellow')
                     let tile = map.tile_at(tpt)
                     // if blocked, stop the player
-                    if (tile === 3) {
+                    if(map.wall_types.indexOf(tile) >= 0) {
                         player.vx = 0
                         loc.x = ((tx - 1) * map.tileSize)
                     }
@@ -160,7 +160,7 @@ export class PlatformerPhysicsSystem extends System {
                     if(player.debug) this._draw_tile_overlay(tpt, map, 'blue')
                     let tile = map.tile_at(tpt)
                     // if blocked, stop the player and set ground flag
-                    if (tile === 3) {
+                    if(map.wall_types.indexOf(tile) >= 0) {
                         player.vy = 0
                         loc.y = ((tpt.y - 1) * map.tileSize)
                         player.on_ground = true
@@ -182,7 +182,7 @@ export class PlatformerPhysicsSystem extends System {
                     if(player.debug) this._draw_tile_overlay(tpt, map, 'green')
                     let tile = map.tile_at(tpt)
                     // if blocked, stop the player and set ground flag
-                    if (tile === 3) {
+                    if(map.wall_types.indexOf(tile) >= 0) {
                         player.vy = 0
                         loc.y = ((tpt.y+1) * map.tileSize)
                     }
