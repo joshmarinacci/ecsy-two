@@ -171,3 +171,6 @@ export function make_map(width, height, data) {
     }
 }
 
+export function make_map_from_tiledjson(jsonobj) {
+
+}
