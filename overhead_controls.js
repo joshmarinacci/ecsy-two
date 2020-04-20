@@ -43,11 +43,6 @@ export class PlayerControlSystem extends System {
                         loc.x = oldx
                         loc.y = oldy
                     }
-                    // if(col.tile_type === EGG) {
-                    //     //clear the egg
-                    //     map.set_tile_at(col.tile_coords,EMPTY)
-                    //     ent.addComponent(Sound, {notes:["A4","E5"], noteLength:'16n'})
-                    // }
                 })
                 /*
                 cols = map.collide_bounds(bounds, [TUBE])

@@ -1,5 +1,5 @@
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
-import {SpriteBounds, SpriteLocation} from './ecsytwo.js'
+import {AnimatedSprite, SpriteBounds, SpriteLocation} from './ecsytwo.js'
 import {make_bounds, TileMap} from './tiles.js'
 import {KeyboardState} from './keyboard.js'
 
@@ -13,6 +13,8 @@ export class PlayerPhysics extends Component {
         this.vy = 0
         this.ax = 0
         this.ay = 0
+        this.max_vx = 10
+        this.max_vy = 10
     }
 
 }
@@ -33,25 +35,31 @@ export class PlatformerPhysicsSystem extends System {
             let sprite_bounds = player.getComponent(SpriteBounds)
 
 
-            if (kb.isPressed('ArrowRight')) player_physics.vx += 1
-            if (kb.isPressed('ArrowLeft')) player_physics.vx -= 1
-            if (kb.isPressed(' ')) player_physics.vy = -10
+            if (kb.isPressed('ArrowRight')) player_physics.vx += 3
+            if (kb.isPressed('ArrowLeft')) player_physics.vx -= 3
+            if (kb.isPressed(' ')) player_physics.vy = -30
+            if(kb.isPressed('ArrowRight')) {
+                player.getMutableComponent(AnimatedSprite).flipY = false
+            }
+            if(kb.isPressed('ArrowLeft')) {
+                player.getMutableComponent(AnimatedSprite).flipY = true
+            }
+
 
             let oldx = sprite_location.x
             let oldy = sprite_location.y
             player_physics.vx += player_physics.ax*delta/1000
             player_physics.vy += player_physics.ay*delta/1000
 
-            if(player_physics.vx > 0 && player_physics.vx > 10) {
-                player_physics.vx = 10
+            if(player_physics.vx > 0 && player_physics.vx > player_physics.max_vx) {
+                player_physics.vx = player_physics.max_vx
+            }
+            if(player_physics.vx < 0 && player_physics.vx < -player_physics.max_vx) {
+                player_physics.vx = -player_physics.max_vx
             }
 
             sprite_location.x += player_physics.vx*delta/1000
             sprite_location.y += player_physics.vy*delta/1000
-
-
-
-
 
             this.queries.map.results.forEach(ent => {
                 let map = ent.getComponent(TileMap)
@@ -59,18 +67,11 @@ export class PlatformerPhysicsSystem extends System {
                 let bounds = make_bounds(sprite_location.x, sprite_location.y, sprite_bounds.width, sprite_bounds.height)
                 let cols = map.collide_bounds(bounds, map.wall_types)
                 cols.forEach(col => {
-                    // if (map.wall_types.indexOf(col.tile_type) >= 0) {
-                        //go back to previous position
-                    sprite_location.x = oldx
+                    // sprite_location.x = oldx
                     sprite_location.y = oldy
                     // player_physics.vx = 0
+                    //player_physics.ax = 0
                     player_physics.vy = 0
-                    // }
-                    // if(col.tile_type === EGG) {
-                    //     //clear the egg
-                    //     map.set_tile_at(col.tile_coords,EMPTY)
-                    //     ent.addComponent(Sound, {notes:["A4","E5"], noteLength:'16n'})
-                    // }
                 })
             })
 

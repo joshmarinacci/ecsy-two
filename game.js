@@ -116,7 +116,6 @@ let PALETTE = [
 let TILE_INDEX = {}
 
 let player = world.createEntity()
-player.addComponent(PlayerPhysics, { ay: 5})
 
 class EggSystem extends System {
     execute(delta, time) {
@@ -160,7 +159,7 @@ let prom4 = load_image_from_url("imgs/seaman_sheet.png").then(img => {
         .addComponent(SpriteLocation, { x: 8, y: 40 })
         .addComponent(SpriteBounds, { width: 8, height: 8})
         .addComponent(AnimatedSprite, {
-            frames:sheet.sprites_to_frames(0,1,4),
+            frames:sheet.sprites_to_frames(0,0,4),
             width:8,
             height:8,
             frame_duration: 250,
@@ -179,6 +178,7 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
         .addComponent(SpriteLocation)
         .addComponent(Fish, {start: new Point(8,32), end: new Point(50,32), duration: 5000})
 
+    /*
     player.addComponent(Emitter, {
             image:sheet.sprite_to_image(2,1),
             velocityStart: new Point(0,100), // move down and to the right, pixels per second
@@ -187,6 +187,7 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
             rate:1, // one sprite per second
             lifetime:2, //lifetime in seconds
         })
+     */
 })
 
 TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
@@ -207,6 +208,10 @@ TILE_INDEX[GROUND] = make_tile(TILE_SIZE, PALETTE, `
     `)
 
 function make_area_1() {
+    player.addComponent(PlayerPhysics, {
+        ay: 50,
+        max_vx:40,
+    })
 
     let TILE_MAP = {
         width:20,
