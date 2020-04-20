@@ -82,7 +82,7 @@ export class PlatformerPhysicsSystem extends System {
                         let tx = Math.floor((bounds.x) / map.tileSize)
                         let ty = Math.floor((bounds.y) / map.tileSize)
                         let tpt = make_point(tx, ty)
-                        this._draw_tile_overlay(tpt, map, 'red')
+                        // this._draw_tile_overlay(tpt, map, 'red')
                         let tile = map.tile_at(tpt)
                         // if blocked, stop the player
                         if (tile === 3) {
@@ -94,7 +94,7 @@ export class PlatformerPhysicsSystem extends System {
                         let tx = Math.floor((bounds.x) / map.tileSize)
                         let ty = Math.floor((bounds.y + bounds.height -1) / map.tileSize)
                         let tpt = make_point(tx, ty)
-                        this._draw_tile_overlay(tpt, map, 'red')
+                        // this._draw_tile_overlay(tpt, map, 'red')
                         let tile = map.tile_at(tpt)
                         // if blocked, stop the player
                         if (tile === 3) {
@@ -113,7 +113,7 @@ export class PlatformerPhysicsSystem extends System {
                         let tx = Math.floor((bounds.x + bounds.width) / map.tileSize)
                         let ty = Math.floor((bounds.y) / map.tileSize)
                         let tpt = make_point(tx, ty)
-                        this._draw_tile_overlay(tpt, map, 'yellow')
+                        // this._draw_tile_overlay(tpt, map, 'yellow')
                         let tile = map.tile_at(tpt)
                         // if blocked, stop the player
                         if (tile === 3) {
@@ -125,7 +125,7 @@ export class PlatformerPhysicsSystem extends System {
                         let tx = Math.floor((bounds.x + bounds.width) / map.tileSize)
                         let ty = Math.floor((bounds.y + bounds.height -1) / map.tileSize)
                         let tpt = make_point(tx, ty)
-                        this._draw_tile_overlay(tpt, map, 'yellow')
+                        // this._draw_tile_overlay(tpt, map, 'yellow')
                         let tile = map.tile_at(tpt)
                         // if blocked, stop the player
                         if (tile === 3) {
@@ -143,12 +143,10 @@ export class PlatformerPhysicsSystem extends System {
                     let bounds = make_bounds(loc.x, loc.y, sprite_bounds.width, sprite_bounds.height)
                     let tc1 = make_point(
                         Math.floor((bounds.x) / map.tileSize),
-                        Math.floor((bounds.y + bounds.height) / map.tileSize)
-                    )
+                        Math.floor((bounds.y + bounds.height) / map.tileSize))
                     let tc2 = make_point(
                         Math.floor((bounds.x+bounds.width-1) / map.tileSize),
-                        Math.floor((bounds.y + bounds.height) / map.tileSize)
-                    );
+                        Math.floor((bounds.y + bounds.height) / map.tileSize));
                     [tc1,tc2].forEach((tpt)=>{
                         this._draw_tile_overlay(tpt, map, 'blue')
                         let tile = map.tile_at(tpt)
@@ -165,16 +163,21 @@ export class PlatformerPhysicsSystem extends System {
                 if (player.vy < 0) {
                     player.on_ground = false
                     let bounds = make_bounds(loc.x, loc.y, sprite_bounds.width, sprite_bounds.height)
-                    let ty = Math.floor((bounds.y) / map.tileSize)
-                    let tx = Math.floor((bounds.x) / map.tileSize)
-                    let tpt = make_point(tx, ty)
-                    this._draw_tile_overlay(tpt, map, 'green')
-                    let tile = map.tile_at(tpt)
-                    // if blocked, stop the player and set ground flag
-                    if (tile === 3) {
-                        player.vy = 0
-                        loc.y = ((ty+1) * map.tileSize)
-                    }
+                    let tc1 = make_point(
+                        Math.floor((bounds.x) / map.tileSize),
+                        Math.floor((bounds.y) / map.tileSize));
+                    let tc2 = make_point(
+                        Math.floor((bounds.x+bounds.width-1) / map.tileSize),
+                        Math.floor((bounds.y) / map.tileSize));
+                    [tc1,tc2].forEach(tpt => {
+                        this._draw_tile_overlay(tpt, map, 'green')
+                        let tile = map.tile_at(tpt)
+                        // if blocked, stop the player and set ground flag
+                        if (tile === 3) {
+                            player.vy = 0
+                            loc.y = ((tpt.y+1) * map.tileSize)
+                        }
+                    })
                 }
             })
         })

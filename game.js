@@ -234,6 +234,7 @@ function make_area_1() {
     TILE_MAP.data[4+7*TILE_MAP.width] = TUBE
     TILE_MAP.data[4+6*TILE_MAP.width] = WALL
     TILE_MAP.data[5+5*TILE_MAP.width] = WALL
+    TILE_MAP.data[6+4*TILE_MAP.width] = WALL
 
     return {
         name:'area1',
