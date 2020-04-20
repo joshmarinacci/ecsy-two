@@ -45,6 +45,7 @@ export class TileMap extends Component {
         this.height = -1
         this.map = []
         this.index = []
+        this.wall_types = []
     }
     tile_at(tile_coords) {
         return this.map[tile_coords.y*this.width+tile_coords.x]

@@ -15,12 +15,9 @@ import {make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {BackgroundMusic, MusicSystem, Sound} from './music.js'
 import {Emitter, ParticleSystem} from './particles.js'
 import {load_image_from_url} from './image.js'
+import {Player, PlayerControlSystem} from './overhead_controls.js'
 
 let world = new World()
-
-class Player extends Component {
-
-}
 
 class Point {
     constructor(x,y) {
@@ -35,78 +32,49 @@ class Size {
     }
 }
 
-function make_bounds(x, y, width, height) {
-    return {
-        x:x,
-        y:y,
-        width:width,
-        height:height,
-        type:'screen'
+class Jumping extends Component {
+
+}
+class PlayerPhysics extends Component {
+    constructor() {
+        super();
+        this.vx = 0
+        this.vy = 0
+        this.ax = 0
+        this.ay = 0
     }
+
 }
 
-class PlayerControlSystem extends System {
+
+class PlatformerPhysicsSystem extends System {
     execute(delta, time) {
-        this.queries.player.results.forEach(player => {
-            let kb = player.getComponent(KeyboardState)
-            let loc = player.getMutableComponent(SpriteLocation)
-            let sprite = player.getComponent(SpriteBounds)
-
-            let oldx = loc.x
-            let oldy = loc.y
-            if (kb.isPressed('ArrowRight')) loc.x += 1
-            if (kb.isPressed('ArrowLeft')) loc.x -= 1
-            if (kb.isPressed('ArrowUp')) loc.y -= 1
-            if (kb.isPressed('ArrowDown')) loc.y += 1
-            if(kb.isPressed('ArrowRight')) {
-                player.getMutableComponent(AnimatedSprite).flipY = false
-            }
-            if(kb.isPressed('ArrowLeft')) {
-                player.getMutableComponent(AnimatedSprite).flipY = true
-            }
-
-            this.queries.map.results.forEach(ent => {
-                let map = ent.getComponent(TileMap)
-                //don't enter if type is wall
-                let bounds = make_bounds(loc.x,loc.y,sprite.width,sprite.height)
-                let cols = map.collide_bounds(bounds, [WALL,EGG, TUBE, FLOOR, SEAWEED1, SEAWEED2])
-                cols.forEach(col=>{
-                    // console.log("collision ",col)
-                    if([WALL, FLOOR, SEAWEED1, SEAWEED2].indexOf(col.tile_type) >= 0) {
-                        //go back to previous position
-                        loc.x = oldx
-                        loc.y = oldy
-                    }
-                    if(col.tile_type === EGG) {
-                        //clear the egg
-                        map.set_tile_at(col.tile_coords,EMPTY)
-                        ent.addComponent(Sound, {notes:["A4","E5"], noteLength:'16n'})
-                    }
-                })
-                cols = map.collide_bounds(bounds, [TUBE])
-                cols.forEach(col => {
-                    if(col.tile_type === TUBE) {
-                        console.log("need to go into the tube", loc)
-                        ent.removeComponent(TileMap)
-                        if(map.name === 'area1') {
-                            ent.addComponent(TileMap, make_area_2())
-                            loc.y -= TILE_SIZE*1
-                        } else {
-                            ent.addComponent(TileMap, make_area_1())
-                            loc.y -= TILE_SIZE*1
-                        }
-                    }
-                })
-            })
+        this.queries.jump.added.forEach(ent => {
+            let player_physics = ent.getComponent(PlayerPhysics)
+            let jump = ent.getComponent(Jumping)
+            player_physics.vy = -10
+            player_physics.vx = 0
+        })
+        this.queries.player.results.forEach(ent => {
+            let player_physics = ent.getComponent(PlayerPhysics)
+            let loc = ent.getComponent(SpriteLocation)
+            player_physics.vx += player_physics.ax*delta/1000
+            player_physics.vy += player_physics.ay*delta/1000
+            loc.x += player_physics.vx*delta/1000
+            loc.y += player_physics.vy*delta/1000
         })
     }
 }
-PlayerControlSystem.queries = {
-    player: {
-        components: [Player, KeyboardState, SpriteLocation, SpriteBounds]
+PlatformerPhysicsSystem.queries = {
+    jump: {
+        components:[Jumping, PlayerPhysics],
+        listen: {
+            added:true,
+            removed:true,
+        }
     },
-    map: {
-        components: [TileMap]
+    player: {
+        components:[PlayerPhysics, SpriteLocation]
     }
 }
 
@@ -158,6 +126,7 @@ world.registerSystem(SpriteSystem)
 world.registerSystem(MusicSystem)
 world.registerSystem(FishSystem)
 world.registerSystem(ParticleSystem)
+// world.registerSystem(PlatformerPhysicsSystem)
 
 let TILE_SIZE = 8
 let EMPTY = 0
@@ -222,6 +191,7 @@ class SpriteSheet {
 }
 
 let player = world.createEntity()
+player.addComponent(PlayerPhysics, { ay: 1})
 
 let prom1 = load_image_from_url("./imgs/blocks@1x.png").then(blocks_img=>{
     let sheet = new SpriteSheet(blocks_img,8,8,4,2)
@@ -310,6 +280,7 @@ function make_area_1() {
         height:TILE_MAP.height,
         map:TILE_MAP.data,
         index:TILE_INDEX,
+        wall_types: [WALL, TUBE, FLOOR, SEAWEED1, SEAWEED2]
     }
 }
 
@@ -340,6 +311,7 @@ function make_area_2() {
         height:TILE_MAP.height,
         map:TILE_MAP.data,
         index:TILE_INDEX,
+        wall_types: [WALL, TUBE, FLOOR, SEAWEED1, SEAWEED2]
     }
 }
 Promise.all([prom1,prom3, prom4, prom5]).then(()=>{
