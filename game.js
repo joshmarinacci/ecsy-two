@@ -17,6 +17,7 @@ import {Emitter, ParticleSystem} from './particles.js'
 import {load_image_from_url, SpriteSheet} from './image.js'
 import {Player, PlayerControlSystem} from './overhead_controls.js'
 import {PlatformerPhysicsSystem, PlayerPhysics} from './platformer_controls.js'
+import {FadeTransition, TransitionSystem} from './transitions.js'
 
 let world = new World()
 
@@ -84,6 +85,7 @@ world.registerSystem(FishSystem)
 world.registerSystem(ParticleSystem)
 // world.registerSystem(PlayerControlSystem)
 world.registerSystem(PlatformerPhysicsSystem)
+world.registerSystem(TransitionSystem)
 
 let TILE_SIZE = 8
 let EMPTY = 0
@@ -329,9 +331,6 @@ let prom6 = load_image_from_url("./imgs/castle@1x.png").then(img=>{
     })
 })
 
-Promise.all([prom1,prom3, prom4, prom5, prom6]).then(()=>{
-    console.log('all images loaded')
-})
 
 
 
@@ -341,6 +340,15 @@ let view = world.createEntity()
     .addComponent(BackgroundFill, {color: PALETTE[0xC]})
     .addComponent(Camera, { x:1*TILE_SIZE, y:0*TILE_SIZE})
     .addComponent(CameraFollowsSprite, { target: player})
+
+Promise.all([prom1,prom3, prom4, prom5, prom6]).then(()=>{
+    view.addComponent(FadeTransition,{
+        direction:'in',
+        color:'black',
+        duration:0.5,
+    })
+    console.log('all images loaded')
+})
 
 startWorld(world)
 
