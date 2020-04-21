@@ -31,6 +31,7 @@ function make_point(tx, ty) {
 
 export class PlatformerPhysicsSystem extends System {
     execute(delta, time) {
+        if(delta > 100) return
         this.queries.jump.added.forEach(ent => {
             let player_physics = ent.getComponent(PlayerPhysics)
             player_physics.vy = -10
