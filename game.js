@@ -18,6 +18,7 @@ import {load_image_from_url, SpriteSheet} from './image.js'
 import {Player, PlayerControlSystem} from './overhead_controls.js'
 import {PlatformerPhysicsSystem, PlayerPhysics} from './platformer_controls.js'
 import {FadeTransition, TransitionSystem} from './transitions.js'
+import {StateMachine, StateMachineSystem} from './dialogs.js'
 
 let world = new World()
 
@@ -86,6 +87,7 @@ world.registerSystem(ParticleSystem)
 // world.registerSystem(PlayerControlSystem)
 world.registerSystem(PlatformerPhysicsSystem)
 world.registerSystem(TransitionSystem)
+world.registerSystem(StateMachineSystem)
 
 let TILE_SIZE = 8
 let EMPTY = 0
@@ -353,11 +355,23 @@ let view = world.createEntity()
     .addComponent(CameraFollowsSprite, { target: player})
 
 Promise.all([prom1,prom3, prom4, prom5, prom6]).then(()=>{
-    view.addComponent(FadeTransition,{
-        direction:'in',
-        color:'black',
-        duration:0.5,
-    })
+
+    view.addComponent(StateMachine, {states:[
+            (machine)=>{
+                console.log("starting the state machine")
+                PlatformerPhysicsSystem.enabled = false
+                let splash = world.createEntity()
+                splash.addComponent(Sprite, { src:"./imgs/splash@1x.png"})
+                splash.addComponent(SpriteLocation, { x: 0, y:0, fixed:true})
+                // view.addComponent(WaitForInput)
+            },
+        ]})
+
+    // view.addComponent(FadeTransition,{
+    //     direction:'in',
+    //     color:'black',
+    //     duration:0.5,
+    // })
     console.log('all images loaded')
 })
 

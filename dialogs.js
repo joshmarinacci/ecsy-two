@@ -55,6 +55,75 @@ addComponent(StateMachine, {states:[
 
 
 */
-export class Dialog {
 
+import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
+import {InputState, KeyboardState} from './keyboard.js'
+
+export class StateMachine {
+    constructor() {
+        this.states = []
+        this.current_state = -1
+        this.waiting = false
+    }
+}
+
+export class SplashImage {
+
+}
+export class WaitForInput extends Component {
+
+}
+export class WaitForTime extends Component {
+
+}
+export class Dialog {
+    constructor() {
+        this.text = "some text"
+    }
+}
+
+export class StateMachineSystem extends System {
+    execute(delta, time) {
+        this.queries.machines.added.forEach(ent => {
+            let machine = ent.getMutableComponent(StateMachine)
+            machine.current_state = 0
+            machine.waiting = false
+        })
+        this.queries.machines.results.forEach(ent => {
+            let machine = ent.getMutableComponent(StateMachine)
+            if(!machine.waiting) {
+                machine.states[machine.current_state]()
+                machine.waiting = true
+            }
+        })
+
+        this.queries.waiting.results.forEach(ent => {
+            console.log("waiting for input")
+            this.queries.input.results.forEach(ent => {
+                let input = ent.getComponent(InputState)
+                if(input.anyChanged()) {
+                    ent.removeComponent(WaitForInput)
+                }
+            })
+        })
+    }
+}
+
+
+
+
+StateMachineSystem.queries = {
+    machines: {
+        components: [StateMachine],
+        listen: {
+            added:true,
+            removed:true,
+        }
+    },
+    waiting: {
+        components: [StateMachine, WaitForInput]
+    },
+    input: {
+        components: [InputState]
+    }
 }

@@ -14,6 +14,7 @@ export class Sprite extends  Component {
         this.height = -1
         this.flipX = false
         this.flipY = false
+        this.src = null
     }
 }
 export class SpriteLocation extends Component {
@@ -21,6 +22,7 @@ export class SpriteLocation extends Component {
         super();
         this.x = 0
         this.y = 0
+        this.fixed = false
     }
 }
 export class SpriteBounds extends Component {
@@ -109,16 +111,31 @@ export class SpriteSystem extends System {
             ctx.translate(
                 -camera.x + canvas.width/2,
                 -camera.y + canvas.height/2)
+
+            //load sprites with src properties
+            this.queries.sprites.added.forEach(ent =>{
+                let sprite = ent.getComponent(Sprite)
+                if(!sprite.image && sprite.src) {
+                    sprite.image = new Image()
+                    sprite.image.src = sprite.src
+                }
+            })
+
             this.queries.sprites.results.forEach(ent => {
                 let sprite = ent.getComponent(Sprite)
                 let loc = ent.getComponent(SpriteLocation)
                 ctx.save()
+                if(loc.fixed) {
+                    ctx.translate(
+                        +camera.x - canvas.width/2,
+                        +camera.y - canvas.height/2)
+                }
                 ctx.translate(loc.x, loc.y)
                 if(sprite.flipY) {
                     ctx.scale(-1,1)
                     ctx.translate(-sprite.width,0)
                 }
-                ctx.drawImage(sprite.image, 0, 0)
+                if(sprite.image) ctx.drawImage(sprite.image, 0, 0)
                 ctx.restore()
             })
             this.queries.animated_sprites.results.forEach(ent => {
@@ -160,7 +177,11 @@ SpriteSystem.queries = {
         components: [Canvas,Camera],
     },
     sprites: {
-        components: [Sprite, SpriteLocation]
+        components: [Sprite, SpriteLocation],
+        listen: {
+            added:true,
+            removed:true,
+        }
     },
     camera_move: {
         components: [CameraFollowsSprite]
