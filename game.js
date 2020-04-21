@@ -10,7 +10,7 @@ import {
     BackgroundFill,
     Camera, CameraFollowsSprite, SpriteBounds
 } from "./ecsytwo.js"
-import {KeyboardSystem, KeyboardState} from './keyboard.js'
+import {KeyboardSystem, KeyboardState, InputState} from './keyboard.js'
 import {make_bounds, make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {BackgroundMusic, MusicSystem, Sound} from './music.js'
 import {Emitter, ParticleSystem} from './particles.js'
@@ -166,7 +166,20 @@ let prom4 = load_image_from_url("imgs/seaman_sheet.png").then(img => {
             height:8,
             frame_duration: 250,
         })
-        .addComponent(KeyboardState)
+        .addComponent(InputState)
+        .addComponent(KeyboardState, {
+            mapping: {
+                'w':'up',
+                'a':'left',
+                's':'down',
+                'd':'right',
+                ' ':'jump',
+                'ArrowLeft':'left',
+                'ArrowRight':'right',
+                'ArrowUp':'up',
+                'ArrowDown':'down',
+            }
+        })
 })
 let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
     let sheet = new SpriteSheet(img,8,8,4,2)
@@ -283,8 +296,6 @@ function make_area_2() {
 
 let prom6 = load_image_from_url("./imgs/castle@1x.png").then(img=>{
     let sheet = new SpriteSheet(img,8,8,8,8)
-    // TILE_INDEX[WALL] = sheet.sprite_to_image(0,0)
-    // TILE_INDEX[TUBE] = sheet.sprite_to_image(1,0)
     fetch("./maps/simple.json").then(res => res.json()).then(data => {
         console.log("data is ",data)
         let ts = data.tilesets[0]

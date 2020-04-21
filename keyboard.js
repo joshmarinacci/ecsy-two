@@ -1,21 +1,45 @@
-import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js"
+import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
 
+export class InputState extends Component {
+    constructor() {
+        super();
+        this.states = {}
+    }
+}
 export class KeyboardState extends Component {
     constructor() {
         super();
         this.states = {}
+        this.mapping = {
+            ' ':'jump',
+            'ArrowLeft':'left',
+            'ArrowRight':'right',
+            'ArrowUp':'up',
+            'ArrowDown':'down',
+        }
         this.on_keydown = (e) => {
-            if(!this.states[e.key]) this.states[e.key] = false
-            this.states[e.key] = true
+            this.setKeyState(e.key,'down')
         }
         this.on_keyup = (e) => {
-            if(!this.states[e.key]) this.states[e.key] = false
-            this.states[e.key] = false
+            this.setKeyState(e.key,'up')
         }
     }
+    setKeyState(key,value) {
+        let state = this.getKeyState(key)
+        state.prev = state.current
+        state.current = value
+    }
+    getKeyState(key) {
+        if(!this.states[key]) {
+            this.states[key] = {
+                prev:'up',
+                current:'up',
+            }
+        }
+        return this.states[key]
+    }
     isPressed(name) {
-        if(this.states[name]) return this.states[name]
-        return false
+        return this.getKeyState(name).current === 'down'
     }
 }
 export class KeyboardSystem extends System {
@@ -25,11 +49,27 @@ export class KeyboardSystem extends System {
             document.addEventListener('keydown',cont.on_keydown)
             document.addEventListener('keyup',cont.on_keyup)
         })
+        this.queries.controls.results.forEach(ent => {
+            let kb = ent.getComponent(KeyboardState)
+            let inp = ent.getMutableComponent(InputState)
+            Object.keys(kb.mapping).forEach(key => {
+                let name = kb.mapping[key]
+                let state = kb.getKeyState(key)
+                if(state.current === 'down' && state.prev === 'up') {
+                    inp.states[name] = (state.current === 'down')
+                }
+                if(state.current === 'up' && state.prev === 'down') {
+                    inp.states[name] = (state.current === 'down')
+                }
+                state.prev = state.current
+            })
+            // console.log("key mapping", kb.mapping['a'], kb.states['a'], "left state",inp.states['left'])
+        })
     }
 }
 KeyboardSystem.queries = {
     controls: {
-        components:[KeyboardState],
+        components:[KeyboardState, InputState],
         listen: { added:true, removed: true},
     },
 }

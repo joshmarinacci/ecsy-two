@@ -1,7 +1,7 @@
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
 import {AnimatedSprite, Camera, Canvas, SpriteBounds, SpriteLocation} from './ecsytwo.js'
 import {make_bounds, TileMap} from './tiles.js'
-import {KeyboardState} from './keyboard.js'
+import {InputState} from './keyboard.js'
 
 export class PlayerPhysics extends Component {
     constructor() {
@@ -38,29 +38,29 @@ export class PlatformerPhysicsSystem extends System {
             player_physics.vx = 0
         })
         this.queries.player.results.forEach(player_ent => {
-            let kb = player_ent.getComponent(KeyboardState)
+            let input = player_ent.getComponent(InputState)
             let player = player_ent.getComponent(PlayerPhysics)
             let loc = player_ent.getComponent(SpriteLocation)
             let sprite_bounds = player_ent.getComponent(SpriteBounds)
 
 
-            this.handle_vertical(kb,player,loc,sprite_bounds, delta)
+            this.handle_vertical(input,player,loc,sprite_bounds, delta)
             // update velocity with friction
             if(player.on_ground) {
                 player.vx *= player.ground_friction
             }
-            this.handle_horizontal(kb,player,loc,sprite_bounds,delta)
+            this.handle_horizontal(input,player,loc,sprite_bounds,delta)
             //flip the player sprite to face the correct direction
 
-            if(kb.isPressed('ArrowRight')) player_ent.getMutableComponent(AnimatedSprite).flipY = false
-            if(kb.isPressed('ArrowLeft'))  player_ent.getMutableComponent(AnimatedSprite).flipY = true
+            if(input.states.right) player_ent.getMutableComponent(AnimatedSprite).flipY = false
+            if(input.states.left)  player_ent.getMutableComponent(AnimatedSprite).flipY = true
         })
     }
 
-    handle_horizontal(kb, player, loc, sprite_bounds, delta) {
+    handle_horizontal(input, player, loc, sprite_bounds, delta) {
         // increase velocity in the correct direction
-        if (kb.isPressed('ArrowRight')) player.vx += player.h_accel
-        if (kb.isPressed('ArrowLeft'))  player.vx -= player.h_accel
+        if (input.states.right) player.vx += player.h_accel
+        if (input.states.left)  player.vx -= player.h_accel
         //update velocity with acceleration
         player.vx += player.ax * delta / 1000
         // update player location with velocity
@@ -136,8 +136,8 @@ export class PlatformerPhysicsSystem extends System {
 
     }
 
-    handle_vertical(kb, player, loc, sprite_bounds, delta) {
-        if (kb.isPressed(' ') && player.on_ground)          player.vy -= player.jump_y
+    handle_vertical(input, player, loc, sprite_bounds, delta) {
+        if (input.states.jump && player.on_ground)          player.vy -= player.jump_y
         //update velocity with acceleration
         player.vy += player.ay * delta / 1000
         // update player location with velocity
@@ -219,7 +219,7 @@ PlatformerPhysicsSystem.queries = {
         }
     },
     player: {
-        components: [PlayerPhysics, SpriteLocation, KeyboardState]
+        components: [PlayerPhysics, SpriteLocation, InputState]
     },
     map: {
         components: [TileMap]
