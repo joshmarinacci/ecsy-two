@@ -18,7 +18,7 @@ import {load_image_from_url, SpriteSheet} from './image.js'
 import {Player, PlayerControlSystem} from './overhead_controls.js'
 import {PlatformerPhysicsSystem, PlayerPhysics} from './platformer_controls.js'
 import {FadeTransition, TransitionSystem} from './transitions.js'
-import {StateMachine, StateMachineSystem} from './dialogs.js'
+import {Dialog, DialogSystem, StateMachine, StateMachineSystem, WaitForInput} from './dialogs.js'
 
 let world = new World()
 
@@ -88,6 +88,7 @@ world.registerSystem(ParticleSystem)
 world.registerSystem(PlatformerPhysicsSystem)
 world.registerSystem(TransitionSystem)
 world.registerSystem(StateMachineSystem)
+world.registerSystem(DialogSystem)
 
 let TILE_SIZE = 8
 let EMPTY = 0
@@ -355,16 +356,37 @@ let view = world.createEntity()
     .addComponent(CameraFollowsSprite, { target: player})
 
 Promise.all([prom1,prom3, prom4, prom5, prom6]).then(()=>{
-
+    let splash = null
     view.addComponent(StateMachine, {states:[
             (machine)=>{
                 console.log("starting the state machine")
-                PlatformerPhysicsSystem.enabled = false
-                let splash = world.createEntity()
+                world.getSystem(PlatformerPhysicsSystem).enabled = false
+                splash = world.createEntity()
                 splash.addComponent(Sprite, { src:"./imgs/splash@1x.png"})
                 splash.addComponent(SpriteLocation, { x: 0, y:0, fixed:true})
-                // view.addComponent(WaitForInput)
+                view.addComponent(WaitForInput)
             },
+            machine => {
+                splash.removeAllComponents()
+                view.addComponent(Dialog, { text:"Cat Prince!\nWe need your help!" })
+                view.addComponent(WaitForInput)
+            },
+            () => {
+                view.removeComponent(Dialog)
+                view.addComponent(Dialog, { text:"Your grandfather \nthe old Cat King \nhas been kidnapped!" })
+                view.addComponent(WaitForInput)
+            },
+            (machine) => {
+                view.removeComponent(Dialog)
+                view.addComponent(Dialog, { text:"Please rescue him." })
+                view.addComponent(WaitForInput)
+            },
+            machine => {
+                console.log("done with the state machine")
+                view.removeComponent(Dialog)
+                view.removeComponent(StateMachine)
+                world.getSystem(PlatformerPhysicsSystem).enabled = true
+            }
         ]})
 
     // view.addComponent(FadeTransition,{

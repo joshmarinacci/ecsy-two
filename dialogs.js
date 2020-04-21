@@ -58,6 +58,7 @@ addComponent(StateMachine, {states:[
 
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
 import {InputState, KeyboardState} from './keyboard.js'
+import {Canvas} from './ecsytwo.js'
 
 export class StateMachine {
     constructor() {
@@ -76,11 +77,6 @@ export class WaitForInput extends Component {
 export class WaitForTime extends Component {
 
 }
-export class Dialog {
-    constructor() {
-        this.text = "some text"
-    }
-}
 
 export class StateMachineSystem extends System {
     execute(delta, time) {
@@ -94,15 +90,17 @@ export class StateMachineSystem extends System {
             if(!machine.waiting) {
                 machine.states[machine.current_state]()
                 machine.waiting = true
+                machine.current_state++
             }
         })
 
-        this.queries.waiting.results.forEach(ent => {
+        this.queries.waiting.results.forEach(waiting_ent => {
             console.log("waiting for input")
             this.queries.input.results.forEach(ent => {
                 let input = ent.getComponent(InputState)
-                if(input.anyChanged()) {
-                    ent.removeComponent(WaitForInput)
+                if(input.anyReleased()) {
+                    waiting_ent.removeComponent(WaitForInput)
+                    waiting_ent.getMutableComponent(StateMachine).waiting = false
                 }
             })
         })
@@ -125,5 +123,54 @@ StateMachineSystem.queries = {
     },
     input: {
         components: [InputState]
+    }
+}
+
+
+
+export class Dialog {
+    constructor() {
+        this.text = "some text"
+    }
+}
+
+export class DialogSystem extends System {
+    execute(delta, time) {
+        this.queries.dialogs.added.forEach(ent => {
+
+        })
+        this.queries.canvas.results.forEach(ent => {
+            let canvas = ent.getComponent(Canvas)
+            let ctx = canvas.dom.getContext('2d')
+            ctx.imageSmoothingEnabled = false
+            ctx.save()
+            ctx.scale(canvas.scale,canvas.scale)
+            this.queries.dialogs.results.forEach(ent => {
+                let dialog = ent.getComponent(Dialog)
+                ctx.fillStyle = 'yellow'
+                ctx.fillRect(10,10,canvas.width-10*2,canvas.height-10*2)
+                ctx.fillStyle = 'black'
+                ctx.font = "6pt normal sans-serif"
+                let dy = 10
+                dialog.text.split("\n").forEach(line => {
+                    let bounds = ctx.measureText(line)
+                    dy += bounds.actualBoundingBoxAscent + bounds.actualBoundingBoxDescent
+                    ctx.fillText(line, 10, dy)
+                })
+                // console.log(bounds.width, bounds.actualBoundingBoxAscent, bounds.actualBoundingBoxDescent)
+            })
+            ctx.restore()
+        })
+    }
+}
+DialogSystem.queries = {
+    canvas: {
+        components: [Canvas],
+    },
+    dialogs: {
+        components:[Dialog],
+        listen: {
+            added:true
+        }
     }
 }

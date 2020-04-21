@@ -4,6 +4,14 @@ export class InputState extends Component {
     constructor() {
         super();
         this.states = {}
+        this.changed = true
+        this.released = false
+    }
+    anyChanged() {
+        return this.changed
+    }
+    anyReleased() {
+        return this.released
     }
 }
 export class KeyboardState extends Component {
@@ -52,14 +60,19 @@ export class KeyboardSystem extends System {
         this.queries.controls.results.forEach(ent => {
             let kb = ent.getComponent(KeyboardState)
             let inp = ent.getMutableComponent(InputState)
+            inp.changed = false
+            inp.released = false
             Object.keys(kb.mapping).forEach(key => {
                 let name = kb.mapping[key]
                 let state = kb.getKeyState(key)
                 if(state.current === 'down' && state.prev === 'up') {
                     inp.states[name] = (state.current === 'down')
+                    inp.changed = true
                 }
                 if(state.current === 'up' && state.prev === 'down') {
                     inp.states[name] = (state.current === 'down')
+                    inp.changed = true
+                    inp.released = true
                 }
                 state.prev = state.current
             })
