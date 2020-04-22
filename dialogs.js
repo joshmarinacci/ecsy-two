@@ -138,7 +138,8 @@ export class FixedWidthFont {
         this.src = null
         this.loaded = false
         this.image = null
-        this.height = 7
+        this.lineHeight = 7
+        this.charHeight = 7
         this.charWidth = 4
         this._debug_drawn = false
     }
@@ -168,18 +169,61 @@ export class FixedWidthFont {
     }
 }
 
+export class VariableWidthFont {
+    constructor() {
+        this.src = null
+        this.loaded = false
+        this.image = null
+        this.charHeight = 7
+        this.lineHeight = 7
+        this.charWidth = 4
+        this.charsPerLine = 8
+        this._debug_drawn = false
+        this.widths = {}
+    }
+    drawCharCode(ctx,ch) {
+        // space
+        let cw = this.charWidth
+        cw = 3
+        let str = String.fromCharCode(ch)
+        //
+        if(this.widths[str]) cw = this.widths[str]
+
+        //space
+        if(ch === 32) return cw
+        let sx = 0
+        let sy = 0
+        // if between A and Z
+        if(ch >= 65 && ch <= 90) {
+            sx = ch-65
+            sy = Math.floor(sx/this.charsPerLine)
+            sx = sx % this.charsPerLine
+        }
+        // if between a and z
+        if(ch >= 97 && ch <= 122) {
+            sx = ch-97
+            sy = Math.floor(sx/this.charsPerLine) + 3
+            sx = sx % this.charsPerLine
+        }
+        if(sx >= 0) {
+            ctx.drawImage(this.image,
+                //src
+                sx*this.charWidth, sy*(this.charHeight), cw, this.charHeight,
+                //dst
+                0,0, cw, this.charHeight
+            )
+        }
+        return cw+1
+    }
+}
+
 export class DialogSystem extends System {
     execute(delta, time) {
         this.queries.fonts.added.forEach(ent => {
-            let font = ent.getMutableComponent(FixedWidthFont)
-            if(!font.image) {
-                font.image = new Image()
-                font.image.onload = () => {
-                    font.loaded = true
-                }
-                font.image.src = font.src
-
-            }
+            this.loadImage(ent.getMutableComponent(FixedWidthFont))
+        })
+        this.queries.fonts2.added.forEach(ent => {
+            this.loadImage(ent.getMutableComponent(VariableWidthFont))
         })
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
@@ -189,7 +233,6 @@ export class DialogSystem extends System {
             ctx.scale(canvas.scale,canvas.scale)
             this.queries.dialogs.results.forEach(ent => {
                 let dialog = ent.getComponent(Dialog)
-                let font = ent.getComponent(FixedWidthFont)
 
                 if(dialog.tilemap) {
                     this.drawTilemap(ctx,dialog.tilemap)
@@ -197,16 +240,39 @@ export class DialogSystem extends System {
                     ctx.fillStyle = 'yellow'
                     ctx.fillRect(8, 8, canvas.width - 8 * 2, canvas.height - 8 * 2)
                 }
-                ctx.fillStyle = 'black'
-                ctx.font = "6pt normal sans-serif"
-                let dy = 8
-                dialog.text.split("\n").forEach(line => {
-                    this.drawLine(ctx,line,font,8,dy)
-                    // let bounds = ctx.measureText(line)
-                    // dy += bounds.actualBoundingBoxAscent + bounds.actualBoundingBoxDescent
-                    dy += font.height
-                    // ctx.fillText(line, 10, dy)
-                })
+
+                if(ent.hasComponent(FixedWidthFont)) {
+                    let font = ent.getComponent(FixedWidthFont)
+                    let dy = 8
+                    dialog.text.split("\n").forEach(line => {
+                        this.drawLine(ctx, line, font, 8, dy)
+                        dy += font.lineHeight
+                    })
+                    return
+                }
+                if(ent.hasComponent(VariableWidthFont)) {
+                    let font = ent.getComponent(VariableWidthFont)
+                    let dy = 8
+                    dialog.text.split("\n").forEach(line => {
+                        this.drawLine(ctx,line,font,8,dy)
+                        dy += font.lineHeight
+                    })
+                    return
+                }
+
+                //if not font specified, just use sans-serif from canvas
+                {
+                    ctx.fillStyle = 'black'
+                    ctx.font = "6pt normal sans-serif"
+                    let dy = 8
+                    dialog.text.split("\n").forEach(line => {
+                        let bounds = ctx.measureText(line)
+                        dy += bounds.actualBoundingBoxAscent + bounds.actualBoundingBoxDescent
+                        dy += 1
+                        ctx.fillText(line, 10, dy)
+                    })
+                }
+
                 // console.log(bounds.width, bounds.actualBoundingBoxAscent, bounds.actualBoundingBoxDescent)
             })
             ctx.restore()
@@ -214,7 +280,7 @@ export class DialogSystem extends System {
     }
 
     drawLine(ctx, line, font, x, y) {
-        line = line.toUpperCase()
+        // line = line.toUpperCase()
         for(let i=0; i<line.length; i++) {
             if(!font._debug_drawn) {
                 font._debug_drawn = true
@@ -238,19 +304,35 @@ export class DialogSystem extends System {
             }
         }
     }
+
+    loadImage(font) {
+        if(!font.image) {
+            font.image = new Image()
+            font.image.onload = () => {
+                font.loaded = true
+            }
+            font.image.src = font.src
+        }
+    }
 }
 DialogSystem.queries = {
     canvas: {
         components: [Canvas],
     },
     dialogs: {
-        components:[Dialog, FixedWidthFont],
+        components:[Dialog],
         listen: {
             added:true
         }
     },
     fonts: {
         components: [FixedWidthFont],
+        listen: {
+            added:true,
+        }
+    },
+    fonts2: {
+        components: [VariableWidthFont],
         listen: {
             added:true,
         }

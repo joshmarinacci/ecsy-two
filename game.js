@@ -18,7 +18,15 @@ import {load_image_from_url, SpriteSheet} from './image.js'
 import {Player, PlayerControlSystem} from './overhead_controls.js'
 import {PlatformerPhysicsSystem, PlayerPhysics} from './platformer_controls.js'
 import {FadeTransition, TransitionSystem} from './transitions.js'
-import {Dialog, DialogSystem, FixedWidthFont, StateMachine, StateMachineSystem, WaitForInput} from './dialogs.js'
+import {
+    Dialog,
+    DialogSystem,
+    FixedWidthFont,
+    StateMachine,
+    StateMachineSystem,
+    VariableWidthFont,
+    WaitForInput
+} from './dialogs.js'
 
 let world = new World()
 
@@ -394,7 +402,19 @@ Promise.all([prom1,prom3, prom4, prom5, prom6, prom7]).then(()=>{
             },
             machine => {
                 splash.removeAllComponents()
-                view.addComponent(FixedWidthFont, { src:"./imgs/font_4@1x.png"})
+                let widths = {
+                    G:4, J:4, M:5, N:4, O:4, P:4, Q:4, R:4, S:4, U:4, W:5,
+                    f:2, i:1,l:1, m:5, s:2,w:5,
+                    ' ':3,
+                }
+                view.addComponent(VariableWidthFont, {
+                    src:"./imgs/font_5@1x.png",
+                    charHeight: 5,
+                    charWidth: 6,
+                    charsPerLine: 11,
+                    widths: widths,
+                })
+                // view.addComponent(Dialog, { text:"abcdefghijklm\nnopqrstuvwxyz" , tilemap:dialog_tilemap})
                 view.addComponent(Dialog, { text:"Cat Prince!\nWe need \nyour help!" , tilemap:dialog_tilemap})
                 view.addComponent(WaitForInput)
             },
