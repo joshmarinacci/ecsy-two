@@ -166,8 +166,21 @@ export class DialogSystem extends System {
             this.queries.dialogs.results.forEach(ent => {
                 let dialog = ent.getComponent(Dialog)
                 let font = ent.getComponent(Font)
-                ctx.fillStyle = 'yellow'
-                ctx.fillRect(8,8,canvas.width-8*2,canvas.height-8*2)
+
+                if(dialog.tilemap) {
+                    let map = dialog.tilemap
+                    for(let y=0; y<map.height; y++) {
+                        for(let x=0; x<map.width; x++) {
+                            let n = y*map.width+x
+                            let tile_index = map.map[n]
+                            let tile = map.index[tile_index]
+                            if(tile)  ctx.drawImage(tile,x*map.tileSize, y*map.tileSize)
+                        }
+                    }
+                } else {
+                    ctx.fillStyle = 'yellow'
+                    ctx.fillRect(8, 8, canvas.width - 8 * 2, canvas.height - 8 * 2)
+                }
                 ctx.fillStyle = 'black'
                 ctx.font = "6pt normal sans-serif"
                 let dy = 8

@@ -400,12 +400,12 @@ Promise.all([prom1,prom3, prom4, prom5, prom6, prom7]).then(()=>{
             },
             () => {
                 view.removeComponent(Dialog)
-                view.addComponent(Dialog, { text:"Your father \nthe Cat King \nhas been\nkidnapped!" })
+                view.addComponent(Dialog, { text:"Your father \nthe Cat King \nhas been\nkidnapped!", tilemap:dialog_tilemap })
                 view.addComponent(WaitForInput)
             },
             (machine) => {
                 view.removeComponent(Dialog)
-                view.addComponent(Dialog, { text:"Please rescue\nhim!" })
+                view.addComponent(Dialog, { text:"Please rescue\nhim!", tilemap:dialog_tilemap })
                 view.addComponent(WaitForInput)
             },
             machine => {
