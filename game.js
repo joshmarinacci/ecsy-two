@@ -386,7 +386,7 @@ let prom7 = load_image_from_url("./imgs/dialog@1x.png").then(img => {
 
 
 let view = world.createEntity()
-    .addComponent(Canvas, { scale: 10, width:TILE_SIZE*10, height: TILE_SIZE*8})
+    .addComponent(Canvas, { scale: 10, width:TILE_SIZE*8, height: TILE_SIZE*8})
     .addComponent(BackgroundFill, {color: PALETTE[0xC]})
     .addComponent(Camera, { x:1*TILE_SIZE, y:0*TILE_SIZE})
     .addComponent(CameraFollowsSprite, { target: player})
