@@ -27,6 +27,7 @@ import {
     VariableWidthFont,
     WaitForInput
 } from './dialogs.js'
+import {FullscreenButton, FullscreenSystem} from './fullscreen.js'
 
 let world = new World()
 
@@ -97,6 +98,7 @@ world.registerSystem(PlatformerPhysicsSystem)
 world.registerSystem(TransitionSystem)
 world.registerSystem(StateMachineSystem)
 world.registerSystem(DialogSystem)
+world.registerSystem(FullscreenSystem)
 
 let TILE_SIZE = 8
 let EMPTY = 0
@@ -388,6 +390,7 @@ let view = world.createEntity()
     .addComponent(BackgroundFill, {color: PALETTE[0xC]})
     .addComponent(Camera, { x:1*TILE_SIZE, y:0*TILE_SIZE})
     .addComponent(CameraFollowsSprite, { target: player})
+    .addComponent(FullscreenButton)
 
 Promise.all([prom1,prom3, prom4, prom5, prom6, prom7]).then(()=>{
     let splash = null
