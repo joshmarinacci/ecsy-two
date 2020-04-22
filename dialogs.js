@@ -133,7 +133,7 @@ export class Dialog {
         this.tilemap = null
     }
 }
-export class Font {
+export class FixedWidthFont {
     constructor() {
         this.src = null
         this.loaded = false
@@ -142,12 +142,36 @@ export class Font {
         this.charWidth = 4
         this._debug_drawn = false
     }
+    drawCharCode(ctx,ch) {
+        if(ch === 32) {
+            return this.charWidth
+        }
+
+        let sx = 0
+        let sy = 0
+        if(ch >= 65 && ch <= 90) {
+            sx = ch-65
+            sy = Math.floor(sx/16)
+            sx = sx % 16
+        }
+        if(ch === 33) {
+            sx = 0
+            sy = 3
+        }
+        if(sx >= 0) {
+            ctx.drawImage(this.image,
+                sx*this.charWidth, sy*(this.height-1), this.charWidth, this.height,
+                0,0, this.charWidth, this.height
+            )
+        }
+        return this.charWidth
+    }
 }
 
 export class DialogSystem extends System {
     execute(delta, time) {
         this.queries.fonts.added.forEach(ent => {
-            let font = ent.getMutableComponent(Font)
+            let font = ent.getMutableComponent(FixedWidthFont)
             if(!font.image) {
                 font.image = new Image()
                 font.image.onload = () => {
@@ -165,18 +189,10 @@ export class DialogSystem extends System {
             ctx.scale(canvas.scale,canvas.scale)
             this.queries.dialogs.results.forEach(ent => {
                 let dialog = ent.getComponent(Dialog)
-                let font = ent.getComponent(Font)
+                let font = ent.getComponent(FixedWidthFont)
 
                 if(dialog.tilemap) {
-                    let map = dialog.tilemap
-                    for(let y=0; y<map.height; y++) {
-                        for(let x=0; x<map.width; x++) {
-                            let n = y*map.width+x
-                            let tile_index = map.map[n]
-                            let tile = map.index[tile_index]
-                            if(tile)  ctx.drawImage(tile,x*map.tileSize, y*map.tileSize)
-                        }
-                    }
+                    this.drawTilemap(ctx,dialog.tilemap)
                 } else {
                     ctx.fillStyle = 'yellow'
                     ctx.fillRect(8, 8, canvas.width - 8 * 2, canvas.height - 8 * 2)
@@ -204,30 +220,22 @@ export class DialogSystem extends System {
                 font._debug_drawn = true
                 console.log(line.charAt(i), line.charCodeAt(i))
             }
-            let ch = line.charCodeAt(i)
-            if(ch === 32) {
-                x += font.charWidth
-                continue
-            }
+            ctx.save()
+            ctx.translate(x,y)
+            x += font.drawCharCode(ctx,line.charCodeAt(i))
+            ctx.restore()
+        }
+    }
 
-            let sx = 0
-            let sy = 0
-            if(ch >= 65 && ch <= 90) {
-                sx = ch-65
-                sy = Math.floor(sx/16)
-                sx = sx % 16
+    drawTilemap(ctx, tilemap) {
+        let map = tilemap
+        for(let y=0; y<map.height; y++) {
+            for(let x=0; x<map.width; x++) {
+                let n = y*map.width+x
+                let tile_index = map.map[n]
+                let tile = map.index[tile_index]
+                if(tile)  ctx.drawImage(tile,x*map.tileSize, y*map.tileSize)
             }
-            if(ch === 33) {
-                sx = 0
-                sy = 3
-            }
-            if(sx >= 0) {
-                ctx.drawImage(font.image,
-                    sx*font.charWidth, sy*(font.height-1), font.charWidth, font.height,
-                    x, y, font.charWidth, font.height
-                )
-            }
-            x += font.charWidth
         }
     }
 }
@@ -236,13 +244,13 @@ DialogSystem.queries = {
         components: [Canvas],
     },
     dialogs: {
-        components:[Dialog, Font],
+        components:[Dialog, FixedWidthFont],
         listen: {
             added:true
         }
     },
     fonts: {
-        components: [Font],
+        components: [FixedWidthFont],
         listen: {
             added:true,
         }
