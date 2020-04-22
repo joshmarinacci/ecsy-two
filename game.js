@@ -413,6 +413,9 @@ Promise.all([prom1,prom3, prom4, prom5, prom6, prom7]).then(()=>{
                     charWidth: 6,
                     charsPerLine: 11,
                     widths: widths,
+                    positions: {
+                        '!':{x:8, y:7},
+                    }
                 })
                 // view.addComponent(Dialog, { text:"abcdefghijklm\nnopqrstuvwxyz" , tilemap:dialog_tilemap})
                 view.addComponent(Dialog, { text:"Cat Prince!\nWe need \nyour help!" , tilemap:dialog_tilemap})

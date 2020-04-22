@@ -180,6 +180,7 @@ export class VariableWidthFont {
         this.charsPerLine = 8
         this._debug_drawn = false
         this.widths = {}
+        this.positions = {}
     }
     drawCharCode(ctx,ch) {
         // space
@@ -204,6 +205,10 @@ export class VariableWidthFont {
             sx = ch-97
             sy = Math.floor(sx/this.charsPerLine) + 3
             sx = sx % this.charsPerLine
+        }
+        if(this.positions[str]) {
+            sx = this.positions[str].x
+            sy = this.positions[str].y
         }
         if(sx >= 0) {
             ctx.drawImage(this.image,
