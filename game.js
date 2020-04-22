@@ -155,6 +155,11 @@ let prom1 = load_image_from_url("./imgs/blocks@1x.png").then(blocks_img=>{
     TILE_INDEX[WALL] = sheet.sprite_to_image(0,0)
     TILE_INDEX[TUBE] = sheet.sprite_to_image(1,0)
 })
+let prom2 = load_image_from_url("./imgs/dialog@1x.png").then(img => {
+    let sheet = new SpriteSheet(img)
+    sheet.sprite_to_image(0,0)
+
+})
 let prom3 = load_image_from_url("imgs/lucky_block@1x.png").then(img =>{
     TILE_INDEX[EGG] = img
 })
@@ -297,29 +302,51 @@ function make_area_2() {
     }
 }
 
-let prom6 = load_image_from_url("./imgs/castle@1x.png").then(img=>{
-    let sheet = new SpriteSheet(img,8,8,8,8)
-    fetch("./maps/simple.json").then(res => res.json()).then(data => {
-        console.log("data is ",data)
+
+function load_tilemap(url,sheet) {
+    return fetch(url).then(res => res.json()).then(data => {
+        console.log("data is ", data)
         let ts = data.tilesets[0]
         let TILE_MAP = {
-            width:data.width,
-            height:data.height,
-            data:data.layers[0].data
+            width: data.width,
+            height: data.height,
+            data: data.layers[0].data
         }
 
         let TILE_INDEX = []
         let start = ts.firstgid
-        for(let i=0; i<ts.tilecount; i++) {
-            TILE_INDEX[start] = sheet.sprite_to_image(i%8, Math.floor(i/8))
+        for (let i = 0; i < ts.tilecount; i++) {
+            TILE_INDEX[start] = sheet.sprite_to_image(i % 8, Math.floor(i / 8))
             start++
         }
         let blocking = []
-        ts.tiles.forEach(tile=>{
-            if(tile.type === 'floor') blocking.push(tile.id+1)
-            if(tile.type === 'wall')  blocking.push(tile.id+1)
-            if(tile.type === 'block') blocking.push(tile.id+1)
-        })
+        if(ts.tiles) {
+            ts.tiles.forEach(tile => {
+                if (tile.type === 'floor') blocking.push(tile.id + 1)
+                if (tile.type === 'wall') blocking.push(tile.id + 1)
+                if (tile.type === 'block') blocking.push(tile.id + 1)
+            })
+        }
+
+        // blocking = [2]
+        console.log("blocking numbers are", blocking)
+        return {
+            name: 'area3',
+            tileSize: ts.tilewidth,
+            width: TILE_MAP.width,
+            height: TILE_MAP.height,
+            map: TILE_MAP.data,
+            index: TILE_INDEX,
+            wall_types: blocking,
+        }
+    })
+}
+
+let prom6 = load_image_from_url("./imgs/castle@1x.png").then(img=>{
+    let sheet = new SpriteSheet(img,8,8,8,8)
+    load_tilemap("./maps/simple.json",sheet).then((data)=>{
+        console.log("loaded simple json")
+        view.addComponent(TileMap, data)
 
         player.addComponent(PlayerPhysics, {
             ay: 200,
@@ -330,18 +357,17 @@ let prom6 = load_image_from_url("./imgs/castle@1x.png").then(img=>{
             h_accel: 3,
             debug:false,
         })
+    })
+})
 
-        // blocking = [2]
-        console.log("blocking numbers are",blocking)
-        view.addComponent(TileMap, {
-            name:'area3',
-            tileSize:ts.tilewidth,
-            width:TILE_MAP.width,
-            height:TILE_MAP.height,
-            map:TILE_MAP.data,
-            index:TILE_INDEX,
-            wall_types:blocking,
-        })
+let dialog_tilemap = null
+
+let prom7 = load_image_from_url("./imgs/dialog@1x.png").then(img => {
+    let sheet = new SpriteSheet(img,8,8,8,8)
+    load_tilemap("./maps/dialog.json",sheet).then((data)=> {
+        console.log("loaded dialog")
+        console.log('we have the tilemap data',data)
+        dialog_tilemap = data
     })
 })
 
@@ -355,7 +381,7 @@ let view = world.createEntity()
     .addComponent(Camera, { x:1*TILE_SIZE, y:0*TILE_SIZE})
     .addComponent(CameraFollowsSprite, { target: player})
 
-Promise.all([prom1,prom3, prom4, prom5, prom6]).then(()=>{
+Promise.all([prom1,prom3, prom4, prom5, prom6, prom7]).then(()=>{
     let splash = null
     view.addComponent(StateMachine, {states:[
             (machine)=>{
@@ -369,17 +395,17 @@ Promise.all([prom1,prom3, prom4, prom5, prom6]).then(()=>{
             machine => {
                 splash.removeAllComponents()
                 view.addComponent(Font, { src:"./imgs/font_4@1x.png"})
-                view.addComponent(Dialog, { text:"Cat Prince!\nWe need \nyour help!" })
+                view.addComponent(Dialog, { text:"Cat Prince!\nWe need \nyour help!" , tilemap:dialog_tilemap})
                 view.addComponent(WaitForInput)
             },
             () => {
                 view.removeComponent(Dialog)
-                view.addComponent(Dialog, { text:"Your grandfather \nthe old Cat King \nhas been kidnapped!" })
+                view.addComponent(Dialog, { text:"Your father \nthe Cat King \nhas been\nkidnapped!" })
                 view.addComponent(WaitForInput)
             },
             (machine) => {
                 view.removeComponent(Dialog)
-                view.addComponent(Dialog, { text:"Please rescue him." })
+                view.addComponent(Dialog, { text:"Please rescue\nhim!" })
                 view.addComponent(WaitForInput)
             },
             machine => {

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.4" orientation="orthogonal" renderorder="left-down" width="8" height="8" tilewidth="8" tileheight="8" infinite="0" nextlayerid="2" nextobjectid="1">
+ <editorsettings>
+  <export target="dialog.json" format="json"/>
+ </editorsettings>
+ <tileset firstgid="1" name="ts3" tilewidth="8" tileheight="8" tilecount="64" columns="8">
+  <image source="../imgs/dialog@1x.png" width="64" height="64"/>
+ </tileset>
+ <layer id="1" name="Tile Layer 1" width="8" height="8">
+  <data encoding="csv">
+1,2,2,2,2,2,2,2,
+9,10,10,10,10,10,10,11,
+9,10,10,10,10,10,10,11,
+9,10,10,10,10,10,10,11,
+9,10,10,10,10,10,10,11,
+9,10,10,10,10,10,10,11,
+9,10,10,10,10,10,10,11,
+2,2,2,2,2,2,2,2
+</data>
+ </layer>
+</map>

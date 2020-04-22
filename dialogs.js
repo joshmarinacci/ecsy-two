@@ -130,6 +130,7 @@ StateMachineSystem.queries = {
 export class Dialog {
     constructor() {
         this.text = "some text"
+        this.tilemap = null
     }
 }
 export class Font {
