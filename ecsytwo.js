@@ -187,7 +187,7 @@ SpriteSystem.queries = {
         components: [CameraFollowsSprite]
     },
     animated_sprites: {
-        components: [AnimatedSprite]
+        components: [AnimatedSprite, SpriteLocation]
     },
 }
 

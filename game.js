@@ -123,60 +123,40 @@ let PALETTE = [
 let TILE_INDEX = {}
 
 let player = world.createEntity()
-/*
-class EggSystem extends System {
-    execute(delta, time) {
-        this.queries.player.results.forEach(player => {
-            let sprite_location = player.getComponent(SpriteLocation)
-            let sprite_bounds = player.getComponent(SpriteBounds)
-            this.queries.map.results.forEach(ent => {
-                let map = ent.getComponent(TileMap)
-                //don't enter if type is wall
-                let bounds = make_bounds(sprite_location.x, sprite_location.y, sprite_bounds.width, sprite_bounds.height)
-                let cols = map.collide_bounds(bounds, [EGG])
-                cols.forEach(col => {
-                    map.set_tile_at(col.tile_coords,EMPTY)
-                    ent.addComponent(Sound, {notes:["A4","E5"], noteLength:'16n'})
-                })
-            })
-        })
-    }
-}
-EggSystem.queries = {
-    player: {
-        components:[Player]
-    },
-    map: {
-        components: [TileMap]
-    }
-}
-// world.registerSystem(EggSystem)
-*/
+    .addComponent(Player)
+    .addComponent(SpriteLocation)
+    .addComponent(SpriteBounds, { width: 8, height: 8})
+    .addComponent(InputState)
+    .addComponent(KeyboardState, {
+        mapping: {
+            'w':'up',
+            'a':'left',
+            's':'down',
+            'd':'right',
+            ' ':'jump',
+            'ArrowLeft':'left',
+            'ArrowRight':'right',
+            'ArrowUp':'up',
+            'ArrowDown':'down',
+        }
+    })
+    .addComponent(PlayerPhysics, {
+        ay: 200,
+        max_vx:50,
+        max_vy:50,
+        jump_y: 100,
+        ground_friction: 0.95,
+        h_accel: 3,
+        debug:false,
+    })
 
 let prom4 = load_image_from_url("imgs/seaman_sheet.png").then(img => {
     let sheet = new SpriteSheet(img,8,8,4,2)
-    player.addComponent(Player)
-        .addComponent(SpriteLocation, { x: 20, y: 30 })
-        .addComponent(SpriteBounds, { width: 8, height: 8})
-        .addComponent(AnimatedSprite, {
+    player.addComponent(AnimatedSprite, {
             frames:sheet.sprites_to_frames(0,0,4),
             width:8,
             height:8,
             frame_duration: 250,
-        })
-        .addComponent(InputState)
-        .addComponent(KeyboardState, {
-            mapping: {
-                'w':'up',
-                'a':'left',
-                's':'down',
-                'd':'right',
-                ' ':'jump',
-                'ArrowLeft':'left',
-                'ArrowRight':'right',
-                'ArrowUp':'up',
-                'ArrowDown':'down',
-            }
         })
 })
 let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
@@ -187,7 +167,7 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
         .addComponent(Sprite, { image:sheet.sprite_to_image(0,0), width: 8, height: 8})
         .addComponent(SpriteLocation)
         .addComponent(Fish, {start: new Point(8,32), end: new Point(50,32), duration: 5000})
-
+    /*
     player.addComponent(Emitter, {
             image:sheet.sprite_to_image(2,1),
             velocityStart: new Point(0,100), // move down and to the right, pixels per second
@@ -195,103 +175,13 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
             accelerationStart: new Point(0,-1), //move them up, pixels per second per second
             rate:1, // one sprite per second
             lifetime:2, //lifetime in seconds
-        })
+        })*/
 })
-
-/*TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
-   00000000
-   00000000
-   00000000
-   00000000
-   00000000
-   00000000
-   00000000
-   00000000
-   `)
-TILE_INDEX[GROUND] = make_tile(TILE_SIZE, PALETTE, `
-   1010
-   0101
-   1010
-   0101
-    `)
-*/
-function make_area_1() {
-    player.addComponent(PlayerPhysics, {
-        ay: 200,
-        max_vx:50,
-        max_vy:50,
-        jump_y: 100,
-        ground_friction: 0.95,
-        h_accel: 3,
-        debug:false,
-    })
-
-    let TILE_MAP = {
-        width:20,
-        height:8,
-        data:[]
-    }
-    TILE_MAP.data.fill(0,0,TILE_MAP.width*TILE_MAP.height)
-    for(let i=0; i<TILE_MAP.width;i++) {
-        for(let j=0; j<TILE_MAP.height;j++) {
-            let n = j*TILE_MAP.width+i
-            let v = 1
-            if(i===0 || i===TILE_MAP.width-1) v = 3
-            if(j===0 || j===TILE_MAP.height-1) v = 3
-            TILE_MAP.data[n] = v
-        }
-    }
-
-    TILE_MAP.data[4+7*TILE_MAP.width] = TUBE
-    TILE_MAP.data[4+6*TILE_MAP.width] = WALL
-    TILE_MAP.data[5+5*TILE_MAP.width] = WALL
-    TILE_MAP.data[6+4*TILE_MAP.width] = WALL
-
-    return {
-        name:'area1',
-        tileSize:TILE_SIZE,
-        width:TILE_MAP.width,
-        height:TILE_MAP.height,
-        map:TILE_MAP.data,
-        index:TILE_INDEX,
-        wall_types: [WALL, TUBE, FLOOR, SEAWEED1, SEAWEED2]
-    }
-}
-
-function make_area_2() {
-    let TILE_MAP = {
-        width:8,
-        height:8,
-        data:[]
-    }
-    TILE_MAP.data.fill(0,0,TILE_MAP.width*TILE_MAP.height)
-    for(let i=0; i<TILE_MAP.width;i++) {
-        for(let j=0; j<TILE_MAP.height;j++) {
-            let n = j*TILE_MAP.width+i
-            let v = 0
-            if(i===0 || i===TILE_MAP.width-1) v = j%2===0?SEAWEED1:SEAWEED2
-            if(j===0 || j===TILE_MAP.height-1) v = FLOOR
-            TILE_MAP.data[n] = v
-        }
-    }
-
-    TILE_MAP.data[4+7*TILE_MAP.width] = TUBE
-    TILE_MAP.data[4+5*TILE_MAP.width] = FISH1
-
-    return {
-        name:'area2',
-        tileSize:TILE_SIZE,
-        width:TILE_MAP.width,
-        height:TILE_MAP.height,
-        map:TILE_MAP.data,
-        index:TILE_INDEX,
-        wall_types: [WALL, TUBE, FLOOR, SEAWEED1, SEAWEED2]
-    }
-}
 
 
 function load_tilemap(url,sheet) {
     return fetch(url).then(res => res.json()).then(data => {
+        console.log("loaded tilemap: ",url)
         console.log("data is ", data)
         let ts = data.tilesets[0]
         let TILE_MAP = {
@@ -316,9 +206,9 @@ function load_tilemap(url,sheet) {
         }
 
         // blocking = [2]
-        console.log("blocking numbers are", blocking)
+        // console.log("blocking numbers are", blocking)
         return {
-            name: 'area3',
+            name: url,
             tileSize: ts.tilewidth,
             width: TILE_MAP.width,
             height: TILE_MAP.height,
@@ -329,32 +219,39 @@ function load_tilemap(url,sheet) {
     })
 }
 
+const LEVELS = {}
+
 let prom6 = load_image_from_url("./imgs/castle@1x.png").then(img=>{
     let sheet = new SpriteSheet(img,8,8,8,8)
-    load_tilemap("./maps/simple.json",sheet).then((data)=>{
-        console.log("loaded simple json")
-        view.addComponent(TileMap, data)
-
-        player.addComponent(PlayerPhysics, {
-            ay: 200,
-            max_vx:50,
-            max_vy:50,
-            jump_y: 100,
-            ground_friction: 0.95,
-            h_accel: 3,
-            debug:false,
-        })
+    load_tilemap("./maps/vertical.json",sheet).then((data)=> {
+        LEVELS.vertical = {
+            data: data,
+            start: {
+                x: 3*8,
+                y: 60 * 8,
+            }
+        }
+    })
+    load_tilemap("./maps/simple.json",sheet).then(data => {
+        LEVELS.simple = {
+            data:data,
+            start: {
+                x: 3*8,
+                y: 10*8,
+            }
+        }
     })
 })
-
-let dialog_tilemap = null
 
 let prom7 = load_image_from_url("./imgs/dialog@1x.png").then(img => {
     let sheet = new SpriteSheet(img,8,8,8,8)
     load_tilemap("./maps/dialog.json",sheet).then((data)=> {
         console.log("loaded dialog")
         console.log('we have the tilemap data',data)
-        dialog_tilemap = data
+        LEVELS.dialog = {
+            data:data,
+            start: {x:0, y:0}
+        }
     })
 })
 
@@ -372,6 +269,18 @@ class TubeSystem extends System {
                 let tile = map.tile_at({x:px, y:py+1})
                 if(tile === TUBE && input.states.down) {
                     console.log("pressed down on a tube!")
+                    console.log("player location is",px,py)
+                    console.log("map is",map)
+                    if(px === 58 && py === 13 && map.name === "./maps/simple.json") {
+                        console.log("going to vertical")
+                        view.removeComponent(TileMap)
+                        view.addComponent(TileMap, LEVELS.vertical.data)
+                        player.getMutableComponent(SpriteLocation).x = LEVELS.vertical.start.x
+                        player.getMutableComponent(SpriteLocation).y = LEVELS.vertical.start.y
+                    }
+                    if(px === 13 && py === 60 && map.name === "./maps/vertical.json") {
+                        console.log("we won!")
+                    }
                 }
             })
         })
@@ -384,10 +293,8 @@ TubeSystem.queries = {
     map: {
         components:[TileMap]
     }
-
 }
 world.registerSystem(TubeSystem)
-
 
 let view = world.createEntity()
     .addComponent(Canvas, { scale: 10, width:TILE_SIZE*8, height: TILE_SIZE*8})
@@ -400,7 +307,6 @@ Promise.all([ prom4, prom5, prom6, prom7]).then(()=>{
     let splash = null
     view.addComponent(StateMachine, {states:[
             (machine)=>{
-                console.log("starting the state machine")
                 world.getSystem(PlatformerPhysicsSystem).enabled = false
                 splash = world.createEntity()
                 splash.addComponent(Sprite, { src:"./imgs/splash@1x.png"})
@@ -424,24 +330,27 @@ Promise.all([ prom4, prom5, prom6, prom7]).then(()=>{
                         '!':{x:8, y:7},
                     }
                 })
-                // view.addComponent(Dialog, { text:"abcdefghijklm\nnopqrstuvwxyz" , tilemap:dialog_tilemap})
-                view.addComponent(Dialog, { text:"Cat Prince!\nWe need \nyour help!" , tilemap:dialog_tilemap})
+                view.addComponent(Dialog, { text:"Cat Prince!\nWe need \nyour help!" , tilemap:LEVELS.dialog.data})
                 view.addComponent(WaitForInput)
             },
             () => {
                 view.removeComponent(Dialog)
-                view.addComponent(Dialog, { text:"Your father \nthe Cat King \nhas been\nkidnapped!", tilemap:dialog_tilemap })
+                view.addComponent(Dialog, { text:"Your father \nthe Cat King \nhas been\nkidnapped!", tilemap:LEVELS.dialog.data })
                 view.addComponent(WaitForInput)
             },
             (machine) => {
                 view.removeComponent(Dialog)
-                view.addComponent(Dialog, { text:"Please rescue\nhim!", tilemap:dialog_tilemap })
+                view.addComponent(Dialog, { text:"Please rescue\nhim!", tilemap:LEVELS.dialog.data })
                 view.addComponent(WaitForInput)
             },
             machine => {
                 console.log("done with the state machine")
                 view.removeComponent(Dialog)
                 view.removeComponent(StateMachine)
+                player.getMutableComponent(SpriteLocation).x = LEVELS.simple.start.x
+                player.getMutableComponent(SpriteLocation).y = LEVELS.simple.start.y
+                view.removeComponent(TileMap)
+                view.addComponent(TileMap, LEVELS.simple.data)
                 world.getSystem(PlatformerPhysicsSystem).enabled = true
             }
         ]})
