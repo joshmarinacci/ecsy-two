@@ -18,7 +18,7 @@ import {load_image_from_url, SpriteSheet} from './image.js'
 import {Player, PlayerControlSystem} from './overhead_controls.js'
 import {PlatformerPhysicsSystem, PlayerPhysics} from './platformer_controls.js'
 import {FadeTransition, TransitionSystem} from './transitions.js'
-import {Dialog, DialogSystem, StateMachine, StateMachineSystem, WaitForInput} from './dialogs.js'
+import {Dialog, DialogSystem, Font, StateMachine, StateMachineSystem, WaitForInput} from './dialogs.js'
 
 let world = new World()
 
@@ -368,7 +368,8 @@ Promise.all([prom1,prom3, prom4, prom5, prom6]).then(()=>{
             },
             machine => {
                 splash.removeAllComponents()
-                view.addComponent(Dialog, { text:"Cat Prince!\nWe need your help!" })
+                view.addComponent(Font, { src:"./imgs/font_4@1x.png"})
+                view.addComponent(Dialog, { text:"Cat Prince!\nWe need \nyour help!" })
                 view.addComponent(WaitForInput)
             },
             () => {

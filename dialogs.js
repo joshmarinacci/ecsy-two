@@ -95,7 +95,6 @@ export class StateMachineSystem extends System {
         })
 
         this.queries.waiting.results.forEach(waiting_ent => {
-            console.log("waiting for input")
             this.queries.input.results.forEach(ent => {
                 let input = ent.getComponent(InputState)
                 if(input.anyReleased()) {
@@ -133,11 +132,29 @@ export class Dialog {
         this.text = "some text"
     }
 }
+export class Font {
+    constructor() {
+        this.src = null
+        this.loaded = false
+        this.image = null
+        this.height = 7
+        this.charWidth = 4
+        this._debug_drawn = false
+    }
+}
 
 export class DialogSystem extends System {
     execute(delta, time) {
-        this.queries.dialogs.added.forEach(ent => {
+        this.queries.fonts.added.forEach(ent => {
+            let font = ent.getMutableComponent(Font)
+            if(!font.image) {
+                font.image = new Image()
+                font.image.onload = () => {
+                    font.loaded = true
+                }
+                font.image.src = font.src
 
+            }
         })
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
@@ -147,20 +164,57 @@ export class DialogSystem extends System {
             ctx.scale(canvas.scale,canvas.scale)
             this.queries.dialogs.results.forEach(ent => {
                 let dialog = ent.getComponent(Dialog)
+                let font = ent.getComponent(Font)
                 ctx.fillStyle = 'yellow'
-                ctx.fillRect(10,10,canvas.width-10*2,canvas.height-10*2)
+                ctx.fillRect(8,8,canvas.width-8*2,canvas.height-8*2)
                 ctx.fillStyle = 'black'
                 ctx.font = "6pt normal sans-serif"
-                let dy = 10
+                let dy = 8
                 dialog.text.split("\n").forEach(line => {
-                    let bounds = ctx.measureText(line)
-                    dy += bounds.actualBoundingBoxAscent + bounds.actualBoundingBoxDescent
-                    ctx.fillText(line, 10, dy)
+                    this.drawLine(ctx,line,font,8,dy)
+                    // let bounds = ctx.measureText(line)
+                    // dy += bounds.actualBoundingBoxAscent + bounds.actualBoundingBoxDescent
+                    dy += font.height
+                    // ctx.fillText(line, 10, dy)
                 })
                 // console.log(bounds.width, bounds.actualBoundingBoxAscent, bounds.actualBoundingBoxDescent)
             })
             ctx.restore()
         })
+    }
+
+    drawLine(ctx, line, font, x, y) {
+        line = line.toUpperCase()
+        for(let i=0; i<line.length; i++) {
+            if(!font._debug_drawn) {
+                font._debug_drawn = true
+                console.log(line.charAt(i), line.charCodeAt(i))
+            }
+            let ch = line.charCodeAt(i)
+            if(ch === 32) {
+                x += font.charWidth
+                continue
+            }
+
+            let sx = 0
+            let sy = 0
+            if(ch >= 65 && ch <= 90) {
+                sx = ch-65
+                sy = Math.floor(sx/16)
+                sx = sx % 16
+            }
+            if(ch === 33) {
+                sx = 0
+                sy = 3
+            }
+            if(sx >= 0) {
+                ctx.drawImage(font.image,
+                    sx*font.charWidth, sy*(font.height-1), font.charWidth, font.height,
+                    x, y, font.charWidth, font.height
+                )
+            }
+            x += font.charWidth
+        }
     }
 }
 DialogSystem.queries = {
@@ -168,9 +222,15 @@ DialogSystem.queries = {
         components: [Canvas],
     },
     dialogs: {
-        components:[Dialog],
+        components:[Dialog, Font],
         listen: {
             added:true
+        }
+    },
+    fonts: {
+        components: [Font],
+        listen: {
+            added:true,
         }
     }
 }
