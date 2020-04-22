@@ -101,14 +101,6 @@ world.registerSystem(DialogSystem)
 world.registerSystem(FullscreenSystem)
 
 let TILE_SIZE = 8
-let EMPTY = 0
-let EGG = 1
-let GROUND = 2
-let WALL = 3
-let TUBE = 4
-let SEAWEED1 = 5
-let SEAWEED2 = 6
-let FLOOR = 7
 let FISH1 = 8
 let PALETTE = [
     'transparent',//'#000000',
@@ -131,7 +123,7 @@ let PALETTE = [
 let TILE_INDEX = {}
 
 let player = world.createEntity()
-
+/*
 class EggSystem extends System {
     execute(delta, time) {
         this.queries.player.results.forEach(player => {
@@ -159,20 +151,8 @@ EggSystem.queries = {
     }
 }
 // world.registerSystem(EggSystem)
+*/
 
-let prom1 = load_image_from_url("./imgs/blocks@1x.png").then(blocks_img=>{
-    let sheet = new SpriteSheet(blocks_img,8,8,4,2)
-    TILE_INDEX[WALL] = sheet.sprite_to_image(0,0)
-    TILE_INDEX[TUBE] = sheet.sprite_to_image(1,0)
-})
-let prom2 = load_image_from_url("./imgs/dialog@1x.png").then(img => {
-    let sheet = new SpriteSheet(img)
-    sheet.sprite_to_image(0,0)
-
-})
-let prom3 = load_image_from_url("imgs/lucky_block@1x.png").then(img =>{
-    TILE_INDEX[EGG] = img
-})
 let prom4 = load_image_from_url("imgs/seaman_sheet.png").then(img => {
     let sheet = new SpriteSheet(img,8,8,4,2)
     player.addComponent(Player)
@@ -201,9 +181,6 @@ let prom4 = load_image_from_url("imgs/seaman_sheet.png").then(img => {
 })
 let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
     let sheet = new SpriteSheet(img,8,8,4,2)
-    TILE_INDEX[SEAWEED1] = sheet.sprite_to_image(3,0)
-    TILE_INDEX[SEAWEED2] = sheet.sprite_to_image(3,1)
-    TILE_INDEX[FLOOR]    = sheet.sprite_to_image(3, 2)
     TILE_INDEX[FISH1]    = sheet.sprite_to_image(0, 0)
 
     let fish = world.createEntity()
@@ -221,7 +198,7 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
         })
 })
 
-TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
+/*TILE_INDEX[EMPTY] = make_tile(TILE_SIZE, PALETTE,`
    00000000
    00000000
    00000000
@@ -237,7 +214,7 @@ TILE_INDEX[GROUND] = make_tile(TILE_SIZE, PALETTE, `
    1010
    0101
     `)
-
+*/
 function make_area_1() {
     player.addComponent(PlayerPhysics, {
         ay: 200,
@@ -382,7 +359,34 @@ let prom7 = load_image_from_url("./imgs/dialog@1x.png").then(img => {
 })
 
 
+let TUBE = 62
+class TubeSystem extends System {
+    execute(delta, time) {
+        this.queries.player.results.forEach(ent => {
+            let loc = ent.getComponent(SpriteLocation)
+            let input = ent.getComponent(InputState)
+            this.queries.map.results.forEach(ent => {
+                let map = ent.getComponent(TileMap)
+                let px = Math.floor(loc.x/map.tileSize)
+                let py = Math.floor(loc.y/map.tileSize)
+                let tile = map.tile_at({x:px, y:py+1})
+                if(tile === TUBE && input.states.down) {
+                    console.log("pressed down on a tube!")
+                }
+            })
+        })
+    }
+}
+TubeSystem.queries = {
+    player: {
+        components:[Player, SpriteLocation, InputState]
+    },
+    map: {
+        components:[TileMap]
+    }
 
+}
+world.registerSystem(TubeSystem)
 
 
 let view = world.createEntity()
@@ -392,7 +396,7 @@ let view = world.createEntity()
     .addComponent(CameraFollowsSprite, { target: player})
     .addComponent(FullscreenButton)
 
-Promise.all([prom1,prom3, prom4, prom5, prom6, prom7]).then(()=>{
+Promise.all([ prom4, prom5, prom6, prom7]).then(()=>{
     let splash = null
     view.addComponent(StateMachine, {states:[
             (machine)=>{
