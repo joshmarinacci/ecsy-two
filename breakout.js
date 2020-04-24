@@ -50,6 +50,11 @@ class Score extends Component {
     }
 }
 class Won {}
+class Lives {
+    constructor() {
+        this.lives = 3
+    }
+}
 
 class BreakoutInput extends System {
     execute(delta, time) {
@@ -123,7 +128,15 @@ class BreakoutLogic extends System {
                         if (bloc.x > ploc.x && bloc.x < ploc.x + paddle.width) {
                             ball.dy = -ball.dy
                         } else {
-                            console.log('GAME OVER')
+                            this.queries.lives.results.forEach(ent => {
+                                let lives = ent.getComponent(Lives)
+                                lives.lives--
+                                if(lives.lives === 0) {
+                                    console.log('GAME OVER')
+                                }else {
+                                    this.resetGame(canvas, ball, bloc, paddle, ploc)
+                                }
+                            })
                         }
                     }
                     if (bloc.x + ball.dx > canvas.width - ball.radius || bloc.x + ball.dx < ball.radius) {
@@ -164,6 +177,14 @@ class BreakoutLogic extends System {
             }
         }
     }
+
+    resetGame(canvas, ball, bloc, paddle, ploc) {
+        bloc.x = canvas.width/2
+        bloc.y = canvas.height-30
+        ball.dx = 2
+        ball.dy = -2
+        ploc.x = (canvas.width - paddle.width) / 2
+    }
 }
 BreakoutLogic.queries = {
     canvas: {
@@ -186,6 +207,9 @@ BreakoutLogic.queries = {
     },
     score: {
         components: [Score]
+    },
+    lives: {
+        components: [Lives]
     }
 }
 
@@ -214,6 +238,10 @@ class BreakoutRenderer extends  System {
             })
             this.queries.won.results.forEach(ent => {
                 this.drawWinBanner(canvas, ctx)
+            })
+            this.queries.lives.results.forEach(ent => {
+                let lives = ent.getComponent(Lives)
+                this.drawLives(canvas, ctx, lives)
             })
         })
     }
@@ -266,6 +294,12 @@ class BreakoutRenderer extends  System {
         ctx.fillStyle = "black"
         ctx.fillText('YOU WIN!', canvas.width/2 - 30, 20)
     }
+
+    drawLives(canvas, ctx, lives) {
+        ctx.font = '16px Arial'
+        ctx.fillStyle = '#0095dd'
+        ctx.fillText("Lives: " + lives.lives, canvas.width-65, 20)
+    }
 }
 BreakoutRenderer.queries = {
     canvas: {
@@ -291,6 +325,9 @@ BreakoutRenderer.queries = {
     },
     won: {
         components: [Won]
+    },
+    lives: {
+        components: [Lives]
     }
 }
 
@@ -323,6 +360,8 @@ let input = world.createEntity()
 
 let score = world.createEntity()
     .addComponent(Score)
+let lives = world.createEntity()
+    .addComponent(Lives)
 
 
 startWorld(world)
