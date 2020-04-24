@@ -4,6 +4,8 @@ export class Canvas extends Component {
     constructor() {
         super();
         this.scale = 1
+        this.dom = null
+        this.pixelMode = true
     }
 }
 export class Sprite extends  Component {
@@ -75,7 +77,7 @@ export class ECSYTwoSystem extends  System {
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
             let ctx = canvas.dom.getContext('2d')
-            ctx.imageSmoothingEnabled = false
+            ctx.imageSmoothingEnabled = canvas.pixelMode
             ctx.save()
             ctx.scale(canvas.scale,canvas.scale)
             this.queries.background.results.forEach(ent => {
