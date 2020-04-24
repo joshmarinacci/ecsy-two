@@ -42,6 +42,13 @@ class Bricks extends Component {
         }
     }
 }
+class Score extends Component {
+    constructor() {
+        super();
+        this.score = 0
+    }
+}
+class Won {}
 
 class BreakoutInput extends System {
     execute(delta, time) {
@@ -121,12 +128,15 @@ class BreakoutLogic extends System {
 
                 this.queries.bricks.results.forEach(ent => {
                     let bricks = ent.getMutableComponent(Bricks)
-                    this.brickCollisionDetection(ball, bloc, bricks)
+                    this.queries.score.results.forEach(ent => {
+                        let score = ent.getMutableComponent(Score)
+                        this.brickCollisionDetection(ball, bloc, bricks, score)
+                    })
                 })
             })
         })
     }
-    brickCollisionDetection(ball, bloc, bricks) {
+    brickCollisionDetection(ball, bloc, bricks, score) {
         for(let c=0; c<bricks.columnCount; c++) {
             for(let r=0; r<bricks.rowCount; r++) {
                 let b = bricks.bricks[c][r]
@@ -137,6 +147,10 @@ class BreakoutLogic extends System {
                         && bloc.y < b.y + bricks.height) {
                         ball.dy = -ball.dy;
                         b.status = 0
+                        score.score += 1
+                        if(score.score === bricks.rowCount * bricks.columnCount) {
+                            this.world.createEntity().addComponent(Won)
+                        }
                     }
                 }
             }
@@ -161,6 +175,9 @@ BreakoutLogic.queries = {
     },
     bricks: {
         components: [Bricks]
+    },
+    score: {
+        components: [Score]
     }
 }
 
@@ -183,6 +200,12 @@ class BreakoutRenderer extends  System {
             this.queries.bricks.results.forEach(ent => {
                 let bricks = ent.getComponent(Bricks)
                 this.drawBricks(ctx,bricks)
+            })
+            this.queries.score.results.forEach(ent => {
+                this.drawScore(ctx,ent.getComponent(Score))
+            })
+            this.queries.won.results.forEach(ent => {
+                this.drawWinBanner(canvas, ctx)
             })
         })
     }
@@ -223,6 +246,18 @@ class BreakoutRenderer extends  System {
         ctx.closePath()
         ctx.restore()
     }
+
+    drawScore(ctx, score) {
+        ctx.font = '16px Arial'
+        ctx.fillStyle = "#0095dd"
+        ctx.fillText('Score: ' + score.score, 8, 20)
+    }
+
+    drawWinBanner(canvas, ctx) {
+        ctx.font = '16px Arial'
+        ctx.fillStyle = "black"
+        ctx.fillText('YOU WIN!', canvas.width/2 - 30, 20)
+    }
 }
 BreakoutRenderer.queries = {
     canvas: {
@@ -242,6 +277,12 @@ BreakoutRenderer.queries = {
     },
     bricks: {
         components: [Bricks]
+    },
+    score: {
+        components: [Score]
+    },
+    won: {
+        components: [Won]
     }
 }
 
@@ -269,6 +310,10 @@ let paddle = world.createEntity()
 let input = world.createEntity()
     .addComponent(InputState)
     .addComponent(KeyboardState)
+
+let score = world.createEntity()
+    .addComponent(Score)
+
 
 startWorld(world)
 
