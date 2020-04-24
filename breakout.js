@@ -4,6 +4,7 @@
 import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js"
 import {BackgroundFill, Canvas, ECSYTwoSystem, SpriteLocation, startWorld} from './ecsytwo.js'
 import {InputState, KeyboardState, KeyboardSystem} from './keyboard.js'
+import {MouseInputSystem, MouseState} from './mouse.js'
 
 let world = new World()
 world.registerSystem(ECSYTwoSystem)
@@ -55,21 +56,28 @@ class BreakoutInput extends System {
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
             //move the paddle based on input
-            this.queries.input.results.forEach(ent => {
-                let input = ent.getComponent(InputState)
-                this.queries.paddle.results.forEach(ent => {
-                    let paddle = ent.getMutableComponent(Paddle)
-                    let loc = ent.getMutableComponent(SpriteLocation)
+            this.queries.paddle.results.forEach(ent => {
+                let paddle = ent.getMutableComponent(Paddle)
+                let ploc = ent.getMutableComponent(SpriteLocation)
+                this.queries.input.results.forEach(ent => {
+                    let input = ent.getComponent(InputState)
                     if (input.states.left) {
-                        loc.x -= 7
-                        if (loc.x < 0) {
-                            loc.x = 0
+                        ploc.x -= 7
+                        if (ploc.x < 0) {
+                            ploc.x = 0
                         }
                     }
                     if (input.states.right) {
-                        loc.x += 7
-                        if (loc.x + paddle.width > canvas.width) {
-                            loc.x = canvas.width - paddle.width
+                        ploc.x += 7
+                        if (ploc.x + paddle.width > canvas.width) {
+                            ploc.x = canvas.width - paddle.width
+                        }
+                    }
+                    let mouse = ent.getComponent(MouseState)
+                    if(time - mouse.lastTimestamp < 100) {
+                        let relativeX = mouse.clientX - canvas.dom.offsetLeft
+                        if(relativeX > 0 && relativeX < canvas.width) {
+                            ploc.x = relativeX - paddle.width/2
                         }
                     }
                 })
@@ -88,7 +96,7 @@ BreakoutInput.queries = {
         }
     },
     input: {
-        components: [KeyboardState, InputState]
+        components: [KeyboardState, InputState, MouseState]
     },
 }
 
@@ -171,7 +179,7 @@ BreakoutLogic.queries = {
         }
     },
     input: {
-        components: [KeyboardState, InputState]
+        components: [KeyboardState, InputState, MouseState]
     },
     bricks: {
         components: [Bricks]
@@ -298,6 +306,7 @@ game.addComponent(BackgroundFill, {color: 'grey'})
 game.addComponent(Bricks)
 
 
+world.registerSystem(MouseInputSystem)
 
 let ball = world.createEntity()
     ball.addComponent(Ball)
@@ -310,6 +319,7 @@ let paddle = world.createEntity()
 let input = world.createEntity()
     .addComponent(InputState)
     .addComponent(KeyboardState)
+    .addComponent(MouseState)
 
 let score = world.createEntity()
     .addComponent(Score)
