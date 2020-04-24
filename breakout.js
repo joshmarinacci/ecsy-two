@@ -23,7 +23,6 @@ class Paddle extends Component {
         this.width = 75
     }
 }
-
 class Bricks extends Component {
     constructor() {
         super();
@@ -44,11 +43,10 @@ class Bricks extends Component {
     }
 }
 
-class BreakoutSystem extends System {
+class BreakoutInput extends System {
     execute(delta, time) {
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
-
             //move the paddle based on input
             this.queries.input.results.forEach(ent => {
                 let input = ent.getComponent(InputState)
@@ -70,10 +68,27 @@ class BreakoutSystem extends System {
                 })
             })
         })
+    }
+}
+BreakoutInput.queries = {
+    canvas: {
+        components:[Canvas]
+    },
+    paddle: {
+        components: [Paddle, SpriteLocation],
+        listen: {
+            added:true
+        }
+    },
+    input: {
+        components: [KeyboardState, InputState]
+    },
+}
 
+class BreakoutLogic extends System {
+    execute(delta, time) {
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
-
             //initial paddle position
             this.queries.paddle.added.forEach(ent => {
                 let paddle = ent.getComponent(Paddle)
@@ -106,43 +121,71 @@ class BreakoutSystem extends System {
 
                 this.queries.bricks.results.forEach(ent => {
                     let bricks = ent.getMutableComponent(Bricks)
-                    this.collisionDetection(ball, bloc, bricks)
+                    this.brickCollisionDetection(ball, bloc, bricks)
                 })
-
-                let ctx = canvas.dom.getContext('2d')
-                this.drawBall(ctx,ball,bloc)
-            })
-
-            this.queries.paddle.results.forEach(ent => {
-                let paddle = ent.getComponent(Paddle)
-                let loc = ent.getComponent(SpriteLocation)
-                let ctx = canvas.dom.getContext('2d')
-                this.drawPaddle(canvas, ctx,paddle,loc)
-            })
-
-            //draw the bricks
-            this.queries.bricks.results.forEach(ent => {
-                let bricks = ent.getComponent(Bricks)
-                let ctx = canvas.dom.getContext('2d')
-                this.drawBricks(ctx,bricks)
             })
         })
     }
-
-    collisionDetection(ball, bloc, bricks) {
+    brickCollisionDetection(ball, bloc, bricks) {
         for(let c=0; c<bricks.columnCount; c++) {
             for(let r=0; r<bricks.rowCount; r++) {
                 let b = bricks.bricks[c][r]
-                if(bloc.x > b.x
-                    && bloc.x < b.x+bricks.width
-                    && bloc.y > b.y
-                    && bloc.y < b.y+bricks.height) {
-                    ball.dy = -ball.dy;
+                if(b.status === 1) {
+                    if (bloc.x > b.x
+                        && bloc.x < b.x + bricks.width
+                        && bloc.y > b.y
+                        && bloc.y < b.y + bricks.height) {
+                        ball.dy = -ball.dy;
+                        b.status = 0
+                    }
                 }
             }
         }
     }
+}
+BreakoutLogic.queries = {
+    canvas: {
+        components:[Canvas]
+    },
+    ball: {
+        components:[Ball, SpriteLocation]
+    },
+    paddle: {
+        components: [Paddle, SpriteLocation],
+        listen: {
+            added:true
+        }
+    },
+    input: {
+        components: [KeyboardState, InputState]
+    },
+    bricks: {
+        components: [Bricks]
+    }
+}
 
+
+class BreakoutRenderer extends  System {
+    execute(delta, time) {
+        this.queries.canvas.results.forEach(ent => {
+            let canvas = ent.getComponent(Canvas)
+            let ctx = canvas.dom.getContext('2d')
+            this.queries.ball.results.forEach(ent => {
+                let ball = ent.getComponent(Ball)
+                let bloc = ent.getComponent(SpriteLocation)
+                this.drawBall(ctx,ball,bloc)
+            })
+            this.queries.paddle.results.forEach(ent => {
+                let paddle = ent.getComponent(Paddle)
+                let loc = ent.getComponent(SpriteLocation)
+                this.drawPaddle(canvas, ctx,paddle,loc)
+            })
+            this.queries.bricks.results.forEach(ent => {
+                let bricks = ent.getComponent(Bricks)
+                this.drawBricks(ctx,bricks)
+            })
+        })
+    }
     drawBricks(ctx, bricks) {
         for(let c=0; c<bricks.columnCount; c++) {
             for(let r=0; r<bricks.rowCount; r++) {
@@ -181,7 +224,7 @@ class BreakoutSystem extends System {
         ctx.restore()
     }
 }
-BreakoutSystem.queries = {
+BreakoutRenderer.queries = {
     canvas: {
         components:[Canvas]
     },
@@ -202,7 +245,9 @@ BreakoutSystem.queries = {
     }
 }
 
-world.registerSystem(BreakoutSystem)
+world.registerSystem(BreakoutInput)
+world.registerSystem(BreakoutLogic)
+world.registerSystem(BreakoutRenderer)
 world.registerSystem(KeyboardSystem)
 
 
