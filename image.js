@@ -1,10 +1,10 @@
+import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
+
 export class SpriteSheet {
-    constructor(img,tw,th,w,h) {
+    constructor(img,tw,th) {
         this.image = img
         this.tw = tw
         this.th = th
-        this.ssw = w
-        this.ssh = h
     }
 
     sprite_to_image(x, y) {
@@ -40,4 +40,3 @@ export function load_image_from_url(src) {
         img.src = src
     })
 }
-

@@ -11,27 +11,10 @@ export class Canvas extends Component {
 export class Sprite extends  Component {
     constructor() {
         super();
-        this.image = null
-        this.width = -1
-        this.height = -1
-        this.flipX = false
-        this.flipY = false
-        this.src = null
-    }
-}
-export class SpriteLocation extends Component {
-    constructor() {
-        super();
         this.x = 0
         this.y = 0
-        this.fixed = false
-    }
-}
-export class SpriteBounds extends Component {
-    constructor() {
-        super();
-        this.width = 1
-        this.height = 1
+        this.width = 10
+        this.height = 10
     }
 }
 export class BackgroundFill extends Component {
@@ -53,6 +36,16 @@ export class CameraFollowsSprite extends Component {
         this.target = null
     }
 }
+
+
+export class ImageSprite extends Component {
+    constructor() {
+        super();
+        this.image = null
+        this.src = null
+    }
+}
+
 export class AnimatedSprite extends Component {
     constructor() {
         super();
@@ -123,23 +116,29 @@ export class SpriteSystem extends System {
                 }
             })
 
+            //draw image sprites
             this.queries.sprites.results.forEach(ent => {
                 let sprite = ent.getComponent(Sprite)
-                let loc = ent.getComponent(SpriteLocation)
                 ctx.save()
-                if(loc.fixed) {
+                if(sprite.fixed) {
                     ctx.translate(
                         +camera.x - canvas.width/2,
                         +camera.y - canvas.height/2)
                 }
-                ctx.translate(loc.x, loc.y)
-                if(sprite.flipY) {
+                ctx.translate(sprite.x, sprite.y)
+                let image_sprite = ent.getComponent(ImageSprite)
+                if(image_sprite.flipY) {
                     ctx.scale(-1,1)
                     ctx.translate(-sprite.width,0)
                 }
-                if(sprite.image) ctx.drawImage(sprite.image, 0, 0)
+                if(image_sprite.image) {
+                    ctx.drawImage(image_sprite.image, 50, 50)
+                    // ctx.fillStyle = 'rgba(0,0,0,0.5)'
+                    // ctx.fillRect(50,50,sprite.width, sprite.height)
+                }
                 ctx.restore()
             })
+            /*
             this.queries.animated_sprites.results.forEach(ent => {
                 let sprite = ent.getMutableComponent(AnimatedSprite)
                 let diff = time - sprite.last_frame_time
@@ -156,7 +155,7 @@ export class SpriteSystem extends System {
                 }
                 ctx.drawImage(sprite.frames[sprite.current_frame],0,0)
                 ctx.restore()
-            })
+            })*/
             ctx.restore()
         })
 
@@ -179,7 +178,7 @@ SpriteSystem.queries = {
         components: [Canvas,Camera],
     },
     sprites: {
-        components: [Sprite, SpriteLocation],
+        components: [Sprite, ImageSprite],
         listen: {
             added:true,
             removed:true,
@@ -189,7 +188,7 @@ SpriteSystem.queries = {
         components: [CameraFollowsSprite]
     },
     animated_sprites: {
-        components: [AnimatedSprite, SpriteLocation]
+        components: [AnimatedSprite]
     },
 }
 
