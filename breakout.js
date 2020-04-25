@@ -17,13 +17,7 @@ class Ball extends Component {
         this.radius = 10
     }
 }
-class Paddle extends Component {
-    constructor() {
-        super()
-        this.height = 10
-        this.width = 75
-    }
-}
+class Paddle extends Component { }
 class Bricks extends Component {
     constructor() {
         super();
@@ -43,18 +37,14 @@ class Bricks extends Component {
         }
     }
 }
-class Score extends Component {
+class GameState extends Component {
     constructor() {
         super();
         this.score = 0
-    }
-}
-class Won {}
-class Lives {
-    constructor() {
         this.lives = 3
     }
 }
+class Won {}
 
 class BreakoutInput extends System {
     execute(delta, time) {
@@ -62,27 +52,26 @@ class BreakoutInput extends System {
             let canvas = ent.getComponent(Canvas)
             //move the paddle based on input
             this.queries.paddle.results.forEach(ent => {
-                let paddle = ent.getMutableComponent(Paddle)
-                let ploc = ent.getMutableComponent(Sprite)
+                let paddle = ent.getMutableComponent(Sprite)
                 this.queries.input.results.forEach(ent => {
                     let input = ent.getComponent(InputState)
                     if (input.states.left) {
-                        ploc.x -= 7
-                        if (ploc.x < 0) {
-                            ploc.x = 0
+                        paddle.x -= 7
+                        if (paddle.x < 0) {
+                            paddle.x = 0
                         }
                     }
                     if (input.states.right) {
-                        ploc.x += 7
-                        if (ploc.x + paddle.width > canvas.width) {
-                            ploc.x = canvas.width - paddle.width
+                        paddle.x += 7
+                        if (paddle.x + paddle.width > canvas.width) {
+                            paddle.x = canvas.width - paddle.width
                         }
                     }
                     let mouse = ent.getComponent(MouseState)
                     if(time - mouse.lastTimestamp < 100) {
                         let relativeX = mouse.clientX - canvas.dom.offsetLeft
                         if(relativeX > 0 && relativeX < canvas.width) {
-                            ploc.x = relativeX - paddle.width/2
+                            paddle.x = relativeX - paddle.width/2
                         }
                     }
                 })
@@ -111,47 +100,45 @@ class BreakoutLogic extends System {
             let canvas = ent.getComponent(Canvas)
             //initial paddle position
             this.queries.paddle.added.forEach(ent => {
-                let paddle = ent.getComponent(Paddle)
-                let loc = ent.getComponent(Sprite)
-                loc.x = (canvas.width - paddle.width) / 2
+                let paddle = ent.getComponent(Sprite)
+                paddle.x = (canvas.width - paddle.width) / 2
             })
 
             this.queries.ball.results.forEach(ent => {
                 let ball = ent.getComponent(Ball)
-                let bloc = ent.getComponent(Sprite)
+                let ball_sprite = ent.getComponent(Sprite)
                 this.queries.paddle.results.forEach(ent => {
-                    let paddle = ent.getMutableComponent(Paddle)
-                    let ploc = ent.getMutableComponent(Sprite)
-                    if (bloc.y + ball.dy < ball.radius) {
+                    let paddle = ent.getMutableComponent(Sprite)
+                    if (ball_sprite.y + ball.dy < ball.radius) {
                         ball.dy = -ball.dy
-                    } else if (bloc.y + ball.dy > canvas.height - ball.radius) {
-                        if (bloc.x > ploc.x && bloc.x < ploc.x + paddle.width) {
+                    } else if (ball_sprite.y + ball.dy > canvas.height - ball.radius) {
+                        if (ball_sprite.x > paddle.x && ball_sprite.x < paddle.x + paddle.width) {
                             ball.dy = -ball.dy
                         } else {
-                            this.queries.lives.results.forEach(ent => {
-                                let lives = ent.getComponent(Lives)
+                            this.queries.gamestate.results.forEach(ent => {
+                                let lives = ent.getComponent(GameState)
                                 lives.lives--
                                 if(lives.lives === 0) {
                                     console.log('GAME OVER')
                                 }else {
-                                    this.resetGame(canvas, ball, bloc, paddle, ploc)
+                                    this.resetGame(canvas, ball, ball_sprite, paddle, paddle)
                                 }
                             })
                         }
                     }
-                    if (bloc.x + ball.dx > canvas.width - ball.radius || bloc.x + ball.dx < ball.radius) {
+                    if (ball_sprite.x + ball.dx > canvas.width - ball.radius || ball_sprite.x + ball.dx < ball.radius) {
                         ball.dx = -ball.dx
                     }
                 })
 
-                bloc.x += ball.dx
-                bloc.y += ball.dy
+                ball_sprite.x += ball.dx
+                ball_sprite.y += ball.dy
 
                 this.queries.bricks.results.forEach(ent => {
                     let bricks = ent.getMutableComponent(Bricks)
-                    this.queries.score.results.forEach(ent => {
-                        let score = ent.getMutableComponent(Score)
-                        this.brickCollisionDetection(ball, bloc, bricks, score)
+                    this.queries.gamestate.results.forEach(ent => {
+                        let score = ent.getMutableComponent(GameState)
+                        this.brickCollisionDetection(ball, ball_sprite, bricks, score)
                     })
                 })
             })
@@ -205,11 +192,8 @@ BreakoutLogic.queries = {
     bricks: {
         components: [Bricks]
     },
-    score: {
-        components: [Score]
-    },
-    lives: {
-        components: [Lives]
+    gamestate: {
+        components: [GameState]
     }
 }
 
@@ -225,23 +209,20 @@ class BreakoutRenderer extends  System {
                 this.drawBall(ctx,ball,bloc)
             })
             this.queries.paddle.results.forEach(ent => {
-                let paddle = ent.getComponent(Paddle)
-                let loc = ent.getComponent(Sprite)
-                this.drawPaddle(canvas, ctx,paddle,loc)
+                let paddle = ent.getComponent(Sprite)
+                this.drawPaddle(canvas, ctx, paddle)
             })
             this.queries.bricks.results.forEach(ent => {
                 let bricks = ent.getComponent(Bricks)
                 this.drawBricks(ctx,bricks)
             })
-            this.queries.score.results.forEach(ent => {
-                this.drawScore(ctx,ent.getComponent(Score))
+            this.queries.gamestate.results.forEach(ent => {
+                let state = ent.getComponent(GameState)
+                this.drawScore(ctx, state)
+                this.drawLives(canvas, ctx, state)
             })
             this.queries.won.results.forEach(ent => {
                 this.drawWinBanner(canvas, ctx)
-            })
-            this.queries.lives.results.forEach(ent => {
-                let lives = ent.getComponent(Lives)
-                this.drawLives(canvas, ctx, lives)
             })
         })
     }
@@ -273,10 +254,10 @@ class BreakoutRenderer extends  System {
         ctx.restore()
     }
 
-    drawPaddle(canvas, ctx, paddle, loc) {
+    drawPaddle(canvas, ctx, paddle) {
         ctx.save()
         ctx.beginPath()
-        ctx.rect(loc.x, canvas.height - paddle.height, paddle.width, paddle.height)
+        ctx.rect(paddle.x, canvas.height - paddle.height, paddle.width, paddle.height)
         ctx.fillStyle = '#0095dd'
         ctx.fill()
         ctx.closePath()
@@ -320,49 +301,38 @@ BreakoutRenderer.queries = {
     bricks: {
         components: [Bricks]
     },
-    score: {
-        components: [Score]
+    gamestate: {
+        components: [GameState]
     },
     won: {
         components: [Won]
     },
-    lives: {
-        components: [Lives]
-    }
 }
 
 world.registerSystem(BreakoutInput)
 world.registerSystem(BreakoutLogic)
 world.registerSystem(BreakoutRenderer)
 world.registerSystem(KeyboardSystem)
-
-
-let game = world.createEntity()
-game.addComponent(Canvas, { width: 480, height: 320, pixelMode:false})
-game.addComponent(BackgroundFill, {color: 'grey'})
-game.addComponent(Bricks)
-
-
 world.registerSystem(MouseInputSystem)
 
-let ball = world.createEntity()
-    ball.addComponent(Ball)
-    ball.addComponent(Sprite, { x: 100,  y: 100})
+world.createEntity()
+    .addComponent(Canvas, { width: 480, height: 320, pixelMode:false})
+    .addComponent(BackgroundFill, {color: 'grey'})
+    .addComponent(Bricks)
+    .addComponent(GameState)
 
-let paddle = world.createEntity()
+world.createEntity()
+    .addComponent(Ball)
+    .addComponent(Sprite, { x: 100,  y: 100})
+
+world.createEntity()
     .addComponent(Paddle)
-    .addComponent(Sprite)
+    .addComponent(Sprite, { width: 75, height: 20 })
 
-let input = world.createEntity()
+world.createEntity()
     .addComponent(InputState)
     .addComponent(KeyboardState)
     .addComponent(MouseState)
-
-let score = world.createEntity()
-    .addComponent(Score)
-let lives = world.createEntity()
-    .addComponent(Lives)
-
 
 startWorld(world)
 
