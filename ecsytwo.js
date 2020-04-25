@@ -28,6 +28,7 @@ export class Camera extends Component {
         super();
         this.x = 0
         this.y = 0
+        this.centered = true
     }
 }
 export class CameraFollowsSprite extends Component {
@@ -37,6 +38,13 @@ export class CameraFollowsSprite extends Component {
     }
 }
 
+
+export class FilledSprite extends Component {
+    constructor() {
+        super();
+        this.color = 'red'
+    }
+}
 
 export class ImageSprite extends Component {
     constructor() {
@@ -103,9 +111,11 @@ export class SpriteSystem extends System {
             ctx.imageSmoothingEnabled = false
             ctx.save()
             ctx.scale(canvas.scale,canvas.scale)
-            ctx.translate(
-                -camera.x + canvas.width/2,
-                -camera.y + canvas.height/2)
+            if(camera.centered) {
+                ctx.translate(
+                    -camera.x + canvas.width / 2,
+                    -camera.y + canvas.height / 2)
+            }
 
             //load sprites with src properties
             this.queries.sprites.added.forEach(ent =>{
@@ -116,7 +126,14 @@ export class SpriteSystem extends System {
                 }
             })
 
-            //draw image sprites
+            // draw colored sprites
+            this.queries.filled_sprites.results.forEach(ent => {
+                let sprite = ent.getComponent(Sprite)
+                let color = ent.getComponent(FilledSprite)
+                ctx.fillStyle = color.color
+                ctx.fillRect(sprite.x, sprite.y, sprite.width, sprite.height)
+            })
+            // draw image sprites
             this.queries.sprites.results.forEach(ent => {
                 let sprite = ent.getComponent(Sprite)
                 ctx.save()
@@ -136,6 +153,8 @@ export class SpriteSystem extends System {
                 }
                 ctx.restore()
             })
+
+            // draw animated images sprites
             this.queries.animated_sprites.results.forEach(ent => {
                 let sprite = ent.getMutableComponent(AnimatedSprite)
                 let diff = time - sprite.last_frame_time
@@ -187,6 +206,9 @@ SpriteSystem.queries = {
     animated_sprites: {
         components: [Sprite, AnimatedSprite]
     },
+    filled_sprites: {
+        components: [Sprite, FilledSprite]
+    }
 }
 
 export function startWorld(world) {
