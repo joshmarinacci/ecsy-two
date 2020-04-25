@@ -12,7 +12,7 @@ import {
 import {KeyboardSystem, KeyboardState, InputState} from './keyboard.js'
 import {load_tilemap, make_bounds, make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {BackgroundMusic, MusicSystem, Sound} from './music.js'
-// import {Emitter, ParticleSystem} from './particles.js'
+import {Emitter, ParticleSystem} from './particles.js'
 import {load_image_from_url, SpriteSheet} from './image.js'
 import {PlatformerPhysicsSystem, PlayerPhysics} from './platformer_controls.js'
 // import {FadeTransition, TransitionSystem} from './transitions.js'
@@ -92,7 +92,7 @@ world.registerSystem(TileMapSystem)
 world.registerSystem(SpriteSystem)
 // world.registerSystem(MusicSystem)
 world.registerSystem(FishSystem)
-// world.registerSystem(ParticleSystem)
+world.registerSystem(ParticleSystem)
 // world.registerSystem(PlayerControlSystem)
 world.registerSystem(PlatformerPhysicsSystem)
 // world.registerSystem(TransitionSystem)
@@ -166,7 +166,7 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
         .addComponent(ImageSprite, { image:sheet.sprite_to_image(0,0)})
         .addComponent(Sprite, {width: 8, height: 8})
         .addComponent(Fish, {start: new Point(8,32), end: new Point(50,32), duration: 5000})
-    /*
+
     player.addComponent(Emitter, {
             image:sheet.sprite_to_image(2,1),
             velocityStart: new Point(0,100), // move down and to the right, pixels per second
@@ -174,7 +174,7 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
             accelerationStart: new Point(0,-1), //move them up, pixels per second per second
             rate:1, // one sprite per second
             lifetime:2, //lifetime in seconds
-        })*/
+        })
 })
 
 
@@ -234,8 +234,8 @@ class TubeSystem extends System {
                         console.log("going to vertical")
                         view.removeComponent(TileMap)
                         view.addComponent(TileMap, LEVELS.vertical.data)
-                        player.getMutableComponent(SpriteLocation).x = LEVELS.vertical.start.x
-                        player.getMutableComponent(SpriteLocation).y = LEVELS.vertical.start.y
+                        player.getMutableComponent(Sprite).x = LEVELS.vertical.start.x
+                        player.getMutableComponent(Sprite).y = LEVELS.vertical.start.y
                     }
                     if(px === 13 && py === 60 && map.name === "./maps/vertical.json") {
                         console.log("we won!")

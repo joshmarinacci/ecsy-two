@@ -1,5 +1,5 @@
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
-import {Sprite, SpriteLocation} from './ecsytwo.js'
+import {ImageSprite, Sprite} from './ecsytwo.js'
 
 export class Emitter extends Component {
     constructor() {
@@ -22,7 +22,7 @@ export class ParticleSystem extends System {
     execute(delta, time) {
         this.queries.emitters.results.forEach(ent => {
             let emitter = ent.getComponent(Emitter)
-            let loc = ent.getComponent(SpriteLocation)
+            let loc = ent.getComponent(Sprite)
             emitter.count++
             if(emitter.count % 60 === 0) {
                 let part = this.world.createEntity()
@@ -32,13 +32,13 @@ export class ParticleSystem extends System {
                     lifetime: emitter.lifetime,
                     start_time: time/1000,
                 })
-                part.addComponent(Sprite, {image:emitter.image})
-                part.addComponent(SpriteLocation, {x: loc.x, y: loc.y})
+                part.addComponent(ImageSprite, {image:emitter.image})
+                part.addComponent(Sprite, {x: loc.x, y: loc.y})
             }
         })
         this.queries.particles.results.forEach(ent => {
             let part = ent.getComponent(Particle)
-            let loc = ent.getMutableComponent(SpriteLocation)
+            let loc = ent.getMutableComponent(Sprite)
             loc.x += part.vx*delta/1000
             loc.y += part.vy*delta/1000
             if(time/1000 > part.start_time + part.lifetime) {
@@ -50,14 +50,14 @@ export class ParticleSystem extends System {
 }
 ParticleSystem.queries = {
     emitters: {
-        components:[Emitter, SpriteLocation],
+        components:[Emitter, Sprite],
         listen: {
             added:true,
             removed:true,
         }
     },
     particles: {
-        components:[Particle, SpriteLocation],
+        components:[Particle, Sprite],
         listen: {
             added:true,
             removed:true,
