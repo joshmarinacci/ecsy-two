@@ -22,13 +22,19 @@ class GameState {
         this.enemySpeed = 10;
         this.enemyFirePercent = 10;
         this.enemyDropAmount = 1
+        this.field = new Sprite()
+        this.field.x = 0
+        this.field.y = 0
+        this.field.width = 300
+        this.field.height = 180
     }
 }
 
 let game = world.createEntity()
-    .addComponent(Canvas, { width: 200, height: 200})
+    .addComponent(Canvas, { width: 300, height: 180})
     .addComponent(Camera, { centered:false }) /// Why is the camera required?
     .addComponent(BackgroundFill, {color: "gray"})
+    .addComponent(GameState)
 
 class Vector2D {
     constructor(x,y) {
@@ -98,63 +104,46 @@ world.createEntity()
         }
     })
 
-world.createEntity()
-    .addComponent(Enemy, {rank: 0})
-    .addComponent(Sprite, { x: 20, y: 25, width: 10, height: 10})
-    .addComponent(FilledSprite, {color: 'red'})
-    .addComponent(PhysicsSprite, { speed: 20, direction: new Vector2D(0,-1)})
-
-world.createEntity()
-    .addComponent(Enemy, {rank: 1})
-    .addComponent(Sprite, { x: 50, y: 25, width: 10, height: 10})
-    .addComponent(FilledSprite, {color: 'red'})
-    .addComponent(PhysicsSprite, { speed: 10, direction: new Vector2D(0,1)})
-
-world.createEntity()
-    .addComponent(Enemy, {rank: 2})
-    .addComponent(Sprite, { x: 80, y: 25, width: 10, height: 10})
-    .addComponent(FilledSprite, {color: 'red'})
-    .addComponent(PhysicsSprite, { speed: 15, direction: new Vector2D(0,1)})
-
-world.createEntity()
-    .addComponent(Enemy, {rank: 3})
-    .addComponent(Sprite, { x: 120, y: 25, width: 10, height: 10})
-    .addComponent(FilledSprite, {color: 'red'})
-    .addComponent(PhysicsSprite, { speed: 25, direction: new Vector2D(0,1)})
-
-world.createEntity()
-    .addComponent(Enemy, {rank: 4})
-    .addComponent(Sprite, { x: 140, y: 25, width: 10, height: 10})
-    .addComponent(FilledSprite, {color: 'red'})
-    .addComponent(PhysicsSprite, { speed: 30, direction: new Vector2D(0,1)})
-
-
 class GameLogic extends System {
     execute(delta, time) {
         this.queries.game.results.forEach(ent => {
             let game = ent.getComponent(GameState)
-
+            let enemies = this.queries.enemies.results
             //speed increases as there are fewer enemies
-            let enemy_speed = game.enemySpeed + game.enemySpeed * (1-this.queries.enemies.length)
+            let enemy_speed = game.enemySpeed + game.enemySpeed * (1-enemies.length)
 
             // calculate bounds of the enemies
-            let bounds = this.queries.enemies.results.reduce((a,b) => {
-                return a.getComponent(Sprite).union(b.getComponent(Sprite))
-            },undefined)
-            console.log("final bounds are",bounds)
-            if(this.queries.enemies.results.length === 0) {
+            if(enemies.length === 0) {
                 this.spawn_new_enemies(game,enemy_speed)
             }
+            // console.log("enemy count is", this.queries.enemies.results.length)
+
+            //calc bounds of all of the enemies as a group
+            let bounds = enemies
+                .map((ent)=> ent.getComponent(Sprite))
+                .reduce((a,b) =>  a?a.union(b):b,undefined)
+            // console.log("final bounds are",bounds)
+            enemies.forEach(ent => {
+                this.move_enemy(game,bounds, ent, delta)
+            })
         })
     }
     spawn_new_enemies(game, enemy_speed) {
+        console.log("making new enemies", enemy_speed)
         for(let i=0; i<10; i++) {
             for(let j=0; j<5; j++) {
                 let dropTarget = 10+j*20
-                let position = new Vector2D(50+i*20, dropTarget-100)
+                let position = new Vector2D(50+i*20, dropTarget-10)
                 let direction = new Vector2D(1, 0)
                 let rank = 4-j
+
                 this.world.createEntity()
+                    .addComponent(Enemy, {
+                        rank: rank,
+                        dropTarget: dropTarget,
+                        firePercent: game.enemyFirePercent,
+                        dropAmount: game.enemyDropAmount
+                    })
                     .addComponent(Sprite, {
                         x:position.x,
                         y:position.y,
@@ -163,13 +152,7 @@ class GameLogic extends System {
                     })
                     .addComponent(PhysicsSprite, {
                         direction:direction,
-                        speed:enemy_speed,
-                    })
-                    .addComponent(Enemy, {
-                        rank: rank,
-                        dropTarget: dropTarget,
-                        firePercent: game.enemyFirePercent,
-                        dropAmount: game.dropAmount
+                        speed:enemy_speed*3,
                     })
             }
         }
@@ -178,7 +161,52 @@ class GameLogic extends System {
         game.enemyFirePercent += 5;
         game.enemyDropAmount += 1;
     }
+
+    move_enemy(game, bounds, ent, delta) {
+        let edgeMargin = 5
+        let gameLeftEdge = game.field.left() + edgeMargin
+        let gameRightEdge = game.field.right() + edgeMargin
+        let enemy = ent.getComponent(Enemy)
+        let sprite = ent.getComponent(Sprite)
+        let phys = ent.getComponent(PhysicsSprite)
+
+        // drop down if if hit an edge
+        if( (phys.direction.x < 0 && bounds.left() < gameLeftEdge) ||
+            (phys.direction.x > 0 && bounds.right() > gameRightEdge) ) {
+            enemy.dropTarget += enemy.dropAmount
+        }
+
+        //determine direction
+        if( sprite.y < enemy.dropTarget) {
+            phys.direction = new Vector2D(0,1)
+        } else if (phys.direction.y > 0) {
+            phys.direction = (bounds.right() > gameRightEdge)
+                    ? new Vector2D(-1,0):new Vector2D(1,0)
+        }
+
+        //determine firing weapon
+        let p = new Vector2D(enemy.x, enemy.y).add(new Vector2D(0,5))
+        function existsUnderneath(e) {
+            let rect = e.getComponent(Sprite)
+            return p.y <= rect.top() && rect.left() < p.x && p.x <= rect.right()
+        }
+
+        enemy.timer += delta
+        if(enemy.timer > enemy.fireWait) {
+            enemy.timer = 0
+            enemy.fireWait = 1 + Math.random() * 4
+            if(Math.floor(Math.random()*100) < enemy.firePercent &&
+                !this.queries.enemies.results.find(existsUnderneath)) {
+                // console.log("enemy is firing")
+            }
+        }
+    }
 }
+GameLogic.queries = {
+    game: { components: [GameState]},
+    enemies: { components: [ Enemy, Sprite]}
+}
+world.registerSystem(GameLogic)
 
 class SimplePhysics extends System {
     execute(delta, time) {
@@ -197,6 +225,7 @@ class SimplePhysics extends System {
                 }
             }
 
+            // console.log(phy.speed)
             let velocity = phy.direction.scalar_mul(phy.speed)
             let pos = velocity.scalar_mul(delta/1000).add(sprite)
             sprite.x = pos.x

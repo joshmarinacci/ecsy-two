@@ -32,6 +32,15 @@ export class Sprite extends  Component {
         return this.right() >= r2.left() && this.left() <= r2.right() &&
             this.top() <= r2.bottom() && this.bottom() >= r2.top();
     }
+    union(r2) {
+        let sprite = new Sprite()
+        let r1 = this
+        sprite.x = Math.min(r1.x, r2.x)
+        sprite.y = Math.min(r1.y, r2.y)
+        sprite.width  = Math.max( r1.right(),  r2.right() )  - Math.min( r1.left(), r2.left() );
+        sprite.height = Math.max( r1.bottom(), r2.bottom() ) - Math.min( r1.top(),  r2.top() );
+        return sprite
+    }
 }
 export class BackgroundFill extends Component {
     constructor() {
