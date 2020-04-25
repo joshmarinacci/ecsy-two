@@ -2,7 +2,7 @@
 // https://developer.mozilla.org/en-US/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript/Create_the_Canvas_and_draw_on_it
 
 import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js"
-import {BackgroundFill, Canvas, ECSYTwoSystem, SpriteLocation, startWorld} from './ecsytwo.js'
+import {BackgroundFill, Canvas, ECSYTwoSystem, Sprite, startWorld} from './ecsytwo.js'
 import {InputState, KeyboardState, KeyboardSystem} from './keyboard.js'
 import {MouseInputSystem, MouseState} from './mouse.js'
 
@@ -63,7 +63,7 @@ class BreakoutInput extends System {
             //move the paddle based on input
             this.queries.paddle.results.forEach(ent => {
                 let paddle = ent.getMutableComponent(Paddle)
-                let ploc = ent.getMutableComponent(SpriteLocation)
+                let ploc = ent.getMutableComponent(Sprite)
                 this.queries.input.results.forEach(ent => {
                     let input = ent.getComponent(InputState)
                     if (input.states.left) {
@@ -95,7 +95,7 @@ BreakoutInput.queries = {
         components:[Canvas]
     },
     paddle: {
-        components: [Paddle, SpriteLocation],
+        components: [Paddle, Sprite],
         listen: {
             added:true
         }
@@ -112,16 +112,16 @@ class BreakoutLogic extends System {
             //initial paddle position
             this.queries.paddle.added.forEach(ent => {
                 let paddle = ent.getComponent(Paddle)
-                let loc = ent.getComponent(SpriteLocation)
+                let loc = ent.getComponent(Sprite)
                 loc.x = (canvas.width - paddle.width) / 2
             })
 
             this.queries.ball.results.forEach(ent => {
                 let ball = ent.getComponent(Ball)
-                let bloc = ent.getComponent(SpriteLocation)
+                let bloc = ent.getComponent(Sprite)
                 this.queries.paddle.results.forEach(ent => {
                     let paddle = ent.getMutableComponent(Paddle)
-                    let ploc = ent.getMutableComponent(SpriteLocation)
+                    let ploc = ent.getMutableComponent(Sprite)
                     if (bloc.y + ball.dy < ball.radius) {
                         ball.dy = -ball.dy
                     } else if (bloc.y + ball.dy > canvas.height - ball.radius) {
@@ -191,10 +191,10 @@ BreakoutLogic.queries = {
         components:[Canvas]
     },
     ball: {
-        components:[Ball, SpriteLocation]
+        components:[Ball, Sprite]
     },
     paddle: {
-        components: [Paddle, SpriteLocation],
+        components: [Paddle, Sprite],
         listen: {
             added:true
         }
@@ -221,12 +221,12 @@ class BreakoutRenderer extends  System {
             let ctx = canvas.dom.getContext('2d')
             this.queries.ball.results.forEach(ent => {
                 let ball = ent.getComponent(Ball)
-                let bloc = ent.getComponent(SpriteLocation)
+                let bloc = ent.getComponent(Sprite)
                 this.drawBall(ctx,ball,bloc)
             })
             this.queries.paddle.results.forEach(ent => {
                 let paddle = ent.getComponent(Paddle)
-                let loc = ent.getComponent(SpriteLocation)
+                let loc = ent.getComponent(Sprite)
                 this.drawPaddle(canvas, ctx,paddle,loc)
             })
             this.queries.bricks.results.forEach(ent => {
@@ -306,10 +306,10 @@ BreakoutRenderer.queries = {
         components:[Canvas]
     },
     ball: {
-        components:[Ball, SpriteLocation]
+        components:[Ball, Sprite]
     },
     paddle: {
-        components: [Paddle, SpriteLocation],
+        components: [Paddle, Sprite],
         listen: {
             added:true
         }
@@ -347,11 +347,11 @@ world.registerSystem(MouseInputSystem)
 
 let ball = world.createEntity()
     ball.addComponent(Ball)
-    ball.addComponent(SpriteLocation, { x: 100,  y: 100})
+    ball.addComponent(Sprite, { x: 100,  y: 100})
 
 let paddle = world.createEntity()
     .addComponent(Paddle)
-    .addComponent(SpriteLocation)
+    .addComponent(Sprite)
 
 let input = world.createEntity()
     .addComponent(InputState)
