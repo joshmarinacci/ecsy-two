@@ -34,7 +34,12 @@ let game = world.createEntity()
 
 // let map = world.createEntity()
 //     .addComponent(TileMap, { src: 'rpg/assets/map/map.json'})
-class Player extends Component {}
+class ControlTarget extends Component {
+    constructor() {
+        super();
+        this.velocity = 1
+    }
+}
 
 load_image_from_url('rpg/assets/RPG_assets.png').then(img => {
     let sheet = new SpriteSheet(img, 16, 16)
@@ -43,8 +48,7 @@ load_image_from_url('rpg/assets/RPG_assets.png').then(img => {
         .addComponent(ImageSprite, { image: sheet.sprite_to_image(0,0)})
         .addComponent(InputState)
         .addComponent(KeyboardState)
-        .addComponent(Player)
-    console.log('created the player')
+        .addComponent(ControlTarget, { velocity: 3})
 })
 
 export class OverheadControl extends System {
@@ -52,12 +56,12 @@ export class OverheadControl extends System {
         this.queries.input.results.forEach(ent => {
             let input = ent.getComponent(InputState)
             this.queries.player.results.forEach(ent => {
-                let payer = ent.getComponent(Player)
+                let target = ent.getComponent(ControlTarget)
                 let sprite = ent.getComponent(Sprite)
-                if(input.states.left)  sprite.x -= 1
-                if(input.states.right) sprite.x += 1
-                if(input.states.up)    sprite.y -= 1
-                if(input.states.down)  sprite.y += 1
+                if(input.states.left)  sprite.x -= target.velocity
+                if(input.states.right) sprite.x += target.velocity
+                if(input.states.up)    sprite.y -= target.velocity
+                if(input.states.down)  sprite.y += target.velocity
             })
         })
     }
@@ -67,7 +71,7 @@ OverheadControl.queries = {
         components:[InputState]
     },
     player: {
-        components: [Player, Sprite]
+        components: [ControlTarget, Sprite]
     }
 }
 world.registerSystem(KeyboardSystem)
