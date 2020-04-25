@@ -129,32 +129,38 @@ export class TileMap extends Component {
 export class TileMapSystem extends System {
     execute(delta, time) {
         this.queries.maps.results.forEach(ent => {
-            let canvas = ent.getComponent(Canvas)
-            let camera = ent.getComponent(Camera)
             let map = ent.getComponent(TileMap)
-            let ctx = canvas.dom.getContext('2d')
-            ctx.save()
-            ctx.scale(canvas.scale,canvas.scale)
-            ctx.translate(
-                -camera.x + canvas.width/2,
-                -camera.y + canvas.height/2
-            )
-            for(let y=0; y<map.height; y++) {
-                for(let x=0; x<map.width; x++) {
-                    let n = y*map.width+x
-                    let tile_index = map.map[n]
-                    let tile = map.index[tile_index]
-                    if(tile)  ctx.drawImage(tile,x*map.tileSize, y*map.tileSize)
+            this.queries.screen.results.forEach(ent => {
+                let canvas = ent.getComponent(Canvas)
+                let camera = ent.getComponent(Camera)
+                let ctx = canvas.dom.getContext('2d')
+                ctx.imageSmoothingEnabled = !canvas.pixelMode
+                ctx.save()
+                ctx.scale(canvas.scale,canvas.scale)
+                ctx.translate(
+                    -camera.x + canvas.width/2,
+                    -camera.y + canvas.height/2
+                )
+                for(let y=0; y<map.height; y++) {
+                    for(let x=0; x<map.width; x++) {
+                        let n = y*map.width+x
+                        let tile_index = map.map[n]
+                        let tile = map.index[tile_index]
+                        if(tile)  ctx.drawImage(tile,x*map.tileSize, y*map.tileSize)
+                    }
                 }
-            }
-            ctx.restore()
+                ctx.restore()
+            })
         })
     }
 }
 
 TileMapSystem.queries = {
+    screen: {
+        components:[Canvas, Camera]
+    },
     maps: {
-        components:[TileMap, Canvas, Camera],
+        components:[TileMap],
     }
 }
 export function make_map(width, height, data) {
@@ -171,6 +177,42 @@ export function make_map(width, height, data) {
     }
 }
 
-export function make_map_from_tiledjson(jsonobj) {
+export function load_tilemap(url,sheet) {
+    return fetch(url).then(res => res.json()).then(data => {
+        console.log("loaded tilemap: ",url)
+        console.log("data is ", data)
+        let ts = data.tilesets[0]
+        let TILE_MAP = {
+            width: data.width,
+            height: data.height,
+            data: data.layers[0].data
+        }
 
+        let TILE_INDEX = []
+        let start = ts.firstgid
+        for (let i = 0; i < ts.tilecount; i++) {
+            TILE_INDEX[start] = sheet.sprite_to_image(i % 8, Math.floor(i / 8))
+            start++
+        }
+        let blocking = []
+        if(ts.tiles) {
+            ts.tiles.forEach(tile => {
+                if (tile.type === 'floor') blocking.push(tile.id + 1)
+                if (tile.type === 'wall') blocking.push(tile.id + 1)
+                if (tile.type === 'block') blocking.push(tile.id + 1)
+            })
+        }
+
+        // blocking = [2]
+        // console.log("blocking numbers are", blocking)
+        return {
+            name: url,
+            tileSize: ts.tilewidth,
+            width: TILE_MAP.width,
+            height: TILE_MAP.height,
+            map: TILE_MAP.data,
+            index: TILE_INDEX,
+            wall_types: blocking,
+        }
+    })
 }

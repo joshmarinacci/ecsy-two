@@ -4,9 +4,7 @@ import {AnimatedSprite, SpriteBounds, SpriteLocation} from './ecsytwo.js'
 import {make_bounds, TileMap} from './tiles.js'
 import {Sound} from './music.js'
 
-export class Player extends Component {
-
-}
+export class Player extends Component {}
 
 
 

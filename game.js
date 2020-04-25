@@ -1,6 +1,5 @@
 import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js"
 import {
-    SpriteLocation,
     Canvas,
     ECSYTwoSystem,
     Sprite,
@@ -8,16 +7,15 @@ import {
     startWorld,
     SpriteSystem,
     BackgroundFill,
-    Camera, CameraFollowsSprite, SpriteBounds
+    Camera, CameraFollowsSprite, ImageSprite
 } from "./ecsytwo.js"
 import {KeyboardSystem, KeyboardState, InputState} from './keyboard.js'
-import {make_bounds, make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
+import {load_tilemap, make_bounds, make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {BackgroundMusic, MusicSystem, Sound} from './music.js'
-import {Emitter, ParticleSystem} from './particles.js'
+// import {Emitter, ParticleSystem} from './particles.js'
 import {load_image_from_url, SpriteSheet} from './image.js'
-import {Player, PlayerControlSystem} from './overhead_controls.js'
 import {PlatformerPhysicsSystem, PlayerPhysics} from './platformer_controls.js'
-import {FadeTransition, TransitionSystem} from './transitions.js'
+// import {FadeTransition, TransitionSystem} from './transitions.js'
 import {
     Dialog,
     DialogSystem,
@@ -28,6 +26,8 @@ import {
     WaitForInput
 } from './dialogs.js'
 import {FullscreenButton, FullscreenSystem} from './fullscreen.js'
+
+class Player extends Component {}
 
 let world = new World()
 
@@ -63,7 +63,7 @@ class FishSystem extends System {
     execute(delta, time) {
         this.queries.fish.results.forEach(ent => {
             let fish = ent.getComponent(Fish)
-            let loc = ent.getMutableComponent(SpriteLocation)
+            let loc = ent.getMutableComponent(Sprite)
             let diff = time - fish.start_time
             let t = fract(diff/fish.duration)
             if(diff > fish.duration) {
@@ -82,7 +82,7 @@ class FishSystem extends System {
 }
 FishSystem.queries = {
     fish: {
-        components:[Fish, Sprite, SpriteLocation]
+        components:[Fish, Sprite]
     }
 }
 
@@ -92,10 +92,10 @@ world.registerSystem(TileMapSystem)
 world.registerSystem(SpriteSystem)
 // world.registerSystem(MusicSystem)
 world.registerSystem(FishSystem)
-world.registerSystem(ParticleSystem)
+// world.registerSystem(ParticleSystem)
 // world.registerSystem(PlayerControlSystem)
 world.registerSystem(PlatformerPhysicsSystem)
-world.registerSystem(TransitionSystem)
+// world.registerSystem(TransitionSystem)
 world.registerSystem(StateMachineSystem)
 world.registerSystem(DialogSystem)
 world.registerSystem(FullscreenSystem)
@@ -124,8 +124,7 @@ let TILE_INDEX = {}
 
 let player = world.createEntity()
     .addComponent(Player)
-    .addComponent(SpriteLocation)
-    .addComponent(SpriteBounds, { width: 8, height: 8})
+    .addComponent(Sprite, { x:0, y: 0, width: 8, height: 8})
     .addComponent(InputState)
     .addComponent(KeyboardState, {
         mapping: {
@@ -164,8 +163,8 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
     TILE_INDEX[FISH1]    = sheet.sprite_to_image(0, 0)
 
     let fish = world.createEntity()
-        .addComponent(Sprite, { image:sheet.sprite_to_image(0,0), width: 8, height: 8})
-        .addComponent(SpriteLocation)
+        .addComponent(ImageSprite, { image:sheet.sprite_to_image(0,0)})
+        .addComponent(Sprite, {width: 8, height: 8})
         .addComponent(Fish, {start: new Point(8,32), end: new Point(50,32), duration: 5000})
     /*
     player.addComponent(Emitter, {
@@ -178,46 +177,6 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
         })*/
 })
 
-
-function load_tilemap(url,sheet) {
-    return fetch(url).then(res => res.json()).then(data => {
-        console.log("loaded tilemap: ",url)
-        console.log("data is ", data)
-        let ts = data.tilesets[0]
-        let TILE_MAP = {
-            width: data.width,
-            height: data.height,
-            data: data.layers[0].data
-        }
-
-        let TILE_INDEX = []
-        let start = ts.firstgid
-        for (let i = 0; i < ts.tilecount; i++) {
-            TILE_INDEX[start] = sheet.sprite_to_image(i % 8, Math.floor(i / 8))
-            start++
-        }
-        let blocking = []
-        if(ts.tiles) {
-            ts.tiles.forEach(tile => {
-                if (tile.type === 'floor') blocking.push(tile.id + 1)
-                if (tile.type === 'wall') blocking.push(tile.id + 1)
-                if (tile.type === 'block') blocking.push(tile.id + 1)
-            })
-        }
-
-        // blocking = [2]
-        // console.log("blocking numbers are", blocking)
-        return {
-            name: url,
-            tileSize: ts.tilewidth,
-            width: TILE_MAP.width,
-            height: TILE_MAP.height,
-            map: TILE_MAP.data,
-            index: TILE_INDEX,
-            wall_types: blocking,
-        }
-    })
-}
 
 const LEVELS = {}
 
@@ -260,7 +219,7 @@ let TUBE = 62
 class TubeSystem extends System {
     execute(delta, time) {
         this.queries.player.results.forEach(ent => {
-            let loc = ent.getComponent(SpriteLocation)
+            let loc = ent.getComponent(Sprite)
             let input = ent.getComponent(InputState)
             this.queries.map.results.forEach(ent => {
                 let map = ent.getComponent(TileMap)
@@ -288,7 +247,7 @@ class TubeSystem extends System {
 }
 TubeSystem.queries = {
     player: {
-        components:[Player, SpriteLocation, InputState]
+        components:[Player, Sprite, InputState]
     },
     map: {
         components:[TileMap]
@@ -297,7 +256,7 @@ TubeSystem.queries = {
 world.registerSystem(TubeSystem)
 
 let view = world.createEntity()
-    .addComponent(Canvas, { scale: 10, width:TILE_SIZE*8, height: TILE_SIZE*8})
+    .addComponent(Canvas, { scale: 10, width:TILE_SIZE*8, height: TILE_SIZE*8, pixelMode:true})
     .addComponent(BackgroundFill, {color: PALETTE[0xC]})
     .addComponent(Camera, { x:1*TILE_SIZE, y:0*TILE_SIZE})
     .addComponent(CameraFollowsSprite, { target: player})
@@ -309,8 +268,8 @@ Promise.all([ prom4, prom5, prom6, prom7]).then(()=>{
             (machine)=>{
                 world.getSystem(PlatformerPhysicsSystem).enabled = false
                 splash = world.createEntity()
-                splash.addComponent(Sprite, { src:"./imgs/splash@1x.png"})
-                splash.addComponent(SpriteLocation, { x: 0, y:0, fixed:true})
+                splash.addComponent(Sprite, { x: 0, y:0, fixed:true})
+                splash.addComponent(ImageSprite, { src:"./imgs/splash@1x.png"})
                 view.addComponent(WaitForInput)
             },
             machine => {
@@ -347,8 +306,8 @@ Promise.all([ prom4, prom5, prom6, prom7]).then(()=>{
                 console.log("done with the state machine")
                 view.removeComponent(Dialog)
                 view.removeComponent(StateMachine)
-                player.getMutableComponent(SpriteLocation).x = LEVELS.simple.start.x
-                player.getMutableComponent(SpriteLocation).y = LEVELS.simple.start.y
+                player.getMutableComponent(Sprite).x = LEVELS.simple.start.x
+                player.getMutableComponent(Sprite).y = LEVELS.simple.start.y
                 view.removeComponent(TileMap)
                 view.addComponent(TileMap, LEVELS.simple.data)
                 world.getSystem(PlatformerPhysicsSystem).enabled = true

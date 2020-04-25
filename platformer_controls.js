@@ -1,5 +1,5 @@
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
-import {AnimatedSprite, Camera, Canvas, SpriteBounds, SpriteLocation} from './ecsytwo.js'
+import {AnimatedSprite, Camera, Canvas, Sprite} from './ecsytwo.js'
 import {make_bounds, TileMap} from './tiles.js'
 import {InputState} from './keyboard.js'
 
@@ -40,8 +40,8 @@ export class PlatformerPhysicsSystem extends System {
         this.queries.player.results.forEach(player_ent => {
             let input = player_ent.getComponent(InputState)
             let player = player_ent.getComponent(PlayerPhysics)
-            let loc = player_ent.getComponent(SpriteLocation)
-            let sprite_bounds = player_ent.getComponent(SpriteBounds)
+            let loc = player_ent.getComponent(Sprite)
+            let sprite_bounds = player_ent.getComponent(Sprite)
 
 
             this.handle_vertical(input,player,loc,sprite_bounds, delta)
@@ -219,7 +219,7 @@ PlatformerPhysicsSystem.queries = {
         }
     },
     player: {
-        components: [PlayerPhysics, SpriteLocation, InputState]
+        components: [PlayerPhysics, Sprite, InputState]
     },
     map: {
         components: [TileMap]

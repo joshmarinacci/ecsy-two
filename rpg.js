@@ -12,7 +12,7 @@ import {
     startWorld
 } from './ecsytwo.js'
 import {load_image_from_url, SpriteSheet} from './image.js'
-import {TileMap} from './tiles.js'
+import {load_tilemap, TileMap, TileMapSystem} from './tiles.js'
 import {InputState, KeyboardState, KeyboardSystem} from './keyboard.js'
 
 let world = new World()
@@ -34,6 +34,19 @@ let game = world.createEntity()
 
 // let map = world.createEntity()
 //     .addComponent(TileMap, { src: 'rpg/assets/map/map.json'})
+
+load_image_from_url("rpg/assets/map/spritesheet.png").then(img => {
+    let sheet = new SpriteSheet(img,16, 16)
+    load_tilemap('rpg/assets/map/map.json',sheet).then(data=>{
+        console.log("loaded tilemap data",data)
+        let view = world.createEntity()
+            .addComponent(TileMap, data)
+        console.log("added a tilemap")
+    })
+})
+
+world.registerSystem(TileMapSystem)
+
 class ControlTarget extends Component {
     constructor() {
         super();

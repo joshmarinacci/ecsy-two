@@ -70,7 +70,7 @@ export class ECSYTwoSystem extends  System {
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
             let ctx = canvas.dom.getContext('2d')
-            ctx.imageSmoothingEnabled = canvas.pixelMode
+            ctx.imageSmoothingEnabled = !canvas.pixelMode
             ctx.save()
             ctx.scale(canvas.scale,canvas.scale)
             this.queries.background.results.forEach(ent => {
@@ -109,7 +109,7 @@ export class SpriteSystem extends System {
 
             //load sprites with src properties
             this.queries.sprites.added.forEach(ent =>{
-                let sprite = ent.getComponent(Sprite)
+                let sprite = ent.getComponent(ImageSprite)
                 if(!sprite.image && sprite.src) {
                     sprite.image = new Image()
                     sprite.image.src = sprite.src
@@ -132,13 +132,10 @@ export class SpriteSystem extends System {
                     ctx.translate(-sprite.width,0)
                 }
                 if(image_sprite.image) {
-                    ctx.drawImage(image_sprite.image, 50, 50)
-                    // ctx.fillStyle = 'rgba(0,0,0,0.5)'
-                    // ctx.fillRect(50,50,sprite.width, sprite.height)
+                    ctx.drawImage(image_sprite.image, 0, 0)
                 }
                 ctx.restore()
             })
-            /*
             this.queries.animated_sprites.results.forEach(ent => {
                 let sprite = ent.getMutableComponent(AnimatedSprite)
                 let diff = time - sprite.last_frame_time
@@ -146,7 +143,7 @@ export class SpriteSystem extends System {
                     sprite.current_frame = (sprite.current_frame + 1) % sprite.frames.length
                     sprite.last_frame_time = time
                 }
-                let loc = ent.getComponent(SpriteLocation)
+                let loc = ent.getComponent(Sprite)
                 ctx.save()
                 ctx.translate(loc.x, loc.y)
                 if(sprite.flipY) {
@@ -155,14 +152,14 @@ export class SpriteSystem extends System {
                 }
                 ctx.drawImage(sprite.frames[sprite.current_frame],0,0)
                 ctx.restore()
-            })*/
+            })
             ctx.restore()
         })
 
         this.queries.camera_move.results.forEach(ent => {
             let cfs = ent.getComponent(CameraFollowsSprite)
             if(!cfs.target) return
-            let loc = cfs.target.getComponent(SpriteLocation)
+            let loc = cfs.target.getComponent(Sprite)
             if(!loc) return
             this.queries.canvas.results.forEach(ent => {
                 let camera = ent.getMutableComponent(Camera)
@@ -188,7 +185,7 @@ SpriteSystem.queries = {
         components: [CameraFollowsSprite]
     },
     animated_sprites: {
-        components: [AnimatedSprite]
+        components: [Sprite, AnimatedSprite]
     },
 }
 

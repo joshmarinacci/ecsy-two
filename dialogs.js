@@ -88,7 +88,11 @@ export class StateMachineSystem extends System {
         this.queries.machines.results.forEach(ent => {
             let machine = ent.getMutableComponent(StateMachine)
             if(!machine.waiting) {
-                machine.states[machine.current_state]()
+                try {
+                    machine.states[machine.current_state]()
+                } catch (e) {
+                    console.log(e)
+                }
                 machine.waiting = true
                 machine.current_state++
             }
