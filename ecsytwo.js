@@ -10,11 +10,27 @@ export class Canvas extends Component {
 }
 export class Sprite extends  Component {
     constructor() {
-        super();
+        super()
         this.x = 0
         this.y = 0
         this.width = 10
         this.height = 10
+    }
+    left() {
+        return this.x
+    }
+    right() {
+        return this.x + this.width
+    }
+    top() {
+        return this.y
+    }
+    bottom() {
+        return this.y + this.height
+    }
+    intersects(r2) {
+        return this.right() >= r2.left() && this.left() <= r2.right() &&
+            this.top() <= r2.bottom() && this.bottom() >= r2.top();
     }
 }
 export class BackgroundFill extends Component {
