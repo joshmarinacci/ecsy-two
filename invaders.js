@@ -27,6 +27,29 @@ class GameState {
         this.field.y = 0
         this.field.width = 300
         this.field.height = 180
+
+        this.livesRemaining = 2
+        this.score = 0
+        this.highScores = []
+
+        if (typeof(Storage) !== "undefined") {
+            try {
+                this.highScores = JSON.parse(localStorage.invadersScores);
+                console.log("successfully loaded highscores", this.highScores)
+            }
+            catch(e) {
+                console.log("failed to load highscores")
+                this.highScores = [];
+            }
+        }
+    }
+    addScore(score) {
+        this.highScores.push(score)
+        this.highScores.sort((a,b)=>b-a)
+        this.highScores = this.highScores.slice(0,10)
+        if (typeof(Storage) !== "undefined") {
+            localStorage.invadersScores = JSON.stringify(this.highScores);
+        }
     }
 }
 
@@ -78,6 +101,13 @@ class PhysicsSprite {
         this.speed = 0
     }
 }
+class PlayerProjectile {}
+class EnemyProjectile {}
+class Lose{}
+
+// world.createEntity()
+//     .addComponent(Sprite, { width: 1, height: 5})
+
 
 let enemy_colors = [
     "rgb(150, 7, 7)",
@@ -89,7 +119,7 @@ let enemy_colors = [
 
 
 world.createEntity()
-    .addComponent(Player, {})
+    .addComponent(Player, {hp: 10})
     .addComponent(Sprite, { x: 100, y: 175, width: 20, height: 20}) // gives it x,y,w,h
     .addComponent(FilledSprite, {color: 'blue'}) // gives it a color until we put in images
     .addComponent(PhysicsSprite, { speed: 90, direction: new Vector2D(0,0)})
@@ -126,6 +156,16 @@ class GameLogic extends System {
             enemies.forEach(ent => {
                 this.move_enemy(game,bounds, ent, delta)
             })
+            if(bounds.bottom() > game.field.bottom()) {
+                ent.addComponent(Lose)
+            }
+
+            if(ent.hasComponent(Lose)) {
+                console.log("really lost")
+                game.addScore(game.score)
+                ent.removeComponent(Lose)
+                this.world.stop() // just do a hard stop for now
+            }
         })
     }
     spawn_new_enemies(game, enemy_speed) {
@@ -139,6 +179,7 @@ class GameLogic extends System {
 
                 this.world.createEntity()
                     .addComponent(Enemy, {
+                        hp: 1,
                         rank: rank,
                         dropTarget: dropTarget,
                         firePercent: game.enemyFirePercent,
@@ -194,10 +235,13 @@ class GameLogic extends System {
         enemy.timer += delta
         if(enemy.timer > enemy.fireWait) {
             enemy.timer = 0
-            enemy.fireWait = 1 + Math.random() * 4
+            enemy.fireWait = 1000 + Math.random() * 1000
             if(Math.floor(Math.random()*100) < enemy.firePercent &&
                 !this.queries.enemies.results.find(existsUnderneath)) {
-                // console.log("enemy is firing")
+                this.world.createEntity()
+                    .addComponent(EnemyProjectile)
+                    .addComponent(Sprite, { x: sprite.x, y: sprite.y, width: 1, height: 5})
+                    .addComponent(PhysicsSprite, { speed: 60, direction: new Vector2D(0,1)})
             }
         }
     }
@@ -223,23 +267,97 @@ class SimplePhysics extends System {
                 if(input.states.right) {
                     phy.direction.set(1,0)
                 }
+                if(input.states.fire) {
+                    this.fire_player_projectile(sprite)
+                }
             }
 
-            // console.log(phy.speed)
+            // move all sprites
             let velocity = phy.direction.scalar_mul(phy.speed)
             let pos = velocity.scalar_mul(delta/1000).add(sprite)
             sprite.x = pos.x
             sprite.y = pos.y
-            if( sprite.bottom() <= 0 || sprite.top() >= 200 ) {
-                phy.direction = phy.direction.scalar_mul(-1)
-            }
         })
+    }
+
+    fire_player_projectile(sprite) {
+        let count = this.queries.player_projectiles.results.length
+        if(count === 0) {
+            this.world.createEntity()
+                .addComponent(PlayerProjectile)
+                .addComponent(Sprite, {width:1, height:5, x: sprite.x, y: sprite.y})
+                .addComponent(PhysicsSprite, {speed:180, direction: new Vector2D(0,-1)})
+        }
     }
 }
 SimplePhysics.queries = {
     sprites: { components: [Sprite, PhysicsSprite] },
+    player_projectiles: { components: [PlayerProjectile]}
 }
 world.registerSystem(SimplePhysics)
+
+
+class CollisionSystem extends System {
+    execute(delta, time) {
+        this.queries.player_projectiles.results.forEach(proj_ent => {
+            let proj_sprite = proj_ent.getComponent(Sprite)
+            //if projectile leaves the play field
+            this.queries.game.results.forEach(ent => {
+                if(!proj_sprite.intersects(ent.getComponent(GameState).field)) {
+                    proj_ent.removeAllComponents()
+                }
+            })
+
+            this.queries.enemies.results.forEach(enemy_ent => {
+                let en = enemy_ent.getComponent(Sprite)
+                if(proj_sprite.intersects(en)) {
+                    //damage the enemy and remove if dead
+                    let enemy = enemy_ent.getComponent(Enemy)
+                    enemy.hp--
+                    if(enemy.hp <=0) {
+                        enemy_ent.removeAllComponents()
+                        this.queries.game.results.forEach(ent => {
+                            ent.getComponent(GameState).score++
+                            console.log("score is now",ent.getComponent(GameState).score)
+                        })
+                    }
+                    //also destroy the bullet
+                    proj_ent.removeAllComponents()
+                }
+            })
+        })
+        this.queries.enemy_projectiles.results.forEach(proj_ent => {
+            let proj_sprite = proj_ent.getComponent(Sprite)
+
+            //if projectile leaves the play field
+            this.queries.game.results.forEach(ent => {
+                if(!proj_sprite.intersects(ent.getComponent(GameState).field)) {
+                    proj_ent.removeAllComponents()
+                }
+            })
+
+            // projectile collides with player
+            this.queries.players.results.forEach(player_ent => {
+                if(player_ent.getComponent(Sprite).intersects(proj_sprite)) {
+                    //remove the projectile
+                    proj_ent.removeAllComponents()
+                    //damage the player
+                    let player = player_ent.getComponent(Player)
+                    player.hp--
+                    if(player.hp <=0 ) this.queries.game.results.forEach(ent => ent.addComponent(Lose))
+                }
+            })
+        })
+    }
+}
+CollisionSystem.queries = {
+    player_projectiles: { components:[PlayerProjectile, Sprite] },
+    enemies: { components: [Enemy, Sprite]},
+    enemy_projectiles: { components:[EnemyProjectile, Sprite] },
+    players: { components: [Player]},
+    game: { components: [GameState]}
+}
+world.registerSystem(CollisionSystem)
 
 class SimpleRenderer extends System {
     execute(delta, time) {
@@ -250,6 +368,12 @@ class SimpleRenderer extends System {
             })
             this.queries.players.results.forEach(ent => {
                 this.draw_player(canvas,ent)
+            })
+            this.queries.player_projectiles.results.forEach(ent=>{
+                this.draw_player_projectile(canvas,ent)
+            })
+            this.queries.enemy_projectiles.results.forEach(ent=>{
+                this.draw_enemy_projectile(canvas,ent)
             })
         })
     }
@@ -269,11 +393,26 @@ class SimpleRenderer extends System {
         ctx.fillStyle = 'rgb(255,255,0)'
         ctx.fillRect(sprite.x,sprite.y,sprite.width, sprite.height)
     }
+
+    draw_player_projectile(canvas, ent) {
+        let sprite = ent.getComponent(Sprite)
+        let ctx = canvas.dom.getContext('2d')
+        ctx.fillStyle = 'rgb(196,208,106)'
+        ctx.fillRect(sprite.x,sprite.y,sprite.width, sprite.height)
+    }
+    draw_enemy_projectile(canvas, ent) {
+        let sprite = ent.getComponent(Sprite)
+        let ctx = canvas.dom.getContext('2d')
+        ctx.fillStyle = 'rgb(96,195,96)'
+        ctx.fillRect(sprite.x,sprite.y,sprite.width, sprite.height)
+    }
 }
 SimpleRenderer.queries = {
     canvas: { components: [Canvas]},
     players: { components: [Player, Sprite] },
-    enemies: { components:[Enemy, Sprite]}
+    enemies: { components:[Enemy, Sprite]},
+    player_projectiles: { components: [PlayerProjectile, Sprite]},
+    enemy_projectiles: { components: [EnemyProjectile, Sprite]},
 }
 world.registerSystem(SimpleRenderer)
 
