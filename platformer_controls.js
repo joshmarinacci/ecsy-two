@@ -22,7 +22,7 @@ export class PlayerPhysics extends Component {
 }
 
 
-function make_point(tx, ty) {
+export function make_point(tx, ty) {
     return {
         x: tx,
         y: ty
