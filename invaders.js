@@ -173,10 +173,10 @@ class GameLogic extends System {
         })
     }
     spawn_new_enemies(game, enemy_speed) {
-        for(let i=0; i<10; i++) {
+        for(let i=0; i<8; i++) {
             for(let j=0; j<5; j++) {
                 let dropTarget = 10+j*20
-                let position = new Vector2D(50+i*20, dropTarget-10)
+                let position = new Vector2D(50+i*28, dropTarget-10)
                 let direction = new Vector2D(1, 0)
                 let rank = 4-j
 
@@ -198,7 +198,7 @@ class GameLogic extends System {
                         width: 26,
                         height: 20,
                         frame_count: 2,
-                        src: 'imgs/invaders/enemy0.png'
+                        src: `imgs/invaders/enemy${rank}.png`
                     })
                     .addComponent(PhysicsSprite, {
                         direction:direction,
