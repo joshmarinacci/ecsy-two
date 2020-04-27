@@ -91,6 +91,12 @@ export class AnimatedSprite extends Component {
     }
 }
 
+export class DebugOutline {
+    constructor() {
+        this.color = 'red'
+    }
+}
+
 export class ECSYTwoSystem extends  System {
     execute(delta, time) {
         this.queries.canvas.added.forEach(ent => {
@@ -197,6 +203,14 @@ export class SpriteSystem extends System {
                 ctx.drawImage(sprite.frames[sprite.current_frame],0,0)
                 ctx.restore()
             })
+
+            //draw debug sprites
+            this.queries.debug_sprites.results.forEach(ent => {
+                let sprite = ent.getComponent(Sprite)
+                let debug = ent.getComponent(DebugOutline)
+                ctx.strokeStyle = debug.color
+                ctx.strokeRect(sprite.x, sprite.y, sprite.width, sprite.height)
+            })
             ctx.restore()
         })
 
@@ -233,6 +247,9 @@ SpriteSystem.queries = {
     },
     filled_sprites: {
         components: [Sprite, FilledSprite]
+    },
+    debug_sprites: {
+        components: [Sprite, DebugOutline]
     }
 }
 

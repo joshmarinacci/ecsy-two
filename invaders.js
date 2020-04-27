@@ -2,9 +2,9 @@ import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js
 import {
     BackgroundFill,
     Camera,
-    Canvas,
+    Canvas, DebugOutline,
     ECSYTwoSystem,
-    FilledSprite,
+    FilledSprite, ImageSprite,
     Sprite,
     SpriteSystem,
     startWorld
@@ -121,8 +121,9 @@ let enemy_colors = [
 
 world.createEntity()
     .addComponent(Player, {hp: 10})
-    .addComponent(Sprite, { x: 100, y: 175, width: 20, height: 20}) // gives it x,y,w,h
-    .addComponent(FilledSprite, {color: 'blue'}) // gives it a color until we put in images
+    .addComponent(Sprite, { x: 100, y: 150-20, width: 40, height: 20}) // gives it x,y,w,h
+    // .addComponent(FilledSprite, {color: 'blue'}) // gives it a color until we put in images
+    .addComponent(ImageSprite, {src:'imgs/invaders/player.png'} )
     .addComponent(PhysicsSprite, { speed: 90, direction: new Vector2D(0,0)})
     .addComponent(InputState)
     .addComponent(KeyboardState, {
@@ -134,6 +135,7 @@ world.createEntity()
             'ArrowDown':'down',
         }
     })
+    // .addComponent(DebugOutline, { color: 'magenta'})
 
 class GameLogic extends System {
     execute(delta, time) {
@@ -382,7 +384,7 @@ class SimpleRenderer extends System {
                 this.draw_enemy(canvas,ent)
             })
             this.queries.players.results.forEach(ent => {
-                this.draw_player(canvas,ent)
+                // this.draw_player(canvas,ent)
             })
             this.queries.player_projectiles.results.forEach(ent=>{
                 this.draw_player_projectile(canvas,ent)
