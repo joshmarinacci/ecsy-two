@@ -82,12 +82,15 @@ export class ImageSprite extends Component {
 export class AnimatedSprite extends Component {
     constructor() {
         super();
-        this.frames = []
+        this.image = null
+        this.frame_count = 1
         this.current_frame = 0
         this.width = -1
         this.height = -1
         this.frame_duration = 250
         this.last_frame_time = 0
+        this.src = null
+        this.frame_width = 16
     }
 }
 
@@ -156,6 +159,14 @@ export class SpriteSystem extends System {
                     sprite.image.src = sprite.src
                 }
             })
+            // load animated sprites with src properties
+            this.queries.animated_sprites.added.forEach(ent =>{
+                let sprite = ent.getComponent(AnimatedSprite)
+                if(!sprite.frames && sprite.src) {
+                    sprite.image = new Image()
+                    sprite.image.src = sprite.src
+                }
+            })
 
             // draw colored sprites
             this.queries.filled_sprites.results.forEach(ent => {
@@ -190,7 +201,7 @@ export class SpriteSystem extends System {
                 let sprite = ent.getMutableComponent(AnimatedSprite)
                 let diff = time - sprite.last_frame_time
                 if(diff > sprite.frame_duration) {
-                    sprite.current_frame = (sprite.current_frame + 1) % sprite.frames.length
+                    sprite.current_frame = (sprite.current_frame + 1) % sprite.frame_count
                     sprite.last_frame_time = time
                 }
                 let loc = ent.getComponent(Sprite)
@@ -200,7 +211,10 @@ export class SpriteSystem extends System {
                     ctx.scale(-1,1)
                     ctx.translate(-sprite.width,0)
                 }
-                ctx.drawImage(sprite.frames[sprite.current_frame],0,0)
+                ctx.drawImage(sprite.image,
+                    sprite.width*sprite.current_frame,0,sprite.width, sprite.height,
+                    0,0,sprite.width, sprite.height
+                    )
                 ctx.restore()
             })
 
@@ -243,7 +257,11 @@ SpriteSystem.queries = {
         components: [CameraFollowsSprite]
     },
     animated_sprites: {
-        components: [Sprite, AnimatedSprite]
+        components: [Sprite, AnimatedSprite],
+        listen: {
+            added:true,
+            removed:true,
+        }
     },
     filled_sprites: {
         components: [Sprite, FilledSprite]

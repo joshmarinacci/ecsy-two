@@ -1,5 +1,6 @@
 import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js"
 import {
+    AnimatedSprite,
     BackgroundFill,
     Camera,
     Canvas, DebugOutline,
@@ -191,8 +192,14 @@ class GameLogic extends System {
                     .addComponent(Sprite, {
                         x:position.x,
                         y:position.y,
-                        w: 10,
-                        h: 10,
+                        w: 26,
+                        h: 20,
+                    })
+                    .addComponent(AnimatedSprite, {
+                        width: 26,
+                        height: 20,
+                        frame_count: 2,
+                        src: 'imgs/invaders/enemy0.png'
                     })
                     .addComponent(PhysicsSprite, {
                         direction:direction,
@@ -381,7 +388,7 @@ class SimpleRenderer extends System {
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
             this.queries.enemies.results.forEach(ent => {
-                this.draw_enemy(canvas,ent)
+                // this.draw_enemy(canvas,ent)
             })
             this.queries.players.results.forEach(ent => {
                 // this.draw_player(canvas,ent)
