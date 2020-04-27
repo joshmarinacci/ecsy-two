@@ -56,7 +56,7 @@ class GameState {
 }
 
 let game = world.createEntity()
-    .addComponent(Canvas, { width: 300, height: 180})
+    .addComponent(Canvas, { width: 300, height: 180, scale: 2})
     .addComponent(Camera, { centered:false }) /// Why is the camera required?
     .addComponent(BackgroundFill, {color: "gray"})
     .addComponent(GameState)
@@ -250,7 +250,7 @@ class GameLogic extends System {
                 !this.queries.enemies.results.find(existsUnderneath)) {
                 this.world.createEntity()
                     .addComponent(EnemyProjectile)
-                    .addComponent(Sprite, { x: sprite.x, y: sprite.y, width: 1, height: 5})
+                    .addComponent(Sprite, { x: sprite.x, y: sprite.y, width: 2, height: 5})
                     .addComponent(PhysicsSprite, { speed: 60, direction: new Vector2D(0,1)})
             }
         }
@@ -296,7 +296,7 @@ class SimplePhysics extends System {
         if(count === 0) {
             this.world.createEntity()
                 .addComponent(PlayerProjectile)
-                .addComponent(Sprite, {width:1, height:5, x: sprite.x, y: sprite.y})
+                .addComponent(Sprite, {width:2, height:5, x: sprite.x, y: sprite.y})
                 .addComponent(PhysicsSprite, {speed:180, direction: new Vector2D(0,-1)})
         }
     }
@@ -425,14 +425,20 @@ class SimpleRenderer extends System {
     draw_player_projectile(canvas, ent) {
         let sprite = ent.getComponent(Sprite)
         let ctx = canvas.dom.getContext('2d')
+        ctx.save()
+        ctx.scale(canvas.scale,canvas.scale)
         ctx.fillStyle = 'rgb(196,208,106)'
         ctx.fillRect(sprite.x,sprite.y,sprite.width, sprite.height)
+        ctx.restore()
     }
     draw_enemy_projectile(canvas, ent) {
         let sprite = ent.getComponent(Sprite)
         let ctx = canvas.dom.getContext('2d')
+        ctx.save()
+        ctx.scale(canvas.scale,canvas.scale)
         ctx.fillStyle = 'rgb(96,195,96)'
         ctx.fillRect(sprite.x,sprite.y,sprite.width, sprite.height)
+        ctx.restore()
     }
 
     draw_score(canvas, game) {
