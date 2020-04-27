@@ -173,7 +173,6 @@ class GameLogic extends System {
         })
     }
     spawn_new_enemies(game, enemy_speed) {
-        console.log("making new enemies", enemy_speed)
         for(let i=0; i<10; i++) {
             for(let j=0; j<5; j++) {
                 let dropTarget = 10+j*20
@@ -340,7 +339,6 @@ class CollisionSystem extends System {
                         enemy_ent.removeAllComponents()
                         this.queries.game.results.forEach(ent => {
                             ent.getComponent(GameState).score++
-                            console.log("score is now",ent.getComponent(GameState).score)
                         })
                     }
                     //also destroy the bullet
@@ -399,6 +397,12 @@ class SimpleRenderer extends System {
             this.queries.enemy_projectiles.results.forEach(ent=>{
                 this.draw_enemy_projectile(canvas,ent)
             })
+
+            this.queries.game.results.forEach(ent => {
+                let game = ent.getComponent(GameState)
+                this.draw_score(canvas, game)
+
+            })
         })
     }
 
@@ -430,6 +434,13 @@ class SimpleRenderer extends System {
         ctx.fillStyle = 'rgb(96,195,96)'
         ctx.fillRect(sprite.x,sprite.y,sprite.width, sprite.height)
     }
+
+    draw_score(canvas, game) {
+        let ctx = canvas.dom.getContext('2d')
+        ctx.fillStyle = 'red'
+        ctx.fillText("Score: "+game.score, 20, 10)
+        ctx.fillText("Lives: "+game.livesRemaining, 20, 30)
+    }
 }
 SimpleRenderer.queries = {
     canvas: { components: [Canvas]},
@@ -437,6 +448,7 @@ SimpleRenderer.queries = {
     enemies: { components:[Enemy, Sprite]},
     player_projectiles: { components: [PlayerProjectile, Sprite]},
     enemy_projectiles: { components: [EnemyProjectile, Sprite]},
+    game: { components: [GameState]}
 }
 world.registerSystem(SimpleRenderer)
 
