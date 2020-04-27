@@ -1,10 +1,19 @@
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
-import {ImageSprite, Sprite} from './ecsytwo.js'
+import {FilledSprite, ImageSprite, Sprite} from './ecsytwo.js'
 
 export class Emitter extends Component {
     constructor() {
         super();
         this.image = null
+        this.count = 0
+        this.velocity = 0
+        this.angle = 0
+        this.angle_jitter = 0
+        this.velocity_jitter = 0
+        this.lifetime = 2
+        this.duration = 2
+        this.start_time = 0
+        this.tick_rate = 50
         this.count = 0
     }
 }
@@ -20,20 +29,32 @@ class Particle extends Component {
 }
 export class ParticleSystem extends System {
     execute(delta, time) {
+        this.queries.emitters.added.forEach(ent => {
+            let emitter = ent.getComponent(Emitter)
+            emitter.start_time = time/1000
+        })
         this.queries.emitters.results.forEach(ent => {
             let emitter = ent.getComponent(Emitter)
             let loc = ent.getComponent(Sprite)
             emitter.count++
-            if(emitter.count % 60 === 0) {
+            if(emitter.count % emitter.tick_rate === 0) {
                 let part = this.world.createEntity()
+                let v = emitter.velocity + Math.random()*emitter.velocity_jitter
+                let a = emitter.angle + Math.random()*emitter.angle_jitter
                 part.addComponent(Particle, {
-                    vx:0,
-                    vy:-10,
+                    vx:Math.sin(a)*v,
+                    vy:Math.cos(a)*v,
                     lifetime: emitter.lifetime,
                     start_time: time/1000,
                 })
                 part.addComponent(ImageSprite, {image:emitter.image})
-                part.addComponent(Sprite, {x: loc.x, y: loc.y})
+                if(!emitter.image) {
+                    part.addComponent(FilledSprite, { color: 'yellow'})
+                }
+                part.addComponent(Sprite, {x: loc.x, y: loc.y, width:loc.width, height: loc.height})
+            }
+            if(time/1000 - emitter.start_time > emitter.duration) {
+                ent.removeAllComponents()
             }
         })
         this.queries.particles.results.forEach(ent => {

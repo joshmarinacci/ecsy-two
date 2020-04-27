@@ -10,12 +10,13 @@ import {
     startWorld
 } from './ecsytwo.js'
 import {InputState, KeyboardState, KeyboardSystem} from './keyboard.js'
+import {Emitter, ParticleSystem} from './particles.js'
 
 
 let world = new World()
 world.registerSystem(ECSYTwoSystem)
 world.registerSystem(KeyboardSystem)
-// world.registerSystem(SpriteSystem) //disabled because we will use our own renderer
+world.registerSystem(SpriteSystem) //disabled because we will use our own renderer
 
 class GameState {
     constructor() {
@@ -232,6 +233,7 @@ class GameLogic extends System {
             return p.y <= rect.top() && rect.left() < p.x && p.x <= rect.right()
         }
 
+        // see if it should fire a shot
         enemy.timer += delta
         if(enemy.timer > enemy.fireWait) {
             enemy.timer = 0
@@ -258,6 +260,7 @@ class SimplePhysics extends System {
             let sprite = ent.getMutableComponent(Sprite)
             let phy = ent.getMutableComponent(PhysicsSprite)
 
+            // move left, right, and fire
             if(ent.getComponent(InputState)) {
                 let input = ent.getComponent(InputState)
                 phy.direction.set(0,0)
@@ -301,6 +304,7 @@ class CollisionSystem extends System {
     execute(delta, time) {
         this.queries.player_projectiles.results.forEach(proj_ent => {
             let proj_sprite = proj_ent.getComponent(Sprite)
+
             //if projectile leaves the play field
             this.queries.game.results.forEach(ent => {
                 if(!proj_sprite.intersects(ent.getComponent(GameState).field)) {
@@ -314,6 +318,15 @@ class CollisionSystem extends System {
                     //damage the enemy and remove if dead
                     let enemy = enemy_ent.getComponent(Enemy)
                     enemy.hp--
+                    world.createEntity()
+                        .addComponent(Sprite, { x:en.x, y: en.y, width: 2, height: 2})
+                        .addComponent(FilledSprite, { color: 'yellow'})
+                        .addComponent(Emitter, {
+                            velocity: 10, velocity_jitter:100,
+                            angle: 0, angle_jitter: 2*Math.PI,
+                            duration: 0.3, lifetime: 1,
+                            tick_rate: 1
+                        })
                     if(enemy.hp <=0) {
                         enemy_ent.removeAllComponents()
                         this.queries.game.results.forEach(ent => {
@@ -358,6 +371,8 @@ CollisionSystem.queries = {
     game: { components: [GameState]}
 }
 world.registerSystem(CollisionSystem)
+
+world.registerSystem(ParticleSystem)
 
 class SimpleRenderer extends System {
     execute(delta, time) {
