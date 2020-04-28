@@ -40,6 +40,7 @@ class ActionSystem extends System {
         this.queries.actions.added.forEach(ent => {
             this.world.getSystem(OverheadControls).enabled = false
             let action = ent.getComponent(ShowSignAction)
+            console.log("showing dialog with text", action.text)
             view.addComponent(Dialog, { text:action.text, tilemap:LEVELS.dialog.data, text_offset: make_point(50,50)})
             view.addComponent(WaitForInput, {onDone:()=>{
                     view.removeComponent(Dialog)
@@ -140,8 +141,12 @@ class OverheadControls extends System {
                                     if(rect_contains_point(obj,point.pt) && player.blocking_object_types.indexOf(obj.type) >= 0) {
                                         point.stop()
                                         if(obj.type === 'sign') {
-                                            let text = obj.properties.find(p => p.name === 'text').value
-                                            view.addComponent(ShowSignAction, { text:text})
+                                            if(obj.properties) {
+                                                let text = obj.properties.find(p => p.name === 'text').value
+                                                view.addComponent(ShowSignAction, {text: text})
+                                            } else {
+                                                console.warn("sign object is missing properties")
+                                            }
                                         }
                                     }
                                 })
