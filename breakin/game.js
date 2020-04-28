@@ -40,7 +40,7 @@ class ActionSystem extends System {
         this.queries.actions.added.forEach(ent => {
             this.world.getSystem(OverheadControls).enabled = false
             let action = ent.getComponent(ShowSignAction)
-            view.addComponent(Dialog, { text:action.text, tilemap:LEVELS.dialog.data})
+            view.addComponent(Dialog, { text:action.text, tilemap:LEVELS.dialog.data, text_offset: make_point(50,50)})
             view.addComponent(WaitForInput, {onDone:()=>{
                     view.removeComponent(Dialog)
                     ent.removeComponent(ShowSignAction)

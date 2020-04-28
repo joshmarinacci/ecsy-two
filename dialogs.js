@@ -59,6 +59,7 @@ addComponent(StateMachine, {states:[
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
 import {InputState, KeyboardState} from './keyboard.js'
 import {Canvas} from './ecsytwo.js'
+import {make_point} from './utils.js'
 
 export class StateMachine {
     constructor() {
@@ -138,6 +139,7 @@ export class Dialog {
     constructor() {
         this.text = "some text"
         this.tilemap = null
+        this.text_offset = make_point(0,0)
     }
 }
 export class FixedWidthFont {
@@ -253,6 +255,8 @@ export class DialogSystem extends System {
                     ctx.fillRect(8, 8, canvas.width - 8 * 2, canvas.height - 8 * 2)
                 }
 
+                ctx.save()
+                ctx.translate(dialog.text_offset.x,dialog.text_offset.y)
                 if(ent.hasComponent(FixedWidthFont)) {
                     let font = ent.getComponent(FixedWidthFont)
                     let dy = 8
@@ -284,6 +288,7 @@ export class DialogSystem extends System {
                         ctx.fillText(line, 10, dy)
                     })
                 }
+                ctx.restore()
 
                 // console.log(bounds.width, bounds.actualBoundingBoxAscent, bounds.actualBoundingBoxDescent)
             })
