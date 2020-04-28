@@ -10,6 +10,7 @@
  <tileset firstgid="17" name="level1" tilewidth="16" tileheight="16" tilecount="16" columns="4">
   <image source="../images/level1.png" width="64" height="64"/>
   <tile id="0" type="wall"/>
+  <tile id="4" type="wall"/>
  </tileset>
  <tileset firstgid="33" source="level1.tsx"/>
  <layer id="3" name="background" width="30" height="20">
