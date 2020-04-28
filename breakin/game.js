@@ -12,9 +12,81 @@ import {FullscreenButton} from '../fullscreen.js'
 import {load_tilemap_from_url, TileMap, TileMapSystem} from '../tiles.js'
 import {InputState, KeyboardState, KeyboardSystem} from '../keyboard.js'
 import {make_point} from '../utils.js'
+import {Dialog, DialogSystem, WaitForInput} from '../dialogs.js'
 
 let TILE_SIZE = 16
 let world = new World()
+
+const LEVELS = {}
+
+let prom7 = load_tilemap_from_url("../maps/dialog.json").then((data)=> {
+    console.log("loaded dialog")
+    console.log('we have the tile-map data',data)
+    LEVELS.dialog = {
+        data:data,
+        start: {x:0, y:0}
+    }
+})
+
+
+class ShowSignAction {
+    constructor() {
+        this.text = "some text"
+    }
+}
+
+class ActionSystem extends System {
+    execute(delta, time) {
+        this.queries.actions.added.forEach(ent => {
+            this.world.getSystem(OverheadControls).enabled = false
+            let action = ent.getComponent(ShowSignAction)
+            view.addComponent(Dialog, { text:action.text, tilemap:LEVELS.dialog.data})
+            view.addComponent(WaitForInput, {onDone:()=>{
+                    view.removeComponent(Dialog)
+                    ent.removeComponent(ShowSignAction)
+                    this.world.getSystem(OverheadControls).enabled = true
+                }})
+        })
+        this.queries.input_waiters.added.forEach(ent => {
+            let waiter = ent.getComponent(WaitForInput)
+            waiter.start_time = time
+            waiter.timeout = 0.5*1000
+        })
+        this.queries.input_waiters.results.forEach(waiting_ent => {
+            let waiter = waiting_ent.getComponent(WaitForInput)
+            if(time - waiter.start_time > waiter.timeout) waiter.started = true
+            if(waiter.started) {
+                this.queries.input.results.forEach(ent => {
+                    let input = ent.getComponent(InputState)
+                    if (input.anyReleased()) {
+                        if(waiter.onDone) waiter.onDone()
+                        waiting_ent.removeComponent(WaitForInput)
+                    }
+                })
+            }
+        })
+    }
+}
+ActionSystem.queries = {
+    actions: {
+        components:[ShowSignAction],
+        listen: {
+            added:true,
+            removed:true,
+        }
+    },
+    input_waiters: {
+        components: [WaitForInput],
+        listen: {
+            added:true,
+            removed:true,
+        }
+    },
+    input: {
+        components: [InputState]
+    }
+}
+world.registerSystem(ActionSystem)
 
 class OverheadControlsPlayer {
     constructor() {
@@ -69,7 +141,7 @@ class OverheadControls extends System {
                                         point.stop()
                                         if(obj.type === 'sign') {
                                             let text = obj.properties.find(p => p.name === 'text').value
-                                            console.log("read the sign",obj,text)
+                                            view.addComponent(ShowSignAction, { text:text})
                                         }
                                     }
                                 })
@@ -201,6 +273,7 @@ OverheadControls.queries = {
     canvas: { components: [Canvas] }
 }
 world.registerSystem(ECSYTwoSystem)
+world.registerSystem(DialogSystem)
 world.registerSystem(TileMapSystem)
 world.registerSystem(SpriteSystem)
 world.registerSystem(KeyboardSystem)

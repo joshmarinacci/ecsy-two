@@ -72,7 +72,10 @@ export class SplashImage {
 
 }
 export class WaitForInput extends Component {
-
+    constructor() {
+        super();
+        this.started = false
+    }
 }
 export class WaitForTime extends Component {
 
