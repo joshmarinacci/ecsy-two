@@ -2,6 +2,7 @@ import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
 import {AnimatedSprite, Camera, Canvas, Sprite} from './ecsytwo.js'
 import {make_bounds, TileMap} from './tiles.js'
 import {InputState} from './keyboard.js'
+import {make_point} from './utils.js'
 
 export class PlayerPhysics extends Component {
     constructor() {
@@ -62,6 +63,7 @@ export class PlatformerPhysicsSystem extends System {
 
         this.queries.map.results.forEach(ent => {
             let map = ent.getComponent(TileMap)
+            let layer_name = "Tile Layer 1"
 
             // moving left
             if(player.vx < 0) {
@@ -74,7 +76,7 @@ export class PlatformerPhysicsSystem extends System {
                     let ty = Math.floor((bounds.y) / map.tileSize)
                     let tpt = make_point(tx, ty)
                     // this._draw_tile_overlay(tpt, map, 'red')
-                    let tile = map.tile_at(tpt)
+                    let tile = map.tile_at(layer_name, tpt)
                     // if blocked, stop the player
                     if(map.wall_types.indexOf(tile) >= 0) {
                         player.vx = 0
@@ -86,7 +88,7 @@ export class PlatformerPhysicsSystem extends System {
                     let ty = Math.floor((bounds.y + bounds.height -1) / map.tileSize)
                     let tpt = make_point(tx, ty)
                     // this._draw_tile_overlay(tpt, map, 'red')
-                    let tile = map.tile_at(tpt)
+                    let tile = map.tile_at(layer_name,tpt)
                     // if blocked, stop the player
                     if(map.wall_types.indexOf(tile) >= 0) {
                         player.vx = 0
@@ -105,7 +107,7 @@ export class PlatformerPhysicsSystem extends System {
                     let ty = Math.floor((bounds.y) / map.tileSize)
                     let tpt = make_point(tx, ty)
                     if(player.debug) this._draw_tile_overlay(tpt, map, 'yellow')
-                    let tile = map.tile_at(tpt)
+                    let tile = map.tile_at(layer_name,tpt)
                     // if blocked, stop the player
                     if(map.wall_types.indexOf(tile) >= 0) {
                         player.vx = 0
@@ -117,7 +119,7 @@ export class PlatformerPhysicsSystem extends System {
                     let ty = Math.floor((bounds.y + bounds.height -1) / map.tileSize)
                     let tpt = make_point(tx, ty)
                     if(player.debug) this._draw_tile_overlay(tpt, map, 'yellow')
-                    let tile = map.tile_at(tpt)
+                    let tile = map.tile_at(layer_name,tpt)
                     // if blocked, stop the player
                     if(map.wall_types.indexOf(tile) >= 0) {
                         player.vx = 0
@@ -139,6 +141,7 @@ export class PlatformerPhysicsSystem extends System {
 
         this.queries.map.results.forEach(ent => {
             let map = ent.getComponent(TileMap)
+            let layer_name = "Tile Layer 1"
             // if moving down
             if (player.vy > 0) {
                 //cap the falling speed
@@ -153,7 +156,7 @@ export class PlatformerPhysicsSystem extends System {
                     Math.floor((bounds.y + bounds.height) / map.tileSize));
                 [tc1,tc2].forEach((tpt)=>{
                     if(player.debug) this._draw_tile_overlay(tpt, map, 'blue')
-                    let tile = map.tile_at(tpt)
+                    let tile = map.tile_at(layer_name,tpt)
                     // if blocked, stop the player and set ground flag
                     if(map.wall_types.indexOf(tile) >= 0) {
                         player.vy = 0
@@ -175,7 +178,7 @@ export class PlatformerPhysicsSystem extends System {
                     Math.floor((bounds.y) / map.tileSize));
                 [tc1,tc2].forEach(tpt => {
                     if(player.debug) this._draw_tile_overlay(tpt, map, 'green')
-                    let tile = map.tile_at(tpt)
+                    let tile = map.tile_at(layer_name,tpt)
                     // if blocked, stop the player and set ground flag
                     if(map.wall_types.indexOf(tile) >= 0) {
                         player.vy = 0

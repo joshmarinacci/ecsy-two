@@ -303,13 +303,19 @@ export class DialogSystem extends System {
     }
 
     drawTilemap(ctx, tilemap) {
-        let map = tilemap
-        for(let y=0; y<map.height; y++) {
-            for(let x=0; x<map.width; x++) {
-                let n = y*map.width+x
-                let tile_index = map.map[n]
+        tilemap.layers.forEach(layer => {
+            this.drawTileLayer(tilemap,ctx,layer)
+        })
+    }
+    drawTileLayer(map,ctx,layer) {
+        for(let y=0; y<layer.height; y++) {
+            for(let x=0; x<layer.width; x++) {
+                let n = y*layer.width+x
+                let tile_index = layer.data[n]
+                if (tile_index === 0) continue
                 let tile = map.index[tile_index]
-                if(tile)  ctx.drawImage(tile,x*map.tileSize, y*map.tileSize)
+                if(!tile) throw new Error("missing tile " + tile_index + " " + tile)
+                if(tile)  ctx.drawImage(tile,x*map.tilewidth, y*map.tileheight)
             }
         }
     }

@@ -237,37 +237,6 @@ let view = world.createEntity()
     })
 
 
-function load_tilemap_from_url(url) {
-    url = new URL(url, document.baseURI)
-    return fetch(url).then(res=>res.json()).then(data => {
-        let tile_index = []
-        let blocking = []
-        return Promise.all(data.tilesets.map(tileset => {
-            let imgurl = new URL(tileset.image, url)
-            return load_image_from_url(imgurl).then(img => {
-                let sheet = new SpriteSheet(img, tileset.tilewidth, tileset.tileheight)
-                let start = tileset.firstgid
-                for (let i = 0; i < tileset.tilecount; i++) {
-                    tile_index[start] = sheet.sprite_to_image(
-                        i % tileset.columns,
-                        Math.floor(i / tileset.columns))
-                    start++
-                }
-                if (tileset.tiles) {
-                    tileset.tiles.forEach(tile => {
-                        if (tile.type === 'floor') blocking.push(tile.id + tileset.firstgid)
-                        if (tile.type === 'wall') blocking.push(tile.id  + tileset.firstgid)
-                        if (tile.type === 'block') blocking.push(tile.id  + tileset.firstgid)
-                    })
-                }
-            })
-        })).then(()=>{
-            data.index = tile_index
-            data.wall_types = blocking
-            return data
-        })
-    })
-}
 
 load_tilemap_from_url("./maps/level1.json").then(level => {
     console.log("level info is",level)

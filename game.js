@@ -10,7 +10,7 @@ import {
     Camera, CameraFollowsSprite, ImageSprite
 } from "./ecsytwo.js"
 import {KeyboardSystem, KeyboardState, InputState} from './keyboard.js'
-import {load_tilemap, make_bounds, make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
+import {load_tilemap_from_url, make_bounds, make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
 import {BackgroundMusic, MusicSystem, Sound} from './music.js'
 import {Emitter, ParticleSystem} from './particles.js'
 import {load_image_from_url, SpriteSheet} from './image.js'
@@ -121,67 +121,42 @@ let PALETTE = [
 ]
 let TILE_INDEX = {}
 
-let player = world.createEntity()
-    .addComponent(Player)
-    .addComponent(Sprite, { x:0, y: 0, width: 8, height: 8})
-    .addComponent(InputState)
-    .addComponent(KeyboardState, {
-        mapping: {
-            'w':'up',
-            'a':'left',
-            's':'down',
-            'd':'right',
-            ' ':'jump',
-            'ArrowLeft':'left',
-            'ArrowRight':'right',
-            'ArrowUp':'up',
-            'ArrowDown':'down',
-        }
-    })
-    .addComponent(PlayerPhysics, {
-        ay: 200,
-        max_vx:50,
-        max_vy:50,
-        jump_y: 100,
-        ground_friction: 0.95,
-        h_accel: 3,
-        debug:false,
-    })
 
-let prom4 = load_image_from_url("imgs/seaman_sheet.png").then(img => {
-    let sheet = new SpriteSheet(img,8,8,4,2)
-    player.addComponent(AnimatedSprite, {
-            frames:sheet.sprites_to_frames(0,0,4),
-            width:8,
-            height:8,
-            frame_duration: 250,
-        })
-})
-let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
-    let sheet = new SpriteSheet(img,8,8,4,2)
-    TILE_INDEX[FISH1]    = sheet.sprite_to_image(0, 0)
-
-    let fish = world.createEntity()
-        .addComponent(ImageSprite, { image:sheet.sprite_to_image(0,0)})
-        .addComponent(Sprite, {width: 8, height: 8})
-        .addComponent(Fish, {start: new Point(8,32), end: new Point(50,32), duration: 5000})
-
-    player.addComponent(Emitter, {
-            image:sheet.sprite_to_image(2,1),
-            velocityStart: new Point(0,100), // move down and to the right, pixels per second
-            velocityJitter: 0.1, //jitter the velocity
-            accelerationStart: new Point(0,-1), //move them up, pixels per second per second
-            rate:1, // one sprite per second
-            lifetime:2, //lifetime in seconds
-        })
-})
+// let prom4 = load_image_from_url("imgs/seaman_sheet.png").then(img => {
+//     let sheet = new SpriteSheet(img,8,8,4,2)
+//     player.addComponent(AnimatedSprite, {
+//             frames:sheet.sprites_to_frames(0,0,4),
+//             width:8,
+//             height:8,
+//             frame_duration: 250,
+//         })
+// })
+// let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
+//     let sheet = new SpriteSheet(img,8,8,4,2)
+//     TILE_INDEX[FISH1]    = sheet.sprite_to_image(0, 0)
+//
+//     let fish = world.createEntity()
+//         .addComponent(ImageSprite, { image:sheet.sprite_to_image(0,0)})
+//         .addComponent(Sprite, {width: 8, height: 8})
+//         .addComponent(Fish, {start: new Point(8,32), end: new Point(50,32), duration: 5000})
+//
+//     player.addComponent(Emitter, {
+//             image:sheet.sprite_to_image(2,1),
+//             velocityStart: new Point(0,100), // move down and to the right, pixels per second
+//             velocityJitter: 0.1, //jitter the velocity
+//             accelerationStart: new Point(0,-1), //move them up, pixels per second per second
+//             rate:1, // one sprite per second
+//             lifetime:2, //lifetime in seconds
+//         })
+// })
 
 
 const LEVELS = {}
 
-let prom6 = load_image_from_url("./imgs/castle@1x.png").then(img=>{
-    let sheet = new SpriteSheet(img,8,8,8,8)
-    load_tilemap("./maps/vertical.json",sheet).then((data)=> {
+let prom6 =
+    // load_image_from_url("./imgs/castle@1x.png").then(img=>{
+    // let sheet = new SpriteSheet(img,8,8,8,8)
+    load_tilemap_from_url("./maps/vertical.json").then((data)=> {
         LEVELS.vertical = {
             data: data,
             start: {
@@ -189,34 +164,36 @@ let prom6 = load_image_from_url("./imgs/castle@1x.png").then(img=>{
                 y: 60 * 8,
             }
         }
-    })
-    load_tilemap("./maps/simple.json",sheet).then(data => {
-        LEVELS.simple = {
-            data:data,
-            start: {
-                x: 3*8,
-                y: 10*8,
+    }).then(()=>{
+        load_tilemap_from_url("./maps/simple.json").then(data => {
+            LEVELS.simple = {
+                data:data,
+                start: {
+                    x: 3*8,
+                    y: 10*8,
+                }
             }
-        }
+        })
     })
-})
 
-let prom7 = load_image_from_url("./imgs/dialog@1x.png").then(img => {
-    let sheet = new SpriteSheet(img,8,8,8,8)
-    load_tilemap("./maps/dialog.json",sheet).then((data)=> {
-        console.log("loaded dialog")
-        console.log('we have the tilemap data',data)
-        LEVELS.dialog = {
-            data:data,
-            start: {x:0, y:0}
-        }
-    })
+
+let prom7 = load_tilemap_from_url("./maps/dialog.json").then((data)=> {
+    console.log("loaded dialog")
+    console.log('we have the tile-map data',data)
+    LEVELS.dialog = {
+        data:data,
+        start: {x:0, y:0}
+    }
 })
+// let prom7 = load_image_from_url("./imgs/dialog@1x.png").then(img => {
+//     let sheet = new SpriteSheet(img,8,8,8,8)
+// })
 
 
 let TUBE = 62
 class TubeSystem extends System {
     execute(delta, time) {
+        let layer_name = "Tile Layer 1"
         this.queries.player.results.forEach(ent => {
             let loc = ent.getComponent(Sprite)
             let input = ent.getComponent(InputState)
@@ -224,7 +201,7 @@ class TubeSystem extends System {
                 let map = ent.getComponent(TileMap)
                 let px = Math.floor(loc.x/map.tileSize)
                 let py = Math.floor(loc.y/map.tileSize)
-                let tile = map.tile_at({x:px, y:py+1})
+                let tile = map.tile_at(layer_name,{x:px, y:py+1})
                 if(tile === TUBE && input.states.down) {
                     console.log("pressed down on a tube!")
                     console.log("player location is",px,py)
@@ -252,16 +229,48 @@ TubeSystem.queries = {
         components:[TileMap]
     }
 }
-world.registerSystem(TubeSystem)
+// world.registerSystem(TubeSystem)
 
 let view = world.createEntity()
     .addComponent(Canvas, { scale: 10, width:TILE_SIZE*8, height: TILE_SIZE*8, pixelMode:true})
     .addComponent(BackgroundFill, {color: PALETTE[0xC]})
     .addComponent(Camera, { x:1*TILE_SIZE, y:0*TILE_SIZE})
-    .addComponent(CameraFollowsSprite, { target: player})
     .addComponent(FullscreenButton)
 
-Promise.all([ prom4, prom5, prom6, prom7]).then(()=>{
+let player = world.createEntity()
+    .addComponent(Player)
+    .addComponent(Sprite, { x:0, y: 0, width: 8, height: 8})
+    .addComponent(InputState)
+    .addComponent(KeyboardState, {
+        mapping: {
+            'w':'up',
+            'a':'left',
+            's':'down',
+            'd':'right',
+            ' ':'jump',
+            'ArrowLeft':'left',
+            'ArrowRight':'right',
+            'ArrowUp':'up',
+            'ArrowDown':'down',
+        }
+    })
+    .addComponent(PlayerPhysics, {
+        ay: 200,
+        max_vx:50,
+        max_vy:50,
+        jump_y: 100,
+        ground_friction: 0.95,
+        h_accel: 3,
+        debug:false,
+    })
+
+view.addComponent(CameraFollowsSprite, { target: player})
+
+Promise.all([
+    // prom4,
+    // prom5,
+    prom6,
+    prom7]).then(()=>{
     let splash = null
     view.addComponent(StateMachine, {states:[
             (machine)=>{
@@ -270,6 +279,7 @@ Promise.all([ prom4, prom5, prom6, prom7]).then(()=>{
                 splash.addComponent(Sprite, { x: 0, y:0, fixed:true})
                 splash.addComponent(ImageSprite, { src:"./imgs/splash@1x.png"})
                 view.addComponent(WaitForInput)
+                console.log("making splash")
             },
             machine => {
                 splash.removeAllComponents()
