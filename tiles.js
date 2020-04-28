@@ -1,5 +1,6 @@
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
 import {Camera, Canvas} from './ecsytwo.js'
+import {make_point} from './utils.js'
 
 export function make_tile(size, palette, data) {
     if(!palette || !palette.length) throw new Error("make_tile: palette must be an array of colors")
@@ -59,8 +60,13 @@ export class TileMap extends Component {
         this.index = []
         this.wall_types = []
     }
-    tile_at(name, tile_coords) {
+    tile_at(name, canvas_coords) {
         let layer = this.layer_by_name(name)
+        let tile_coords = make_point(
+            Math.floor(canvas_coords.x / this.tileSize ),
+            Math.floor(canvas_coords.y / this.tileSize ),
+        )
+        // console.log("tile coords",canvas_coords, '=>',tile_coords)
         if(layer && layer.type === 'tilelayer') return layer.data[tile_coords.y*this.width+tile_coords.x]
         return null
     }

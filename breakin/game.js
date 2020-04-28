@@ -12,7 +12,7 @@ import {FullscreenButton} from '../fullscreen.js'
 import {load_image_from_url, SpriteSheet} from '../image.js'
 import {load_tilemap, make_bounds, TileMap, TileMapSystem} from '../tiles.js'
 import {InputState, KeyboardState, KeyboardSystem} from '../keyboard.js'
-import {make_point, PlayerPhysics} from '../platformer_controls.js'
+import {make_point} from '../utils.js'
 
 let TILE_SIZE = 16
 let world = new World()
@@ -30,9 +30,9 @@ class OverheadControlsPlayer {
 }
 
 function rect_contains_point(rect, pt) {
-    if(pt.x < rect.x) return false
+    if(pt.x <= rect.x) return false
     if(pt.x > rect.x + rect.width) return false
-    if(pt.y < rect.y) return false
+    if(pt.y <= rect.y) return false
     if(pt.y > rect.y + rect.height) return false
     return true
 }
@@ -66,8 +66,7 @@ class OverheadControls extends System {
                         map.layers.forEach(layer => {
                             if(layer.type === 'objectgroup') {
                                 layer.objects.forEach(obj=>{
-                                    let pt = make_point(point.pt.x*map.tileSize, point.pt.y*map.tileSize)
-                                    if(rect_contains_point(obj,pt) && player.blocking_object_types.indexOf(obj.type) >= 0) {
+                                    if(rect_contains_point(obj,point.pt) && player.blocking_object_types.indexOf(obj.type) >= 0) {
                                         point.stop()
                                         if(obj.type === 'sign') {
                                             let text = obj.properties.find(p => p.name === 'text').value
@@ -102,82 +101,71 @@ class OverheadControls extends System {
         )
         ctx.globalAlpha = 0.5
         ctx.fillStyle = color
-        ctx.fillRect(tpt.x * map.tileSize, tpt.y * map.tileSize, map.tileSize, map.tileSize)
+        ctx.fillRect(
+            Math.floor(tpt.x/map.tileSize)*map.tileSize,
+            Math.floor(tpt.y/map.tileSize)*map.tileSize,
+            map.tileSize, map.tileSize)
         ctx.restore()
     }
 
     calculate_tile_points(map, player, sprite) {
         if (player.vy > 0) {
-            let tc1 = make_point(
-                Math.floor((sprite.x) / map.tileSize),
-                Math.floor((sprite.y + sprite.height) / map.tileSize))
-            let tc2 = make_point(
-                Math.floor((sprite.x + sprite.width - 1) / map.tileSize),
-                Math.floor((sprite.y + sprite.height) / map.tileSize));
+            let tc1 = make_point(sprite.x, sprite.y+sprite.height)
+            let tc2 = make_point(sprite.x + sprite.width -1, sprite.y + sprite.height)
             return [
                 {
                     pt:tc1,
                     stop:() => {
                         player.vy =0
-                        sprite.y = (tc1.y-1)*map.tileSize
+                        sprite.y = (Math.floor(tc1.y/map.tileSize)*map.tileSize-map.tileSize)
                     },
                 },
                 {
                     pt:tc2,
                     stop:() => {
                         player.vy =0
-                        sprite.y = (tc1.y-1)*map.tileSize
+                        sprite.y = (Math.floor(tc1.y/map.tileSize)*map.tileSize-map.tileSize)
                     },
                 }
             ]
         }
         if (player.vy < 0) {
-            let tc1 = make_point(
-                Math.floor((sprite.x) / map.tileSize),
-                Math.floor((sprite.y) / map.tileSize));
-            let tc2 = make_point(
-                Math.floor((sprite.x+sprite.width-1) / map.tileSize),
-                Math.floor((sprite.y) / map.tileSize));
+            let tc1 = make_point(sprite.x,sprite.y);
+            let tc2 = make_point(sprite.x+sprite.width-1,sprite.y);
             return [
                 {
                     pt:tc1,
                     stop:() => {
                         player.vy =0
-                        sprite.y = (tc1.y+1)*map.tileSize
+                        sprite.y = (Math.floor(tc1.y/map.tileSize)*map.tileSize+map.tileSize)
                     },
                 },
                 {
                     pt:tc2,
                     stop:() => {
                         player.vy =0
-                        sprite.y = (tc1.y+1)*map.tileSize
+                        sprite.y = (Math.floor(tc1.y/map.tileSize)*map.tileSize+map.tileSize)
                     },
                 }
             ]
         }
         // moving left
         if(player.vx < 0) {
-                let tpt1 = make_point(
-                    Math.floor((sprite.x) / map.tileSize),
-                    Math.floor((sprite.y) / map.tileSize),
-                )
-                let tpt2 = make_point(
-                    Math.floor((sprite.x) / map.tileSize),
-                    Math.floor((sprite.y + sprite.height -1) / map.tileSize),
-                );
+                let tpt1 = make_point(sprite.x,sprite.y)
+                let tpt2 = make_point(sprite.x,sprite.y + sprite.height -1);
                 return [
                     {
                         pt:tpt1,
                         stop:() => {
                             player.vx = 0
-                            sprite.x = ((tpt1.x + 1) * map.tileSize)
+                            sprite.x = Math.floor(tpt1.x/map.tileSize)*map.tileSize + map.tileSize
                         }
                     },
                     {
                         pt:tpt2,
                         stop:() => {
                             player.vx = 0
-                            sprite.x = ((tpt1.x + 1) * map.tileSize)
+                            sprite.x = Math.floor(tpt1.x/map.tileSize)*map.tileSize + map.tileSize
                         }
                     }
                 ]
@@ -186,27 +174,21 @@ class OverheadControls extends System {
         // moving right
         if(player.vx > 0) {
             //check the tile to the right
-            let tpt1 = make_point(
-                Math.floor((sprite.x + sprite.width) / map.tileSize),
-                Math.floor((sprite.y) / map.tileSize),
-            )
-            let tpt2 = make_point(
-                Math.floor((sprite.x + sprite.width) / map.tileSize),
-                Math.floor((sprite.y + sprite.height -1) / map.tileSize),
-            );
+            let tpt1 = make_point(sprite.x + sprite.width,  sprite.y )
+            let tpt2 = make_point(sprite.x + sprite.width, sprite.y + sprite.height -1);
             return [
                 {
                     pt:tpt1,
                     stop:() => {
                         player.vx = 0
-                        sprite.x = ((tpt1.x - 1) * map.tileSize)
+                        sprite.x = Math.floor(tpt1.x/map.tileSize)*map.tileSize - map.tileSize
                     }
                 },
                 {
                     pt:tpt2,
                     stop:() => {
                         player.vx = 0
-                        sprite.x = ((tpt1.x - 1) * map.tileSize)
+                        sprite.x = Math.floor(tpt1.x/map.tileSize)*map.tileSize - map.tileSize
                     }
                 }
             ]
@@ -219,11 +201,11 @@ OverheadControls.queries = {
     map:    { components: [TileMap] },
     canvas: { components: [Canvas] }
 }
-world.registerSystem(OverheadControls)
 world.registerSystem(ECSYTwoSystem)
 world.registerSystem(TileMapSystem)
 world.registerSystem(SpriteSystem)
 world.registerSystem(KeyboardSystem)
+world.registerSystem(OverheadControls)
 
 let player = world.createEntity()
     .addComponent(Sprite, { x: 100, y: 100, width: 16, height: 16})
@@ -288,6 +270,7 @@ function load_tilemap_from_url(url) {
 }
 
 load_tilemap_from_url("./maps/level1.json").then(level => {
+    console.log("level info is",level)
     view.addComponent(TileMap, level)
 })
 
