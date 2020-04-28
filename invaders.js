@@ -12,12 +12,14 @@ import {
 } from './ecsytwo.js'
 import {InputState, KeyboardState, KeyboardSystem} from './keyboard.js'
 import {Emitter, ParticleSystem} from './particles.js'
+import {AudioSystem, PlaySoundEffect, SoundEffect} from './audio.js'
 
 
 let world = new World()
 world.registerSystem(ECSYTwoSystem)
 world.registerSystem(KeyboardSystem)
-world.registerSystem(SpriteSystem) //disabled because we will use our own renderer
+world.registerSystem(SpriteSystem)
+world.registerSystem(AudioSystem)
 
 class GameState {
     constructor() {
@@ -122,6 +124,7 @@ let enemy_colors = [
 
 world.createEntity()
     .addComponent(Player, {hp: 10})
+    .addComponent(SoundEffect, { src: 'audio/PlayerDidFire.wav'})
     .addComponent(Sprite, { x: 100, y: 150-20, width: 40, height: 20}) // gives it x,y,w,h
     // .addComponent(FilledSprite, {color: 'blue'}) // gives it a color until we put in images
     .addComponent(ImageSprite, {src:'imgs/invaders/player.png'} )
@@ -195,10 +198,11 @@ class GameLogic extends System {
                         h: 20,
                     })
                     .addComponent(AnimatedSprite, {
-                        width: 26,
-                        height: 20,
-                        frame_count: 2,
-                        src: `imgs/invaders/enemy${rank}.png`
+                        width: 16,
+                        height: 16,
+                        frame_count: 1,
+                        // src: `imgs/invaders/enemy${rank}.png`
+                        src: 'imgs/invaders/creeper.png',
                     })
                     .addComponent(PhysicsSprite, {
                         direction:direction,
@@ -279,7 +283,7 @@ class SimplePhysics extends System {
                     phy.direction.set(1,0)
                 }
                 if(input.states.fire) {
-                    this.fire_player_projectile(sprite)
+                    this.fire_player_projectile(ent)
                 }
             }
 
@@ -291,7 +295,9 @@ class SimplePhysics extends System {
         })
     }
 
-    fire_player_projectile(sprite) {
+    fire_player_projectile(ent) {
+        let sprite = ent.getComponent(Sprite)
+        ent.addComponent(PlaySoundEffect)
         let count = this.queries.player_projectiles.results.length
         if(count === 0) {
             this.world.createEntity()
