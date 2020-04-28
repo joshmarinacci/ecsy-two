@@ -209,10 +209,16 @@ export function make_map(width, height, data) {
 
 export function load_tilemap_from_url(url) {
     url = new URL(url, document.baseURI)
+    console.log("loading tilemap from ",url)
     return fetch(url).then(res=>res.json()).then(data => {
         let tile_index = []
         let blocking = []
         return Promise.all(data.tilesets.map(tileset => {
+            if(!tileset.image) {
+                let msg = "tileset doesn't have an image. are you sure it's embedded"
+                console.error(msg)
+                throw new Error(msg)
+            }
             let imgurl = new URL(tileset.image, url)
             return load_image_from_url(imgurl).then(img => {
                 let sheet = new SpriteSheet(img, tileset.tilewidth, tileset.tileheight)

@@ -19,7 +19,7 @@ let world = new World()
 
 const LEVELS = {}
 
-let prom7 = load_tilemap_from_url("../maps/dialog.json").then((data)=> {
+load_tilemap_from_url("maps/dialog.json").then((data)=> {
     console.log("loaded dialog")
     console.log('we have the tile-map data',data)
     LEVELS.dialog = {
