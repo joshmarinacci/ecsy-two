@@ -207,12 +207,13 @@ export function make_map(width, height, data) {
     }
 }
 
-export function load_tilemap_from_url(url) {
-    url = new URL(url, document.baseURI)
+export function load_tilemap_from_url(source) {
+    let url = new URL(source, document.baseURI)
     console.log("loading tilemap from ",url)
     return fetch(url).then(res=>res.json()).then(data => {
         let tile_index = []
         let blocking = []
+        data.source = source
         return Promise.all(data.tilesets.map(tileset => {
             if(!tileset.image) {
                 let msg = "tileset doesn't have an image. are you sure it's embedded"
