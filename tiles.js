@@ -55,74 +55,79 @@ export class TileMap extends Component {
         this.tileSize = 16
         this.width = -1
         this.height = -1
-        this.map = []
+        this.layers = []
         this.index = []
         this.wall_types = []
     }
-    tile_at(tile_coords) {
-        return this.map[tile_coords.y*this.width+tile_coords.x]
+    tile_at(name, tile_coords) {
+        let layer = this.layer_by_name(name)
+        if(layer && layer.type === 'tilelayer') return layer.data[tile_coords.y*this.width+tile_coords.x]
+        return null
     }
-    set_tile_at(coords,v) {
-        this.map[coords.y*this.width+coords.x] = v
+    set_tile_at(layerIndex,coords,v) {
+        return this.layer_by_name(layerIndex).data[coords.y*this.width+coords.x] = v
     }
-    collide_bounds(bounds, types) {
-        let cols = []
+    // collide_bounds(bounds, types) {
+    //     let cols = []
+    //
+    //     {
+    //         // upper left
+    //         let coords = {
+    //             x: Math.floor(bounds.x / this.tileSize),
+    //             y: Math.floor(bounds.y / this.tileSize),
+    //         }
+    //         let tile = this.tile_at(coords);
+    //         if (types.indexOf(tile) >= 0) {
+    //             cols.push(this.make_collision(tile, coords))
+    //         }
+    //     }
+    //
+    //     {
+    //         // lower left
+    //         let coords = {
+    //             x: Math.floor(bounds.x / this.tileSize),
+    //             y: Math.floor((bounds.y+bounds.height) / this.tileSize),
+    //         }
+    //         let tile = this.tile_at(coords);
+    //         if (types.indexOf(tile) >= 0) {
+    //             cols.push(this.make_collision(tile, coords))
+    //         }
+    //     }
+    //
+    //     {
+    //         // upper right
+    //         let coords = {
+    //             x: Math.floor((bounds.x+bounds.width) / this.tileSize),
+    //             y: Math.floor((bounds.y) / this.tileSize),
+    //         }
+    //         let tile = this.tile_at(coords);
+    //         if (types.indexOf(tile) >= 0) {
+    //             cols.push(this.make_collision(tile, coords))
+    //         }
+    //     }
+    //     {
+    //         //lower right
+    //         let coords = {
+    //             x: Math.floor((bounds.x+bounds.width) / this.tileSize),
+    //             y: Math.floor((bounds.y+bounds.height) / this.tileSize),
+    //         }
+    //         let tile = this.tile_at(coords);
+    //         if (types.indexOf(tile) >= 0) {
+    //             cols.push(this.make_collision(tile, coords))
+    //         }
+    //     }
+    //     return cols
+    // }
 
-        {
-            // upper left
-            let coords = {
-                x: Math.floor(bounds.x / this.tileSize),
-                y: Math.floor(bounds.y / this.tileSize),
-            }
-            let tile = this.tile_at(coords);
-            if (types.indexOf(tile) >= 0) {
-                cols.push(this.make_collision(tile, coords))
-            }
-        }
-
-        {
-            // lower left
-            let coords = {
-                x: Math.floor(bounds.x / this.tileSize),
-                y: Math.floor((bounds.y+bounds.height) / this.tileSize),
-            }
-            let tile = this.tile_at(coords);
-            if (types.indexOf(tile) >= 0) {
-                cols.push(this.make_collision(tile, coords))
-            }
-        }
-
-        {
-            // upper right
-            let coords = {
-                x: Math.floor((bounds.x+bounds.width) / this.tileSize),
-                y: Math.floor((bounds.y) / this.tileSize),
-            }
-            let tile = this.tile_at(coords);
-            if (types.indexOf(tile) >= 0) {
-                cols.push(this.make_collision(tile, coords))
-            }
-        }
-        {
-            //lower right
-            let coords = {
-                x: Math.floor((bounds.x+bounds.width) / this.tileSize),
-                y: Math.floor((bounds.y+bounds.height) / this.tileSize),
-            }
-            let tile = this.tile_at(coords);
-            if (types.indexOf(tile) >= 0) {
-                cols.push(this.make_collision(tile, coords))
-            }
-        }
-        return cols
-    }
-
-    make_collision(tile, coords) {
-        return {
-            type:'collision',
-            tile_type:tile,
-            tile_coords:coords,
-        }
+    // make_collision(tile, coords) {
+    //     return {
+    //         type:'collision',
+    //         tile_type:tile,
+    //         tile_coords:coords,
+    //     }
+    // }
+    layer_by_name(name) {
+        return this.layers.find(layer=>layer.name === name)
     }
 }
 
@@ -141,16 +146,35 @@ export class TileMapSystem extends System {
                     -camera.x + canvas.width/2,
                     -camera.y + canvas.height/2
                 )
-                for(let y=0; y<map.height; y++) {
-                    for(let x=0; x<map.width; x++) {
-                        let n = y*map.width+x
-                        let tile_index = map.map[n]
-                        let tile = map.index[tile_index]
-                        if(tile)  ctx.drawImage(tile,x*map.tileSize, y*map.tileSize)
-                    }
-                }
+                map.layers.forEach(layer => {
+                    if(layer.type === 'tilelayer') this.drawTileLayer(map, ctx, layer)
+                    if(layer.type === 'objectgroup') this.drawObjectLayer(map, ctx, layer)
+                })
                 ctx.restore()
             })
+        })
+    }
+
+    drawTileLayer(map, ctx, layer) {
+        for(let y=0; y<layer.height; y++) {
+            for(let x=0; x<layer.width; x++) {
+                let n = y*layer.width+x
+                let tile_index = layer.data[n]
+                if (tile_index === 0) continue
+                let tile = map.index[tile_index]
+                if(!tile) throw new Error("missing tile " + tile_index + " " + tile)
+                if(tile)  ctx.drawImage(tile,x*map.tilewidth, y*map.tileheight)
+            }
+        }
+    }
+
+    drawObjectLayer(map, ctx, layer) {
+        layer.objects.forEach(obj => {
+            if(obj.gid) {
+                let tile = map.index[obj.gid]
+                if(!tile) throw new Error("missing tile " + tile_index + " " + tile)
+                if(tile)  ctx.drawImage(tile,obj.x, obj.y)
+            }
         })
     }
 }

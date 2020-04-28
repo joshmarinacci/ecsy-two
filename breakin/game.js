@@ -26,12 +26,22 @@ class OverheadControlsPlayer {
         this.vx = 0
         this.vy = 0
         this.debug = true
+        this.blocking_layer_name = "layer1"
+        this.blocking_object_types = []
     }
 }
 let player = world.createEntity()
     .addComponent(Sprite, { x: 100, y: 100, width: 16, height: 16})
     .addComponent(FilledSprite, { color: 'red'})
-    .addComponent(OverheadControlsPlayer, { vx: 0, vy: 0, debug:true})
+    .addComponent(OverheadControlsPlayer, { vx: 0, vy: 0, debug:true, blocking_layer_name: "ground", blocking_object_types: ['sign']})
+
+function rect_contains_point(rect, pt) {
+    if(pt.x < rect.x) return false
+    if(pt.x > rect.x + rect.width) return false
+    if(pt.y < rect.y) return false
+    if(pt.y > rect.y + rect.height) return false
+    return true
+}
 
 class OverheadControls extends System {
     execute(delta, time) {
@@ -52,6 +62,7 @@ class OverheadControls extends System {
                 sprite.y += player.vy * delta / 1000
                 this.queries.map.results.forEach(ent => {
                     let map = ent.getComponent(TileMap)
+                    //moving down
                     if (player.vy > 0) {
                         let tc1 = make_point(
                             Math.floor((sprite.x) / map.tileSize),
@@ -61,8 +72,20 @@ class OverheadControls extends System {
                             Math.floor((sprite.y + sprite.height) / map.tileSize));
                         [tc1,tc2].forEach((tpt)=>{
                             if(player.debug) this._draw_tile_overlay(tpt, map, 'blue')
-                            let tile = map.tile_at(tpt)
-                            console.log("tile is",tile)
+
+                            map.layers.forEach(layer => {
+                                if(layer.type === 'objectgroup') {
+                                    layer.objects.forEach(obj=>{
+                                        let pt = make_point(tpt.x*map.tileSize, tpt.y*map.tileSize)
+                                        if(rect_contains_point(obj,pt) && player.blocking_object_types.indexOf(obj.type) >= 0) {
+                                            player.vy = 0
+                                            sprite.y = (tpt.y -1) * map.tileSize
+                                        }
+                                    })
+                                }
+                            })
+
+                            let tile = map.tile_at(player.blocking_layer_name,tpt)
                             // if blocked, stop the player and set ground flag
                             if(map.wall_types.indexOf(tile) >= 0) {
                                 player.vy = 0
@@ -80,12 +103,14 @@ class OverheadControls extends System {
                             Math.floor((sprite.y) / map.tileSize));
                         [tc1,tc2].forEach(tpt => {
                             if(player.debug) this._draw_tile_overlay(tpt, map, 'green')
-                            let tile = map.tile_at(tpt)
-                            // if blocked, stop the player and set ground flag
-                            if(map.wall_types.indexOf(tile) >= 0) {
-                                player.vy = 0
-                                sprite.y = ((tpt.y+1) * map.tileSize)
-                            }
+                            map.layers.forEach(layer => {
+                                let tile = map.tile_at(player.blocking_layer_name,tpt)
+                                // if blocked, stop the player and set ground flag
+                                if(map.wall_types.indexOf(tile) >= 0) {
+                                    player.vy = 0
+                                    sprite.y = ((tpt.y+1) * map.tileSize)
+                                }
+                            })
                         })
                     }
                     // moving left
@@ -102,7 +127,7 @@ class OverheadControls extends System {
                             );
                             [tpt1,tpt2].forEach(tpt => {
                                 if(player.debug) this._draw_tile_overlay(tpt, map, 'yellow')
-                                let tile = map.tile_at(tpt)
+                                let tile = map.tile_at(player.blocking_layer_name,tpt)
                                 if(map.wall_types.indexOf(tile) >= 0) {
                                     player.vx = 0
                                     sprite.x = ((tpt.x + 1) * map.tileSize)
@@ -124,7 +149,7 @@ class OverheadControls extends System {
                             );
                             [tpt1,tpt2].forEach(tpt => {
                                 if(player.debug) this._draw_tile_overlay(tpt, map, 'yellow')
-                                let tile = map.tile_at(tpt)
+                                let tile = map.tile_at(player.blocking_layer_name,tpt)
                                 if(map.wall_types.indexOf(tile) >= 0) {
                                     player.vx = 0
                                     sprite.x = ((tpt.x - 1) * map.tileSize)
@@ -187,15 +212,10 @@ let view = world.createEntity()
 
 function load_tilemap_from_url(url) {
     url = new URL(url, document.baseURI)
-    console.log("loading",url)
     return fetch(url).then(res=>res.json()).then(data => {
-        console.log("got the data",data)
         let tileset = data.tilesets[0]
         let imgurl = new URL(tileset.image,url)
-        console.log("lading image from ",imgurl)
         return load_image_from_url(imgurl).then(img => {
-            console.log("loaded the image",img)
-            console.log("tileset info is",tileset)
             let sheet = new SpriteSheet(img,tileset.tilewidth, tileset.tileheight)
             let tile_index = []
             let start = tileset.firstgid
@@ -205,7 +225,6 @@ function load_tilemap_from_url(url) {
                     Math.floor(i / tileset.columns))
                 start++
             }
-            let layer_data = data.layers[0].data
             let blocking = []
             if(tileset.tiles) {
                 tileset.tiles.forEach(tile => {
@@ -215,20 +234,23 @@ function load_tilemap_from_url(url) {
                 })
             }
 
-            return {
-                width:data.width,
-                height:data.height,
-                tileSize:data.tilewidth,
-                map:layer_data,
-                index:tile_index,
-                wall_types: blocking,
-            }
+            data.index = tile_index
+            data.wall_types = blocking
+            return data
+            // return {
+            //     width:data.width,
+            //     height:data.height,
+            //     tilewidth:data.tilewidth,
+            //     tileheight:data.tileheight,
+            //     layers:data.layers,
+            //     index:tile_index,
+            //     wall_types: blocking,
+            // }
         })
     })
 }
 
 load_tilemap_from_url("./maps/level1.json").then(level => {
-    console.log("loaded the level data",level)
     view.addComponent(TileMap, level)
 })
 
