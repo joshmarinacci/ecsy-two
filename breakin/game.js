@@ -9,8 +9,7 @@ import {
     startWorld
 } from '../ecsytwo.js'
 import {FullscreenButton} from '../fullscreen.js'
-import {load_image_from_url, SpriteSheet} from '../image.js'
-import {load_tilemap, make_bounds, TileMap, TileMapSystem} from '../tiles.js'
+import {load_tilemap_from_url, TileMap, TileMapSystem} from '../tiles.js'
 import {InputState, KeyboardState, KeyboardSystem} from '../keyboard.js'
 import {make_point} from '../utils.js'
 
