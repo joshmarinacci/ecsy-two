@@ -217,7 +217,8 @@ export function load_tilemap_from_url(url) {
             if(!tileset.image) {
                 let msg = "tileset doesn't have an image. are you sure it's embedded"
                 console.error(msg)
-                throw new Error(msg)
+                return
+                // throw new Error(msg)
             }
             let imgurl = new URL(tileset.image, url)
             return load_image_from_url(imgurl).then(img => {

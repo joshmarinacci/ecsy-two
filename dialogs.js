@@ -140,6 +140,7 @@ export class Dialog {
         this.text = "some text"
         this.tilemap = null
         this.text_offset = make_point(0,0)
+        this.text_color = 'black'
     }
 }
 export class FixedWidthFont {
@@ -278,7 +279,7 @@ export class DialogSystem extends System {
 
                 //if not font specified, just use sans-serif from canvas
                 {
-                    ctx.fillStyle = 'black'
+                    ctx.fillStyle = dialog.text_color
                     ctx.font = "6pt normal sans-serif"
                     let dy = 8
                     dialog.text.split("\n").forEach(line => {

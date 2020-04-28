@@ -41,7 +41,12 @@ class ActionSystem extends System {
             this.world.getSystem(OverheadControls).enabled = false
             let action = ent.getComponent(ShowSignAction)
             console.log("showing dialog with text", action.text)
-            view.addComponent(Dialog, { text:action.text, tilemap:LEVELS.dialog.data, text_offset: make_point(50,50)})
+            view.addComponent(Dialog, {
+                text:action.text,
+                tilemap:LEVELS.dialog.data,
+                text_offset: make_point(50,50),
+                text_color: 'green',
+            })
             view.addComponent(WaitForInput, {onDone:()=>{
                     view.removeComponent(Dialog)
                     ent.removeComponent(ShowSignAction)
