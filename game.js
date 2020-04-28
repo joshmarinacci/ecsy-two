@@ -164,6 +164,7 @@ let prom6 =
                 y: 60 * 8,
             }
         }
+        LEVELS.vertical.data.tileSize = 8
     }).then(()=>{
         load_tilemap_from_url("./maps/simple.json").then(data => {
             LEVELS.simple = {
@@ -173,6 +174,7 @@ let prom6 =
                     y: 10*8,
                 }
             }
+            LEVELS.simple.data.tileSize = 8
         })
     })
 
@@ -241,6 +243,12 @@ let player = world.createEntity()
     .addComponent(Player)
     .addComponent(Sprite, { x:0, y: 0, width: 8, height: 8})
     .addComponent(InputState)
+    .addComponent(AnimatedSprite, {
+        width:8,
+        height:8,
+        frame_duration: 250,
+        src: 'imgs/seaman_sheet.png'
+    })
     .addComponent(KeyboardState, {
         mapping: {
             'w':'up',

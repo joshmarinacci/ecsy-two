@@ -62,13 +62,11 @@ export class TileMap extends Component {
         this.wall_types = []
     }
     tile_at(name, canvas_coords) {
-        console.log("name",name, canvas_coords)
         let layer = this.layer_by_name(name)
         let tile_coords = make_point(
             Math.floor(canvas_coords.x / this.tileSize ),
             Math.floor(canvas_coords.y / this.tileSize ),
         )
-        console.log("tile coords",canvas_coords, '=>',tile_coords)
         if(layer && layer.type === 'tilelayer') return layer.data[tile_coords.y*this.width+tile_coords.x]
         return null
     }

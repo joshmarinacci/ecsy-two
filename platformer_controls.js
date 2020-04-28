@@ -4,6 +4,11 @@ import {make_bounds, TileMap} from './tiles.js'
 import {InputState} from './keyboard.js'
 import {make_point} from './utils.js'
 
+const UP='UP'
+const DOWN='DOWN'
+const LEFT='LEFT'
+const RIGHT='RIGHT'
+
 export class PlayerPhysics extends Component {
     constructor() {
         super()
@@ -39,16 +44,64 @@ export class PlatformerPhysicsSystem extends System {
             let sprite_bounds = player_ent.getComponent(Sprite)
 
 
-            this.handle_vertical(input,player,loc,sprite_bounds, delta)
-            // update velocity with friction
-            if(player.on_ground) {
-                player.vx *= player.ground_friction
-            }
-            this.handle_horizontal(input,player,loc,sprite_bounds,delta)
-            //flip the player sprite to face the correct direction
+            this.queries.map.results.forEach(ent => {
+                let map = ent.getComponent(TileMap)
 
+                //jump
+                if (input.states.jump && player.on_ground) player.vy -= player.jump_y
+                //update velocity with acceleration
+                player.vy += player.ay * delta / 1000
+                // update player location with velocity
+                loc.y += player.vy * delta / 1000
+
+                // cap vertical velocity
+                if (player.vy > player.max_vy)  player.vy =  player.max_vy
+                //if (player.vy < -player.max_vy) player.vy = -player.max_vy // DON"T cap upwards velocity
+
+                //vertical first
+                if(player.vy > 0) this.collide(map,player,this.calculate_tile_points(map,player,loc,DOWN))
+                if(player.vy < 0) {
+                    player.on_ground = false
+                    this.collide(map,player,this.calculate_tile_points(map,player,loc,UP))
+                }
+
+                // update velocity with friction
+                if(player.on_ground) {
+                    player.vx *= player.ground_friction
+                }
+
+                // cap horizontal velocity
+                if (player.vx > player.max_vx)  player.vx = player.max_vx
+                if (player.vx < -player.max_vx) player.vx = -player.max_vx
+                // increase velocity in the correct direction
+                if (input.states.right) player.vx += player.h_accel
+                if (input.states.left)  player.vx -= player.h_accel
+                //update velocity with acceleration
+                player.vx += player.ax * delta / 1000
+                // update player location with velocity
+                loc.x += player.vx * delta / 1000
+
+                //then horizontal
+                if(player.vx > 0) this.collide(map,player,this.calculate_tile_points(map,player,loc,RIGHT))
+                if(player.vx < 0) this.collide(map,player,this.calculate_tile_points(map,player,loc,LEFT))
+            })
+
+
+            //flip the player sprite to face the correct direction
             if(input.states.right) player_ent.getMutableComponent(AnimatedSprite).flipY = false
             if(input.states.left)  player_ent.getMutableComponent(AnimatedSprite).flipY = true
+        })
+    }
+    collide(map,player,points) {
+        let layer_name = "Tile Layer 1"
+        points.forEach(point => {
+            if(player.debug) this._draw_tile_overlay(point.pt, map, 'blue')
+            let tile = map.tile_at(layer_name, point.pt)
+            // console.log(tile)
+            if (map.wall_types.indexOf(tile) >= 0) {
+                if(point.direction === DOWN) player.on_ground = true
+                point.stop()
+            }
         })
     }
 
@@ -132,6 +185,103 @@ export class PlatformerPhysicsSystem extends System {
 
     }
 
+    calculate_tile_points(map, player, sprite, direction) {
+        if (direction === DOWN) {
+            let tc1 = make_point(sprite.x, sprite.y+sprite.height)
+            let tc2 = make_point(sprite.x + sprite.width -1, sprite.y + sprite.height)
+            return [
+                {
+                    pt:tc1,
+                    direction:DOWN,
+                    stop:() => {
+                        player.vy =0
+                        sprite.y = (Math.floor(tc1.y/map.tileSize)*map.tileSize-map.tileSize)
+                    },
+                },
+                {
+                    pt:tc2,
+                    direction:DOWN,
+                    stop:() => {
+                        player.vy =0
+                        sprite.y = (Math.floor(tc1.y/map.tileSize)*map.tileSize-map.tileSize)
+                    },
+                }
+            ]
+        }
+        if (direction === UP) {
+            let tc1 = make_point(sprite.x,sprite.y);
+            let tc2 = make_point(sprite.x+sprite.width-1,sprite.y);
+            return [
+                {
+                    pt:tc1,
+                    direction:UP,
+                    stop:() => {
+                        player.vy =0
+                        sprite.y = (Math.floor(tc1.y/map.tileSize)*map.tileSize+map.tileSize)
+                    },
+                },
+                {
+                    pt:tc2,
+                    direction:UP,
+                    stop:() => {
+                        player.vy =0
+                        sprite.y = (Math.floor(tc1.y/map.tileSize)*map.tileSize+map.tileSize)
+                    },
+                }
+            ]
+        }
+        // moving left
+        if (direction === LEFT) {
+            let tpt1 = make_point(sprite.x,sprite.y)
+            let tpt2 = make_point(sprite.x,sprite.y + sprite.height -1);
+            return [
+                {
+                    pt:tpt1,
+                    direction:LEFT,
+                    stop:() => {
+                        player.vx = 0
+                        sprite.x = Math.floor(tpt1.x/map.tileSize)*map.tileSize + map.tileSize
+                    }
+                },
+                {
+                    pt:tpt2,
+                    direction:LEFT,
+                    stop:() => {
+                        player.vx = 0
+                        sprite.x = Math.floor(tpt1.x/map.tileSize)*map.tileSize + map.tileSize
+                    }
+                }
+            ]
+        }
+
+        // moving right
+        if (direction === RIGHT) {
+            //check the tile to the right
+            let tpt1 = make_point(sprite.x + sprite.width,  sprite.y )
+            let tpt2 = make_point(sprite.x + sprite.width, sprite.y + sprite.height -1);
+            return [
+                {
+                    pt:tpt1,
+                    direction:RIGHT,
+                    stop:() => {
+                        player.vx = 0
+                        sprite.x = Math.floor(tpt1.x/map.tileSize)*map.tileSize - map.tileSize
+                    }
+                },
+                {
+                    pt:tpt2,
+                    direction:RIGHT,
+                    stop:() => {
+                        player.vx = 0
+                        sprite.x = Math.floor(tpt1.x/map.tileSize)*map.tileSize - map.tileSize
+                    }
+                }
+            ]
+        }
+        return []
+    }
+
+
     handle_vertical(input, player, loc, sprite_bounds, delta) {
         if (input.states.jump && player.on_ground)          player.vy -= player.jump_y
         //update velocity with acceleration
@@ -202,7 +352,7 @@ export class PlatformerPhysicsSystem extends System {
         )
         ctx.globalAlpha = 0.5
         ctx.fillStyle = color
-        ctx.fillRect(tpt.x * map.tileSize, tpt.y * map.tileSize, 8, 8)
+        ctx.fillRect(tpt.x, tpt.y, map.tilewidth, map.tileheight)
         ctx.restore()
     }
 }
