@@ -187,10 +187,6 @@ let prom7 = load_tilemap_from_url("./maps/dialog.json").then((data)=> {
         start: {x:0, y:0}
     }
 })
-// let prom7 = load_image_from_url("./imgs/dialog@1x.png").then(img => {
-//     let sheet = new SpriteSheet(img,8,8,8,8)
-// })
-
 
 let TUBE = 62
 class TubeSystem extends System {
@@ -203,19 +199,19 @@ class TubeSystem extends System {
                 let map = ent.getComponent(TileMap)
                 let px = Math.floor(loc.x/map.tileSize)
                 let py = Math.floor(loc.y/map.tileSize)
-                let tile = map.tile_at(layer_name,{x:px, y:py+1})
+                let tile = map.tile_at(layer_name,{x:loc.x, y:loc.y+map.tileSize})
                 if(tile === TUBE && input.states.down) {
                     console.log("pressed down on a tube!")
                     console.log("player location is",px,py)
                     console.log("map is",map)
-                    if(px === 58 && py === 13 && map.name === "./maps/simple.json") {
+                    if(px === 58 && py === 13 && map.source === "./maps/simple.json") {
                         console.log("going to vertical")
                         view.removeComponent(TileMap)
                         view.addComponent(TileMap, LEVELS.vertical.data)
                         player.getMutableComponent(Sprite).x = LEVELS.vertical.start.x
                         player.getMutableComponent(Sprite).y = LEVELS.vertical.start.y
                     }
-                    if(px === 13 && py === 60 && map.name === "./maps/vertical.json") {
+                    if(px === 13 && py === 60 && map.source === "./maps/vertical.json") {
                         console.log("we won!")
                     }
                 }
@@ -231,7 +227,7 @@ TubeSystem.queries = {
         components:[TileMap]
     }
 }
-// world.registerSystem(TubeSystem)
+world.registerSystem(TubeSystem)
 
 let view = world.createEntity()
     .addComponent(Canvas, { scale: 10, width:TILE_SIZE*8, height: TILE_SIZE*8, pixelMode:true})
@@ -290,31 +286,34 @@ Promise.all([
                 console.log("making splash")
             },
             machine => {
+                console.log("showing a dialog")
                 splash.removeAllComponents()
                 let widths = {
                     G:4, J:4, M:5, N:4, O:4, P:4, Q:4, R:4, S:4, U:4, W:5,
                     f:2, i:1,l:1, m:5, s:2,w:5,
                     ' ':3,
                 }
-                view.addComponent(VariableWidthFont, {
-                    src:"./imgs/font_5@1x.png",
-                    charHeight: 5,
-                    charWidth: 6,
-                    charsPerLine: 11,
-                    widths: widths,
-                    positions: {
-                        '!':{x:8, y:7},
-                    }
-                })
+                // view.addComponent(VariableWidthFont, {
+                //     src:"./imgs/font_5@1x.png",
+                //     charHeight: 5,
+                //     charWidth: 6,
+                //     charsPerLine: 11,
+                //     widths: widths,
+                //     positions: {
+                //         '!':{x:8, y:7},
+                //     }
+                // })
                 view.addComponent(Dialog, { text:"Cat Prince!\nWe need \nyour help!" , tilemap:LEVELS.dialog.data})
                 view.addComponent(WaitForInput)
             },
             () => {
+                console.log("showing a dialog")
                 view.removeComponent(Dialog)
                 view.addComponent(Dialog, { text:"Your father \nthe Cat King \nhas been\nkidnapped!", tilemap:LEVELS.dialog.data })
                 view.addComponent(WaitForInput)
             },
             (machine) => {
+                console.log("showing a dialog")
                 view.removeComponent(Dialog)
                 view.addComponent(Dialog, { text:"Please rescue\nhim!", tilemap:LEVELS.dialog.data })
                 view.addComponent(WaitForInput)
