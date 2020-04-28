@@ -213,39 +213,34 @@ let view = world.createEntity()
 function load_tilemap_from_url(url) {
     url = new URL(url, document.baseURI)
     return fetch(url).then(res=>res.json()).then(data => {
-        let tileset = data.tilesets[0]
-        let imgurl = new URL(tileset.image,url)
-        return load_image_from_url(imgurl).then(img => {
-            let sheet = new SpriteSheet(img,tileset.tilewidth, tileset.tileheight)
-            let tile_index = []
-            let start = tileset.firstgid
-            for (let i = 0; i < tileset.tilecount; i++) {
-                tile_index[start] = sheet.sprite_to_image(
-                    i % tileset.columns,
-                    Math.floor(i / tileset.columns))
-                start++
-            }
-            let blocking = []
-            if(tileset.tiles) {
-                tileset.tiles.forEach(tile => {
-                    if (tile.type === 'floor') blocking.push(tile.id + 1)
-                    if (tile.type === 'wall') blocking.push(tile.id + 1)
-                    if (tile.type === 'block') blocking.push(tile.id + 1)
-                })
-            }
-
+        let tile_index = []
+        let blocking = []
+        return Promise.all(data.tilesets.map(tileset => {
+            let imgurl = new URL(tileset.image, url)
+            return load_image_from_url(imgurl).then(img => {
+                let sheet = new SpriteSheet(img, tileset.tilewidth, tileset.tileheight)
+                let start = tileset.firstgid
+                for (let i = 0; i < tileset.tilecount; i++) {
+                    tile_index[start] = sheet.sprite_to_image(
+                        i % tileset.columns,
+                        Math.floor(i / tileset.columns))
+                    start++
+                }
+                if (tileset.tiles) {
+                    tileset.tiles.forEach(tile => {
+                        console.log("looking at tile info",tile)
+                        if (tile.type === 'floor') blocking.push(tile.id + tileset.firstgid)
+                        if (tile.type === 'wall') blocking.push(tile.id  + tileset.firstgid)
+                        if (tile.type === 'block') blocking.push(tile.id  + tileset.firstgid)
+                    })
+                }
+                console.log("tileindex",blocking.slice())
+            })
+        })).then(()=>{
+            console.log("finishing up", blocking.slice())
             data.index = tile_index
             data.wall_types = blocking
             return data
-            // return {
-            //     width:data.width,
-            //     height:data.height,
-            //     tilewidth:data.tilewidth,
-            //     tileheight:data.tileheight,
-            //     layers:data.layers,
-            //     index:tile_index,
-            //     wall_types: blocking,
-            // }
         })
     })
 }
