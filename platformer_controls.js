@@ -22,12 +22,6 @@ export class PlayerPhysics extends Component {
 }
 
 
-export function make_point(tx, ty) {
-    return {
-        x: tx,
-        y: ty
-    }
-}
 
 export class PlatformerPhysicsSystem extends System {
     execute(delta, time) {
