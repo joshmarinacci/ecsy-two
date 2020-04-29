@@ -67,9 +67,10 @@ class BricksInput extends System {
                             paddle.x = canvas.width - paddle.width
                         }
                     }
+                    paddle.y = canvas.height - paddle.height
                     let mouse = ent.getComponent(MouseState)
                     if(time - mouse.lastTimestamp < 100) {
-                        let relativeX = mouse.clientX - canvas.dom.offsetLeft
+                        let relativeX = (mouse.clientX - canvas.dom.offsetLeft)/canvas.scale
                         if(relativeX > 0 && relativeX < canvas.width) {
                             paddle.x = relativeX - paddle.width/2
                         }
@@ -80,18 +81,9 @@ class BricksInput extends System {
     }
 }
 BricksInput.queries = {
-    canvas: {
-        components:[Canvas]
-    },
-    paddle: {
-        components: [Paddle, Sprite],
-        listen: {
-            added:true
-        }
-    },
-    input: {
-        components: [KeyboardState, InputState, MouseState]
-    },
+    canvas: { components:[Canvas] },
+    paddle: { components: [Paddle, Sprite],  },
+    input: {  components: [KeyboardState, InputState, MouseState] },
 }
 
 class BricksLogic extends System {
@@ -203,15 +195,10 @@ class BricksRenderer extends  System {
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
             let ctx = canvas.dom.getContext('2d')
-            this.queries.ball.results.forEach(ent => {
-                let ball = ent.getComponent(Ball)
-                let bloc = ent.getComponent(Sprite)
-                // this.drawBall(ctx,ball,bloc)
-            })
-            this.queries.paddle.results.forEach(ent => {
-                let paddle = ent.getComponent(Sprite)
-                this.drawPaddle(canvas, ctx, paddle)
-            })
+            // this.queries.paddle.results.forEach(ent => {
+            //     let paddle = ent.getComponent(Sprite)
+            //     this.drawPaddle(canvas, ctx, paddle)
+            // })
             this.queries.bricks.results.forEach(ent => {
                 let bricks = ent.getComponent(Bricks)
                 this.drawBricks(ctx,bricks)
@@ -242,26 +229,6 @@ class BricksRenderer extends  System {
                 }
             }
         }
-    }
-
-    drawBall(ctx, ball, bloc) {
-        ctx.save()
-        ctx.beginPath()
-        ctx.arc(bloc.x, bloc.y, ball.radius, 0, Math.PI * 2)
-        ctx.fillStyle = '#0095DD'
-        ctx.fill()
-        ctx.closePath()
-        ctx.restore()
-    }
-
-    drawPaddle(canvas, ctx, paddle) {
-        ctx.save()
-        ctx.beginPath()
-        ctx.rect(paddle.x, canvas.height - paddle.height, paddle.width, paddle.height)
-        ctx.fillStyle = '#0095dd'
-        ctx.fill()
-        ctx.closePath()
-        ctx.restore()
     }
 
     drawScore(ctx, score) {
@@ -317,9 +284,8 @@ world.registerSystem(MouseInputSystem)
 world.registerSystem(SpriteSystem)
 
 world.createEntity()
-    .addComponent(Canvas, { width: 480, height: 320, pixelMode:false})
-    .addComponent(BackgroundFill, {color: 'grey'})
-    .addComponent(Bricks)
+    .addComponent(Canvas, { width: 16*16, height: 16*14, pixelMode:true, scale: 2})
+    .addComponent(BackgroundFill, {color: 'yellow'})
     .addComponent(GameState)
 
 world.createEntity()
@@ -329,12 +295,15 @@ world.createEntity()
 
 world.createEntity()
     .addComponent(Paddle)
-    .addComponent(Sprite, { width: 75, height: 20 })
+    .addComponent(Sprite, { x: 0, y: 100, width: 64, height: 16 })
+    .addComponent(ImageSprite, { src: 'images/standard_paddle.png'})
 
 world.createEntity()
     .addComponent(InputState)
     .addComponent(KeyboardState)
     .addComponent(MouseState)
 
+world.createEntity()
+    .addComponent(Bricks)
 startWorld(world)
 
