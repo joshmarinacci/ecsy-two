@@ -57,35 +57,45 @@ class GameState extends Component {
 class Won {}
 class GameBoard {}
 
+function clamp_between(x, lo, hi) {
+    if(x < lo) return lo
+    if(x > hi) return hi
+    return x
+}
+
 class BricksInput extends System {
     execute(delta, time) {
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
-            //move the paddle based on input
-            this.queries.paddle.results.forEach(ent => {
-                let paddle = ent.getMutableComponent(Sprite)
-                this.queries.input.results.forEach(ent => {
-                    let input = ent.getComponent(InputState)
-                    if (input.states.left) {
-                        paddle.x -= 7
-                        if (paddle.x < 0) {
-                            paddle.x = 0
+            this.queries.board.results.forEach(ent => {
+                let board = ent.getComponent(Sprite)
+                //move the paddle based on input
+                this.queries.paddle.results.forEach(ent => {
+                    let paddle = ent.getMutableComponent(Sprite)
+                    this.queries.input.results.forEach(ent => {
+                        let input = ent.getComponent(InputState)
+                        if (input.states.left) {
+                            paddle.x -= 7
+                            if (paddle.x < board.left()) {
+                                paddle.x = board.left()
+                            }
                         }
-                    }
-                    if (input.states.right) {
-                        paddle.x += 7
-                        if (paddle.x + paddle.width > canvas.width) {
-                            paddle.x = canvas.width - paddle.width
+                        if (input.states.right) {
+                            paddle.x += 7
+                            if (paddle.right() > board.right()) {
+                                paddle.x = board.right() - paddle.width
+                            }
                         }
-                    }
-                    paddle.y = canvas.height - paddle.height
-                    let mouse = ent.getComponent(MouseState)
-                    if(time - mouse.lastTimestamp < 100) {
-                        let relativeX = (mouse.clientX - canvas.dom.offsetLeft)/canvas.scale
-                        if(relativeX > 0 && relativeX < canvas.width) {
-                            paddle.x = relativeX - paddle.width/2
+                        paddle.y = canvas.height - paddle.height
+                        let mouse = ent.getComponent(MouseState)
+                        if(time - mouse.lastTimestamp < 100) {
+                            let relativeX = (mouse.clientX - canvas.dom.offsetLeft)/canvas.scale
+                            if(relativeX > 0 && relativeX < canvas.width) {
+                                paddle.x = relativeX - paddle.width/2
+                                paddle.x = clamp_between(paddle.x, board.left(), board.right()-paddle.width)
+                            }
                         }
-                    }
+                    })
                 })
             })
         })
@@ -93,6 +103,7 @@ class BricksInput extends System {
 }
 BricksInput.queries = {
     canvas: { components:[Canvas] },
+    board: { components: [GameBoard, Sprite]},
     paddle: { components: [Paddle, Sprite],  },
     input: {  components: [KeyboardState, InputState, MouseState] },
 }
