@@ -2,9 +2,19 @@
 // https://developer.mozilla.org/en-US/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript/Create_the_Canvas_and_draw_on_it
 
 import {Component, System, World} from "../node_modules/ecsy/build/ecsy.module.js"
-import {BackgroundFill, Canvas, ECSYTwoSystem, ImageSprite, Sprite, SpriteSystem, startWorld} from '../ecsytwo.js'
+import {
+    BackgroundFill,
+    Canvas,
+    DebugOutline,
+    ECSYTwoSystem,
+    ImageSprite,
+    Sprite,
+    SpriteSystem,
+    startWorld
+} from '../ecsytwo.js'
 import {InputState, KeyboardState, KeyboardSystem} from '../keyboard.js'
 import {MouseInputSystem, MouseState} from '../mouse.js'
+import {SpriteSheet} from '../image.js'
 
 let world = new World()
 world.registerSystem(ECSYTwoSystem)
@@ -104,9 +114,9 @@ class BricksLogic extends System {
                 this.queries.paddle.results.forEach(ent => {
                     let paddle = ent.getMutableComponent(Sprite)
                     this.check_paddle_hit(ball, ball_sprite, paddle)
-                    this.check_bottom_hit(ball, ball_sprite, canvas, paddle)
-                    this.check_walls_hit(ball, ball_sprite, canvas)
                 })
+                this.check_bottom_hit(ball, ball_sprite, canvas)
+                this.check_walls_hit(ball, ball_sprite, canvas)
 
                 ball_sprite.x += ball.dx
                 ball_sprite.y += ball.dy
@@ -142,12 +152,11 @@ class BricksLogic extends System {
         }
     }
 
-    resetGame(canvas, ball, bloc, paddle, ploc) {
+    resetGame(canvas, ball, bloc) {
         bloc.x = canvas.width/2
-        bloc.y = canvas.height-30
+        bloc.y = canvas.height-40
         ball.dx = 1
         ball.dy = -1
-        ploc.x = (canvas.width - paddle.width) / 2
     }
 
     check_paddle_hit(ball, ball_sprite, paddle) {
@@ -156,16 +165,15 @@ class BricksLogic extends System {
         }
     }
 
-    check_bottom_hit(ball, ball_sprite, canvas, paddle) {
+    check_bottom_hit(ball, ball_sprite, canvas) {
         if(ball_sprite.y + ball.dy > canvas.height) {
-            console.log("hit the bottom")
             this.queries.gamestate.results.forEach(ent => {
                 let lives = ent.getComponent(GameState)
                 lives.lives--
                 if(lives.lives === 0) {
                     console.log('GAME OVER')
                 }else {
-                    this.resetGame(canvas, ball, ball_sprite, paddle, paddle)
+                    this.resetGame(canvas, ball, ball_sprite)
                 }
             })
         }
@@ -213,6 +221,16 @@ BricksLogic.queries = {
 
 class BricksRenderer extends  System {
     execute(delta, time) {
+        this.queries.bricks.added.forEach(ent => {
+            let bricks = ent.getComponent(Bricks)
+            if(bricks.sheet_src && !bricks.sheet) {
+                bricks.sheet_img = new Image()
+                bricks.sheet_img.onload = () => {
+                    bricks.sheet = new SpriteSheet(bricks.sheet_img,16,16)
+                }
+                bricks.sheet_img.src = bricks.sheet_src
+            }
+        })
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
             let ctx = canvas.dom.getContext('2d')
@@ -246,6 +264,10 @@ class BricksRenderer extends  System {
                     ctx.fillStyle = '#0095dd'
                     ctx.fill()
                     ctx.closePath()
+
+                    if(bricks.sheet) {
+                        bricks.sheet.drawSpriteAt(ctx,1,1,brickX, brickY)
+                    }
                 }
             }
         }
@@ -283,7 +305,10 @@ BricksRenderer.queries = {
         components: [KeyboardState, InputState]
     },
     bricks: {
-        components: [Bricks]
+        components: [Bricks],
+        listen: {
+            added:true
+        }
     },
     gamestate: {
         components: [GameState]
@@ -321,6 +346,6 @@ world.createEntity()
     .addComponent(MouseState)
 
 world.createEntity()
-    .addComponent(Bricks)
+    .addComponent(Bricks, { sheet_src: 'images/standard_bricks.png'})
 startWorld(world)
 

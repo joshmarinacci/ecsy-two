@@ -28,6 +28,14 @@ export class SpriteSheet {
         }
         return arr
     }
+
+    drawSpriteAt(ctx, tx, ty, cx, cy) {
+        ctx.drawImage(this.image,
+            tx*this.tw, ty*this.th, this.tw,this.th, // source x,y,w,h
+            cx, cy, this.tw, this.th, // dest x,y,w,h
+        )
+
+    }
 }
 export function load_image_from_url(src) {
     return new Promise((res,rej)=>{
