@@ -86,7 +86,7 @@ class BricksInput extends System {
                                 paddle.x = board.right() - paddle.width
                             }
                         }
-                        paddle.y = canvas.height - paddle.height
+                        paddle.y = board.bottom() - paddle.height
                         let mouse = ent.getComponent(MouseState)
                         if(time - mouse.lastTimestamp < 100) {
                             let relativeX = (mouse.clientX - canvas.dom.offsetLeft)/canvas.scale
