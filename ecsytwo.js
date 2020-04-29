@@ -138,17 +138,19 @@ ECSYTwoSystem.queries = {
 
 export class SpriteSystem extends System {
     execute(delta, time) {
-        this.queries.canvas.results.forEach(ent => {
-            let canvas = ent.getComponent(Canvas)
-            let camera = ent.getComponent(Camera)
+        this.queries.canvas.results.forEach(canvas_ent => {
+            let canvas = canvas_ent.getComponent(Canvas)
             let ctx = canvas.dom.getContext('2d')
             ctx.imageSmoothingEnabled = false
             ctx.save()
             ctx.scale(canvas.scale,canvas.scale)
-            if(camera.centered) {
-                ctx.translate(
-                    -camera.x + canvas.width / 2,
-                    -camera.y + canvas.height / 2)
+            if(canvas_ent.hasComponent(Camera)) {
+                let camera = canvas_ent.getComponent(Camera)
+                if (camera.centered) {
+                    ctx.translate(
+                        -camera.x + canvas.width / 2,
+                        -camera.y + canvas.height / 2)
+                }
             }
 
             //load sprites with src properties
@@ -179,7 +181,8 @@ export class SpriteSystem extends System {
             this.queries.sprites.results.forEach(ent => {
                 let sprite = ent.getComponent(Sprite)
                 ctx.save()
-                if(sprite.fixed) {
+                if(sprite.fixed && canvas_ent.hasComponent(Camera)) {
+                    let camera = canvas_ent.getComponent(Camera)
                     ctx.translate(
                         +camera.x - canvas.width/2,
                         +camera.y - canvas.height/2)
@@ -234,9 +237,11 @@ export class SpriteSystem extends System {
             let loc = cfs.target.getComponent(Sprite)
             if(!loc) return
             this.queries.canvas.results.forEach(ent => {
-                let camera = ent.getMutableComponent(Camera)
-                camera.x = loc.x
-                camera.y = loc.y
+                if(ent.hasComponent(Camera)) {
+                    let camera = ent.getMutableComponent(Camera)
+                    camera.x = loc.x
+                    camera.y = loc.y
+                }
             })
         })
     }
@@ -244,7 +249,7 @@ export class SpriteSystem extends System {
 
 SpriteSystem.queries = {
     canvas: {
-        components: [Canvas,Camera],
+        components: [Canvas],
     },
     sprites: {
         components: [Sprite, ImageSprite],
