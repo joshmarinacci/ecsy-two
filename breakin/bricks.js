@@ -55,6 +55,7 @@ class GameState extends Component {
     }
 }
 class Won {}
+class GameBoard {}
 
 class BricksInput extends System {
     execute(delta, time) {
@@ -98,14 +99,13 @@ BricksInput.queries = {
 
 class BricksLogic extends System {
     execute(delta, time) {
-        this.queries.canvas.results.forEach(ent => {
-            let canvas = ent.getComponent(Canvas)
-
+        this.queries.board.results.forEach(ent => {
+            let board = ent.getComponent(Sprite)
             //initial paddle position
             this.queries.paddle.added.forEach(ent => {
                 let paddle = ent.getComponent(Sprite)
-                paddle.x = (canvas.width - paddle.width) / 2
-                paddle.y = canvas.height - paddle.height
+                paddle.x = board.left() + (board.width-paddle.width)/2
+                paddle.y = board.bottom() - paddle.height
             })
 
             this.queries.ball.results.forEach(ent => {
@@ -115,8 +115,8 @@ class BricksLogic extends System {
                     let paddle = ent.getMutableComponent(Sprite)
                     this.check_paddle_hit(ball, ball_sprite, paddle)
                 })
-                this.check_bottom_hit(ball, ball_sprite, canvas)
-                this.check_walls_hit(ball, ball_sprite, canvas)
+                this.check_bottom_hit(ball, ball_sprite, board)
+                this.check_walls_hit(ball, ball_sprite, board)
 
                 ball_sprite.x += ball.dx
                 ball_sprite.y += ball.dy
@@ -129,6 +129,7 @@ class BricksLogic extends System {
                     })
                 })
             })
+
         })
     }
     brickCollisionDetection(ball, bloc, bricks, score) {
@@ -152,9 +153,9 @@ class BricksLogic extends System {
         }
     }
 
-    resetGame(canvas, ball, bloc) {
-        bloc.x = canvas.width/2
-        bloc.y = canvas.height-40
+    resetGame(board, ball, bloc) {
+        bloc.x = board.width/2 + board.left()
+        bloc.y = board.height-32
         ball.dx = 1
         ball.dy = -1
     }
@@ -165,38 +166,38 @@ class BricksLogic extends System {
         }
     }
 
-    check_bottom_hit(ball, ball_sprite, canvas) {
-        if(ball_sprite.y + ball.dy > canvas.height) {
+    check_bottom_hit(ball, ball_sprite, board) {
+        if(ball_sprite.y + ball.dy > board.bottom()) {
             this.queries.gamestate.results.forEach(ent => {
                 let lives = ent.getComponent(GameState)
                 lives.lives--
                 if(lives.lives === 0) {
                     console.log('GAME OVER')
                 }else {
-                    this.resetGame(canvas, ball, ball_sprite)
+                    this.resetGame(board, ball, ball_sprite)
                 }
             })
         }
     }
 
-    check_walls_hit(ball, ball_sprite, canvas) {
-        if (ball_sprite.left() + ball.dx < 0) {
+    check_walls_hit(ball, ball_sprite, board) {
+        if (ball_sprite.left() + ball.dx < board.left()) {
             ball.dx = -ball.dx
             return
         }
-        if (ball_sprite.right() + ball.dx > canvas.width) {
+        if (ball_sprite.right() + ball.dx > board.right()) {
             ball.dx = -ball.dx
             return
         }
-        if (ball_sprite.top() + ball.dy < 0) {
+        if (ball_sprite.top() + ball.dy < board.top()) {
             ball.dy = -ball.dy
             return
         }
     }
 }
 BricksLogic.queries = {
-    canvas: {
-        components:[Canvas]
+    board: {
+        components: [GameBoard, Sprite]
     },
     ball: {
         components:[Ball, Sprite]
@@ -231,11 +232,24 @@ class BricksRenderer extends  System {
                 bricks.sheet_img.src = bricks.sheet_src
             }
         })
+        this.queries.board.added.forEach(ent => {
+            let board = ent.getComponent(GameBoard)
+            if(board.sheet_src && !board.sheet) {
+                board.sheet_img = new Image()
+                board.sheet_img.onload = () => {
+                    board.sheet = new SpriteSheet(board.sheet_img,16,16)
+                }
+                board.sheet_img.src = board.sheet_src
+            }
+        })
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
             let ctx = canvas.dom.getContext('2d')
             ctx.save()
             ctx.scale(canvas.scale,canvas.scale)
+            this.queries.board.results.forEach(ent => {
+                this.drawBoard(canvas,ctx,ent)
+            })
             this.queries.bricks.results.forEach(ent => {
                 let bricks = ent.getComponent(Bricks)
                 this.drawBricks(ctx,bricks)
@@ -290,6 +304,20 @@ class BricksRenderer extends  System {
         ctx.fillStyle = '#0095dd'
         ctx.fillText("Lives: " + lives.lives, canvas.width-65, 20)
     }
+
+    drawBoard(canvas, ctx, ent) {
+        let board = ent.getComponent(GameBoard)
+        let bounds = ent.getComponent(Sprite)
+        if(board.sheet) {
+            for(let j=0; j<Math.floor(canvas.height/16); j++) {
+                board.sheet.drawSpriteAt(ctx, 0, 0, 0, j*16)
+                board.sheet.drawSpriteAt(ctx, 0, 0, Math.floor(canvas.width/16)*15, j*16)
+            }
+            for(let i=0; i<Math.floor(canvas.width/16); i++) {
+                board.sheet.drawSpriteAt(ctx, 0, 0, i*16, 0)
+            }
+        }
+    }
 }
 BricksRenderer.queries = {
     canvas: {
@@ -306,6 +334,12 @@ BricksRenderer.queries = {
     },
     bricks: {
         components: [Bricks],
+        listen: {
+            added:true
+        }
+    },
+    board: {
+        components: [GameBoard],
         listen: {
             added:true
         }
@@ -329,6 +363,10 @@ world.createEntity()
     .addComponent(Canvas, { width: 16*16, height: 16*14, pixelMode:true, scale: 2})
     .addComponent(BackgroundFill, {color: 'yellow'})
     .addComponent(GameState)
+
+world.createEntity()
+    .addComponent(GameBoard, { sheet_src: 'images/standard_bricks.png'})
+    .addComponent(Sprite, { x: 16, y: 16, width: 16*14, height: 16*13})
 
 world.createEntity()
     .addComponent(Ball)
