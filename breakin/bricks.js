@@ -12,22 +12,22 @@ world.registerSystem(ECSYTwoSystem)
 class Ball extends Component {
     constructor() {
         super();
-        this.dx = 2
-        this.dy = -2
-        this.radius = 10
+        this.dx = 1
+        this.dy = -1
+        this.radius = 8
     }
 }
 class Paddle extends Component { }
 class Bricks extends Component {
     constructor() {
         super();
-        this.rowCount = 3
-        this.columnCount = 5
-        this.width = 75
-        this.height = 20
-        this.padding = 10
-        this.offsetTop = 30
-        this.offsetLeft = 30
+        this.rowCount = 4
+        this.columnCount = 12
+        this.width = 16
+        this.height = 16
+        this.padding = 0
+        this.offsetTop = 32
+        this.offsetLeft = 32
         this.bricks = []
         for(let c=0; c<this.columnCount; c++) {
             this.bricks[c] = []
@@ -90,10 +90,12 @@ class BricksLogic extends System {
     execute(delta, time) {
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
+
             //initial paddle position
             this.queries.paddle.added.forEach(ent => {
                 let paddle = ent.getComponent(Sprite)
                 paddle.x = (canvas.width - paddle.width) / 2
+                paddle.y = canvas.height - paddle.height
             })
 
             this.queries.ball.results.forEach(ent => {
@@ -101,26 +103,9 @@ class BricksLogic extends System {
                 let ball_sprite = ent.getComponent(Sprite)
                 this.queries.paddle.results.forEach(ent => {
                     let paddle = ent.getMutableComponent(Sprite)
-                    if (ball_sprite.y + ball.dy < ball.radius) {
-                        ball.dy = -ball.dy
-                    } else if (ball_sprite.y + ball.dy > canvas.height - ball.radius) {
-                        if (ball_sprite.x > paddle.x && ball_sprite.x < paddle.x + paddle.width) {
-                            ball.dy = -ball.dy
-                        } else {
-                            this.queries.gamestate.results.forEach(ent => {
-                                let lives = ent.getComponent(GameState)
-                                lives.lives--
-                                if(lives.lives === 0) {
-                                    console.log('GAME OVER')
-                                }else {
-                                    this.resetGame(canvas, ball, ball_sprite, paddle, paddle)
-                                }
-                            })
-                        }
-                    }
-                    if (ball_sprite.x + ball.dx > canvas.width - ball.radius || ball_sprite.x + ball.dx < ball.radius) {
-                        ball.dx = -ball.dx
-                    }
+                    this.check_paddle_hit(ball, ball_sprite, paddle)
+                    this.check_bottom_hit(ball, ball_sprite, canvas, paddle)
+                    this.check_walls_hit(ball, ball_sprite, canvas)
                 })
 
                 ball_sprite.x += ball.dx
@@ -160,9 +145,45 @@ class BricksLogic extends System {
     resetGame(canvas, ball, bloc, paddle, ploc) {
         bloc.x = canvas.width/2
         bloc.y = canvas.height-30
-        ball.dx = 2
-        ball.dy = -2
+        ball.dx = 1
+        ball.dy = -1
         ploc.x = (canvas.width - paddle.width) / 2
+    }
+
+    check_paddle_hit(ball, ball_sprite, paddle) {
+        if(ball_sprite.intersects(paddle)) {
+            ball.dy = -ball.dy
+        }
+    }
+
+    check_bottom_hit(ball, ball_sprite, canvas, paddle) {
+        if(ball_sprite.y + ball.dy > canvas.height) {
+            console.log("hit the bottom")
+            this.queries.gamestate.results.forEach(ent => {
+                let lives = ent.getComponent(GameState)
+                lives.lives--
+                if(lives.lives === 0) {
+                    console.log('GAME OVER')
+                }else {
+                    this.resetGame(canvas, ball, ball_sprite, paddle, paddle)
+                }
+            })
+        }
+    }
+
+    check_walls_hit(ball, ball_sprite, canvas) {
+        if (ball_sprite.left() + ball.dx < 0) {
+            ball.dx = -ball.dx
+            return
+        }
+        if (ball_sprite.right() + ball.dx > canvas.width) {
+            ball.dx = -ball.dx
+            return
+        }
+        if (ball_sprite.top() + ball.dy < 0) {
+            ball.dy = -ball.dy
+            return
+        }
     }
 }
 BricksLogic.queries = {
@@ -195,10 +216,8 @@ class BricksRenderer extends  System {
         this.queries.canvas.results.forEach(ent => {
             let canvas = ent.getComponent(Canvas)
             let ctx = canvas.dom.getContext('2d')
-            // this.queries.paddle.results.forEach(ent => {
-            //     let paddle = ent.getComponent(Sprite)
-            //     this.drawPaddle(canvas, ctx, paddle)
-            // })
+            ctx.save()
+            ctx.scale(canvas.scale,canvas.scale)
             this.queries.bricks.results.forEach(ent => {
                 let bricks = ent.getComponent(Bricks)
                 this.drawBricks(ctx,bricks)
@@ -211,6 +230,7 @@ class BricksRenderer extends  System {
             this.queries.won.results.forEach(ent => {
                 this.drawWinBanner(canvas, ctx)
             })
+            ctx.restore()
         })
     }
     drawBricks(ctx, bricks) {
@@ -252,9 +272,6 @@ class BricksRenderer extends  System {
 BricksRenderer.queries = {
     canvas: {
         components:[Canvas]
-    },
-    ball: {
-        components:[Ball, Sprite]
     },
     paddle: {
         components: [Paddle, Sprite],
