@@ -14,7 +14,7 @@ import {InputState, KeyboardState, KeyboardSystem} from '../keyboard.js'
 import {make_point} from '../utils.js'
 import {Dialog, DialogSystem, WaitForInput} from '../dialogs.js'
 import {OverheadControls, OverheadControlsPlayer} from './rpg.js'
-import {GameState} from './bricks.js'
+import {start_bricks as really_start_bricks} from './bricks.js'
 
 let TILE_SIZE = 16
 let world = new World()
@@ -75,6 +75,11 @@ class ActionSystem extends System {
                 })
             }
         })
+        this.queries.start_bricks.added.forEach(ent => {
+            console.log('starting the bricks')
+            let action = ent.getComponent(StartBricksAction)
+            switch_to_bricks(this.world,view)
+        })
     }
 }
 ActionSystem.queries = {
@@ -84,6 +89,10 @@ ActionSystem.queries = {
             added:true,
             removed:true,
         }
+    },
+    start_bricks: {
+        components: [StartBricksAction],
+        listen: { added:true, removed: true},
     },
     input_waiters: {
         components: [WaitForInput],
@@ -105,10 +114,17 @@ world.registerSystem(KeyboardSystem)
 world.registerSystem(OverheadControls)
 
 let view = world.createEntity()
-    .addComponent(Canvas, { scale: 3, width:TILE_SIZE*16, height: TILE_SIZE*13, pixelMode:true})
+    .addComponent(Canvas, {
+        scale: 2,
+        width:TILE_SIZE*16,
+        height: TILE_SIZE*14,
+        pixelMode:true})
     .addComponent(FullscreenButton)
     .addComponent(InputState)
 
+let GLOBALS = {
+
+}
 
 function start_rpg(world,view) {
     view.addComponent(Camera, { x:1*TILE_SIZE, y:0*TILE_SIZE})
@@ -132,7 +148,7 @@ function start_rpg(world,view) {
         view.addComponent(TileMap, level)
     })
 
-    let player = world.createEntity()
+    GLOBALS.player = world.createEntity()
         .addComponent(Sprite, { x: 100, y: 100, width: 16, height: 16})
         .addComponent(OverheadControlsPlayer, {
             ivx: 100, ivy: 100,
@@ -143,7 +159,7 @@ function start_rpg(world,view) {
                 console.log("showing a sign", text, obj)
                 if(obj.name === 'arcade blip') {
                     console.log('need to start the arcade')
-                    view.addComponent(StartBricksAction)
+                    view.addComponent(StartBricksAction, { view: view})
                 } else {
                     view.addComponent(ShowSignAction, {text: text})
                 }
@@ -151,25 +167,26 @@ function start_rpg(world,view) {
         })
         .addComponent(ImageSprite, { src: "images/akira.png"})
 
-    view.addComponent(CameraFollowsSprite, { target: player})
+    view.addComponent(CameraFollowsSprite, { target: GLOBALS.player})
 }
 
 function stop_rpg(world, view) {
     view.removeComponent(Camera)
     view.removeComponent(BackgroundFill)
     view.removeComponent(KeyboardState)
+    GLOBALS.player.removeAllComponents()
 }
 
 function start_bricks(world,view) {
-
+    really_start_bricks(world,view)
 }
 
 function stop_bricks(world,view) {
 
 }
-function switch_to_bricks() {
-    // stop_rpg(world,view)
-    // start_bricks(world, view)
+function switch_to_bricks(world,view) {
+    stop_rpg(world,view)
+    start_bricks(world, view)
 }
 
 function switch_to_rpg() {
@@ -177,8 +194,8 @@ function switch_to_rpg() {
 }
 
 
-// start_rpg(world,view)
-start_bricks(world,view)
+start_rpg(world,view)
+// start_bricks(world,view)
 
 
 startWorld(world)

@@ -16,8 +16,8 @@ import {InputState, KeyboardState, KeyboardSystem} from '../keyboard.js'
 import {MouseInputSystem, MouseState} from '../mouse.js'
 import {SpriteSheet} from '../image.js'
 
-let world = new World()
-world.registerSystem(ECSYTwoSystem)
+// let world = new World()
+// world.registerSystem(ECSYTwoSystem)
 
 class Ball extends Component {
     constructor() {
@@ -377,27 +377,27 @@ export function start_bricks(world, view) {
     //     .addComponent(BackgroundFill, {color: 'yellow'})
     //     .addComponent(GameState)
 
+    view.addComponent(BackgroundFill, {color:'yellow'})
+    view.addComponent(GameState)
+
     world.createEntity()
         .addComponent(GameBoard, {sheet_src: 'images/standard_bricks.png'})
         .addComponent(Sprite, {x: 16, y: 16, width: 16 * 14, height: 16 * 13})
 
-    // world.createEntity()
-    //     .addComponent(Ball)
-    //     .addComponent(Sprite, {x: 100, y: 100, width: 16, height: 16})
-    //     .addComponent(ImageSprite, {src: 'images/standard_ball.png'})
+    world.createEntity()
+        .addComponent(Ball)
+        .addComponent(Sprite, {x: 100, y: 100, width: 16, height: 16})
+        .addComponent(ImageSprite, {src: 'images/standard_ball.png'})
 
-    // world.createEntity()
-    //     .addComponent(Paddle)
-    //     .addComponent(Sprite, {x: 0, y: 100, width: 64, height: 16})
-    //     .addComponent(ImageSprite, {src: 'images/standard_paddle.png'})
+    world.createEntity()
+        .addComponent(Paddle)
+        .addComponent(Sprite, {x: 0, y: 100, width: 64, height: 16})
+        .addComponent(ImageSprite, {src: 'images/standard_paddle.png'})
 
-    // world.createEntity()
-    //     .addComponent(InputState)
-    //     .addComponent(KeyboardState)
-    //     .addComponent(MouseState)
+    view.addComponent(MouseState)
+    view.addComponent(KeyboardState)
 
     world.createEntity()
         .addComponent(Bricks, {sheet_src: 'images/standard_bricks.png'})
 }
-startWorld(world)
 
