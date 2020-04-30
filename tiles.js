@@ -179,7 +179,7 @@ export class TileMapSystem extends System {
             if(obj.gid) {
                 let tile = map.index[obj.gid]
                 if(!tile) throw new Error("missing tile " + tile_index + " " + tile)
-                if(tile)  ctx.drawImage(tile,obj.x, obj.y)
+                if(tile)  ctx.drawImage(tile,obj.x, obj.y-obj.height)
             }
         })
     }
@@ -241,6 +241,7 @@ export function load_tilemap_from_url(source) {
             })
         })).then(()=>{
             data.index = tile_index
+            console.log("blocking is",blocking)
             data.wall_types = blocking
             return data
         })

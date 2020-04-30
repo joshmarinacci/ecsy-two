@@ -294,8 +294,10 @@ let player = world.createEntity()
     // .addComponent(FilledSprite, { color: 'red'})
     .addComponent(OverheadControlsPlayer, {
         ivx: 100, ivy: 100,
-        debug:false, blocking_layer_name: "ground", blocking_object_types: ['sign']})
-    .addComponent(ImageSprite, { src: "images/cat.png"})
+        debug:false,
+        blocking_layer_name: "floor",
+        blocking_object_types: ['sign']})
+    .addComponent(ImageSprite, { src: "images/akira.png"})
 
 let view = world.createEntity()
     .addComponent(Canvas, { scale: 3, width:TILE_SIZE*16, height: TILE_SIZE*13, pixelMode:true})
@@ -320,7 +322,7 @@ let view = world.createEntity()
 
 
 
-load_tilemap_from_url("./maps/level1.json").then(level => {
+load_tilemap_from_url("./maps/arcade.json").then(level => {
     console.log("level info is",level)
     view.addComponent(TileMap, level)
 })
