@@ -283,8 +283,8 @@ OverheadControls.queries = {
     canvas: { components: [Canvas] }
 }
 world.registerSystem(ECSYTwoSystem)
-world.registerSystem(DialogSystem)
 world.registerSystem(TileMapSystem)
+world.registerSystem(DialogSystem)
 world.registerSystem(SpriteSystem)
 world.registerSystem(KeyboardSystem)
 world.registerSystem(OverheadControls)
