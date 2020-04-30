@@ -47,7 +47,7 @@ class Bricks extends Component {
         }
     }
 }
-class GameState extends Component {
+export class GameState extends Component {
     constructor() {
         super();
         this.score = 0
@@ -363,38 +363,41 @@ BricksRenderer.queries = {
     },
 }
 
-world.registerSystem(BricksInput)
-world.registerSystem(BricksLogic)
-world.registerSystem(BricksRenderer)
-world.registerSystem(KeyboardSystem)
-world.registerSystem(MouseInputSystem)
-world.registerSystem(SpriteSystem)
 
-world.createEntity()
-    .addComponent(Canvas, { width: 16*16, height: 16*14, pixelMode:true, scale: 2})
-    .addComponent(BackgroundFill, {color: 'yellow'})
-    .addComponent(GameState)
+export function start_bricks(world, view) {
+    world.registerSystem(BricksInput)
+    world.registerSystem(BricksLogic)
+    world.registerSystem(BricksRenderer)
+    world.registerSystem(KeyboardSystem)
+    world.registerSystem(MouseInputSystem)
+    world.registerSystem(SpriteSystem)
 
-world.createEntity()
-    .addComponent(GameBoard, { sheet_src: 'images/standard_bricks.png'})
-    .addComponent(Sprite, { x: 16, y: 16, width: 16*14, height: 16*13})
+    // world.createEntity()
+    //     .addComponent(Canvas, {width: 16 * 16, height: 16 * 14, pixelMode: true, scale: 2})
+    //     .addComponent(BackgroundFill, {color: 'yellow'})
+    //     .addComponent(GameState)
 
-world.createEntity()
-    .addComponent(Ball)
-    .addComponent(Sprite, { x: 100,  y: 100, width: 16, height: 16})
-    .addComponent(ImageSprite, { src: 'images/standard_ball.png'})
+    world.createEntity()
+        .addComponent(GameBoard, {sheet_src: 'images/standard_bricks.png'})
+        .addComponent(Sprite, {x: 16, y: 16, width: 16 * 14, height: 16 * 13})
 
-world.createEntity()
-    .addComponent(Paddle)
-    .addComponent(Sprite, { x: 0, y: 100, width: 64, height: 16 })
-    .addComponent(ImageSprite, { src: 'images/standard_paddle.png'})
+    // world.createEntity()
+    //     .addComponent(Ball)
+    //     .addComponent(Sprite, {x: 100, y: 100, width: 16, height: 16})
+    //     .addComponent(ImageSprite, {src: 'images/standard_ball.png'})
 
-world.createEntity()
-    .addComponent(InputState)
-    .addComponent(KeyboardState)
-    .addComponent(MouseState)
+    // world.createEntity()
+    //     .addComponent(Paddle)
+    //     .addComponent(Sprite, {x: 0, y: 100, width: 64, height: 16})
+    //     .addComponent(ImageSprite, {src: 'images/standard_paddle.png'})
 
-world.createEntity()
-    .addComponent(Bricks, { sheet_src: 'images/standard_bricks.png'})
+    // world.createEntity()
+    //     .addComponent(InputState)
+    //     .addComponent(KeyboardState)
+    //     .addComponent(MouseState)
+
+    world.createEntity()
+        .addComponent(Bricks, {sheet_src: 'images/standard_bricks.png'})
+}
 startWorld(world)
 

@@ -59,7 +59,7 @@ export class OverheadControls extends System {
                                         if(obj.type === 'sign') {
                                             if(obj.properties) {
                                                 let text = obj.properties.find(p => p.name === 'text').value
-                                                player.on_sign(text)
+                                                player.on_sign(obj,text)
                                             } else {
                                                 console.warn("sign object is missing properties")
                                             }
