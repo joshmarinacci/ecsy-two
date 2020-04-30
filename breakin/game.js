@@ -14,12 +14,17 @@ import {InputState, KeyboardState, KeyboardSystem} from '../keyboard.js'
 import {make_point} from '../utils.js'
 import {Dialog, DialogSystem, WaitForInput} from '../dialogs.js'
 import {OverheadControls, OverheadControlsPlayer} from './rpg.js'
-import {start_bricks as really_start_bricks} from './bricks.js'
+import {start_bricks, stop_bricks, WonBricks} from './bricks.js'
 
 let TILE_SIZE = 16
 let world = new World()
 
 const LEVELS = {}
+let GLOBALS = {
+    bricks: {},
+    rpg: {},
+    view:null,
+}
 
 load_tilemap_from_url("maps/dialog.json").then((data)=> {
     console.log("loaded dialog")
@@ -76,9 +81,11 @@ class ActionSystem extends System {
             }
         })
         this.queries.start_bricks.added.forEach(ent => {
-            console.log('starting the bricks')
-            let action = ent.getComponent(StartBricksAction)
-            switch_to_bricks(this.world,view)
+            switch_to_bricks(GLOBALS,this.world)
+        })
+        this.queries.won_bricks.added.forEach(ent => {
+            ent.removeAllComponents()
+            switch_to_rpg(GLOBALS,this.world)
         })
     }
 }
@@ -103,6 +110,10 @@ ActionSystem.queries = {
     },
     input: {
         components: [InputState]
+    },
+    won_bricks: {
+        components: [WonBricks],
+        listen: { added:true, removed: true},
     }
 }
 world.registerSystem(ActionSystem)
@@ -113,7 +124,7 @@ world.registerSystem(SpriteSystem)
 world.registerSystem(KeyboardSystem)
 world.registerSystem(OverheadControls)
 
-let view = world.createEntity()
+GLOBALS.view = world.createEntity()
     .addComponent(Canvas, {
         scale: 2,
         width:TILE_SIZE*16,
@@ -122,12 +133,9 @@ let view = world.createEntity()
     .addComponent(FullscreenButton)
     .addComponent(InputState)
 
-let GLOBALS = {
 
-}
-
-function start_rpg(world,view) {
-    view.addComponent(Camera, { x:1*TILE_SIZE, y:0*TILE_SIZE})
+function start_rpg(GLOBALS, world) {
+    GLOBALS.view.addComponent(Camera, { x:1*TILE_SIZE, y:0*TILE_SIZE})
         .addComponent(BackgroundFill, {color: 'rgb(240,255,240)'})
         .addComponent(KeyboardState, {
             mapping: {
@@ -145,57 +153,55 @@ function start_rpg(world,view) {
 
     load_tilemap_from_url("./maps/arcade.json").then(level => {
         console.log("level info is",level)
-        view.addComponent(TileMap, level)
+        GLOBALS.view.addComponent(TileMap, level)
     })
 
-    GLOBALS.player = world.createEntity()
-        .addComponent(Sprite, { x: 100, y: 100, width: 16, height: 16})
-        .addComponent(OverheadControlsPlayer, {
-            ivx: 100, ivy: 100,
-            debug:false,
-            blocking_layer_name: "floor",
-            blocking_object_types: ['sign'],
-            on_sign:(obj,text)=>{
-                console.log("showing a sign", text, obj)
-                if(obj.name === 'arcade blip') {
-                    console.log('need to start the arcade')
-                    view.addComponent(StartBricksAction, { view: view})
-                } else {
-                    view.addComponent(ShowSignAction, {text: text})
+    if(!GLOBALS.player) {
+        GLOBALS.player = world.createEntity()
+            .addComponent(Sprite, {x: 100, y: 100, width: 16, height: 16})
+            .addComponent(OverheadControlsPlayer, {
+                ivx: 100, ivy: 100,
+                debug: false,
+                blocking_layer_name: "floor",
+                blocking_object_types: ['sign'],
+                on_sign: (obj, text) => {
+                    console.log("showing a sign", text, obj)
+                    if (obj.name === 'arcade blip') {
+                        console.log('need to start the arcade')
+                        GLOBALS.view.addComponent(StartBricksAction, {view: GLOBALS.view})
+                    } else {
+                        GLOBALS.view.addComponent(ShowSignAction, {text: text})
+                    }
                 }
-            }
-        })
-        .addComponent(ImageSprite, { src: "images/akira.png"})
+            })
+            .addComponent(ImageSprite, {src: "images/akira.png"})
+    }
 
-    view.addComponent(CameraFollowsSprite, { target: GLOBALS.player})
+    GLOBALS.view.addComponent(CameraFollowsSprite, { target: GLOBALS.player})
 }
 
-function stop_rpg(world, view) {
-    view.removeComponent(Camera)
-    view.removeComponent(BackgroundFill)
-    view.removeComponent(KeyboardState)
-    GLOBALS.player.removeAllComponents()
-}
-
-function start_bricks(world,view) {
-    really_start_bricks(world,view)
-}
-
-function stop_bricks(world,view) {
-
-}
-function switch_to_bricks(world,view) {
-    stop_rpg(world,view)
-    start_bricks(world, view)
-}
-
-function switch_to_rpg() {
-
+function stop_rpg(globals) {
+    globals.view.removeComponent(Camera)
+    globals.view.removeComponent(BackgroundFill)
+    globals.view.removeComponent(KeyboardState)
+    globals.view.removeComponent(CameraFollowsSprite)
+    globals.player.removeAllComponents()
 }
 
 
-start_rpg(world,view)
-// start_bricks(world,view)
+function switch_to_bricks(globals, world) {
+    stop_rpg(globals, world)
+    start_bricks(globals,world)
+}
+
+function switch_to_rpg(globals, world) {
+    stop_bricks(globals, world)
+    start_rpg(globals, world)
+}
+
+
+// start_rpg(GLOBALS,world)
+start_bricks(GLOBALS,world)
 
 
 startWorld(world)

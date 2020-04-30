@@ -54,7 +54,7 @@ export class GameState extends Component {
         this.lives = 3
     }
 }
-class Won {}
+export class WonBricks {}
 class GameBoard {}
 
 function clamp_between(x, lo, hi) {
@@ -156,7 +156,7 @@ class BricksLogic extends System {
                         b.status = 0
                         score.score += 1
                         if(score.score === bricks.rowCount * bricks.columnCount) {
-                            this.world.createEntity().addComponent(Won)
+                            this.world.createEntity().addComponent(WonBricks)
                         }
                     }
                 }
@@ -174,6 +174,7 @@ class BricksLogic extends System {
     check_paddle_hit(ball, ball_sprite, paddle) {
         if(ball_sprite.intersects(paddle)) {
             ball.dy = -ball.dy
+            this.world.createEntity().addComponent(WonBricks)
         }
     }
 
@@ -359,12 +360,12 @@ BricksRenderer.queries = {
         components: [GameState]
     },
     won: {
-        components: [Won]
+        components: [WonBricks]
     },
 }
 
 
-export function start_bricks(world, view) {
+export function start_bricks(GLOBALS, world) {
     world.registerSystem(BricksInput)
     world.registerSystem(BricksLogic)
     world.registerSystem(BricksRenderer)
@@ -377,27 +378,35 @@ export function start_bricks(world, view) {
     //     .addComponent(BackgroundFill, {color: 'yellow'})
     //     .addComponent(GameState)
 
-    view.addComponent(BackgroundFill, {color:'yellow'})
-    view.addComponent(GameState)
+    GLOBALS.view.addComponent(BackgroundFill, {color:'yellow'})
+    GLOBALS.view.addComponent(GameState)
 
-    world.createEntity()
+    GLOBALS.bricks.board = world.createEntity()
         .addComponent(GameBoard, {sheet_src: 'images/standard_bricks.png'})
         .addComponent(Sprite, {x: 16, y: 16, width: 16 * 14, height: 16 * 13})
 
-    world.createEntity()
+    GLOBALS.bricks.ball = world.createEntity()
         .addComponent(Ball)
         .addComponent(Sprite, {x: 100, y: 100, width: 16, height: 16})
         .addComponent(ImageSprite, {src: 'images/standard_ball.png'})
 
-    world.createEntity()
+    GLOBALS.bricks.paddle = world.createEntity()
         .addComponent(Paddle)
         .addComponent(Sprite, {x: 0, y: 100, width: 64, height: 16})
         .addComponent(ImageSprite, {src: 'images/standard_paddle.png'})
 
-    view.addComponent(MouseState)
-    view.addComponent(KeyboardState)
+    GLOBALS.view.addComponent(MouseState)
+    GLOBALS.view.addComponent(KeyboardState)
 
-    world.createEntity()
+    GLOBALS.bricks.bricks = world.createEntity()
         .addComponent(Bricks, {sheet_src: 'images/standard_bricks.png'})
 }
 
+export function stop_bricks(globals, world) {
+    globals.view.removeComponent(BackgroundFill)
+    globals.view.removeComponent(GameState)
+    globals.bricks.board.removeAllComponents()
+    globals.bricks.bricks.removeAllComponents()
+    globals.bricks.paddle.removeAllComponents()
+    globals.bricks.ball.removeAllComponents()
+}
