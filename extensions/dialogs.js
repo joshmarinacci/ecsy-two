@@ -56,10 +56,10 @@ addComponent(StateMachine, {states:[
 
 */
 
-import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
-import {KeyboardState} from './src/keyboard.js'
-import {Canvas, InputState} from './src/ecsy-two.js'
-import {make_point} from './utils.js'
+import {Component, System} from "../node_modules/ecsy/build/ecsy.module.js"
+import {KeyboardState} from '../src/keyboard.js'
+import {Canvas, InputState} from '../src/ecsy-two.js'
+import {make_point} from '../utils.js'
 
 export class StateMachine {
     constructor() {

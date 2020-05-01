@@ -9,10 +9,10 @@ import {
     startWorld
 } from '../src/ecsy-two.js'
 import {FullscreenButton} from '../src/fullscreen.js'
-import {load_tilemap_from_url, TileMap, TileMapSystem} from '../tiles.js'
+import {load_tilemap_from_url, TileMap, TileMapSystem} from '../extensions/tiles.js'
 import {KeyboardState, KeyboardSystem} from '../src/keyboard.js'
 import {make_point} from '../utils.js'
-import {Dialog, DialogSystem, WaitForInput} from '../dialogs.js'
+import {Dialog, DialogSystem, WaitForInput} from '../extensions/dialogs.js'
 import {OverheadControls, OverheadControlsPlayer} from './rpg.js'
 import {start_bricks, stop_bricks, WonBricks} from './bricks.js'
 

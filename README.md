@@ -265,9 +265,10 @@ Play a short sequence of notes once.
 
 
 
-### GamepadInput
+### Non-core Extensions
 
-### MouseInput
+
+### GamepadInput
 
 ### Fullscreen Support
 
@@ -275,9 +276,13 @@ Play a short sequence of notes once.
 
 ### WebXR Support
 
-### Tilemap and platformer physics
+### Tilemap 
 
+### Dialog
 
+### platformer physics & controls
+
+### Overhead RPG like controls
 
 # Examples
 

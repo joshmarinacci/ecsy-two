@@ -1,6 +1,6 @@
 import {System} from "../node_modules/ecsy/build/ecsy.module.js"
 import {Camera, Canvas, InputState, Sprite} from '../src/ecsy-two.js'
-import {TileMap} from '../tiles.js'
+import {TileMap} from '../extensions/tiles.js'
 import {make_point} from '../utils.js'
 
 function rect_contains_point(rect, pt) {
