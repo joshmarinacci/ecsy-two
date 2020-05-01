@@ -1,6 +1,5 @@
 import {System} from "../node_modules/ecsy/build/ecsy.module.js"
-import {InputState} from '../src/keyboard.js'
-import {Camera, Canvas, Sprite} from '../src/ecsy-two.js'
+import {Camera, Canvas, InputState, Sprite} from '../src/ecsy-two.js'
 import {TileMap} from '../tiles.js'
 import {make_point} from '../utils.js'
 

@@ -1,7 +1,10 @@
 import {Component, System} from "../node_modules/ecsy/build/ecsy.module.js"
 
 export class MouseState {
-
+    constructor() {
+        this.clientX = 0
+        this.clientY = 0
+    }
 }
 export class MouseInputSystem extends System {
     execute(delta, time) {

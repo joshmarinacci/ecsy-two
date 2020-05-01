@@ -4,13 +4,13 @@ import {
     Camera,
     CameraFollowsSprite,
     Canvas,
-    ECSYTwoSystem, ImageSprite, Sprite,
+    ECSYTwoSystem, ImageSprite, InputState, Sprite,
     SpriteSystem,
     startWorld
 } from '../src/ecsy-two.js'
 import {FullscreenButton} from '../src/fullscreen.js'
 import {load_tilemap_from_url, TileMap, TileMapSystem} from '../tiles.js'
-import {InputState, KeyboardState, KeyboardSystem} from '../src/keyboard.js'
+import {KeyboardState, KeyboardSystem} from '../src/keyboard.js'
 import {make_point} from '../utils.js'
 import {Dialog, DialogSystem, WaitForInput} from '../dialogs.js'
 import {OverheadControls, OverheadControlsPlayer} from './rpg.js'

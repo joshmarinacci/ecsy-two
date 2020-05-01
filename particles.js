@@ -1,6 +1,6 @@
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
 import {FilledSprite, Sprite} from './src/ecsy-two.js'
-import {ImageSprite} from './image.js'
+import {ImageSprite} from './src/image.js'
 
 export class Emitter extends Component {
     constructor() {

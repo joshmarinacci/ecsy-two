@@ -182,8 +182,86 @@ Draws a sprite from a set of animation frames.
 
 
 
-### Audio, BackgroundMusic and Sound Effects
+## Inputs
 
+#### InputState
+
+Abstract representation of the input states.  Just a set of booleans.
+
+#### KeyboardState
+
+`KeyboardState` is the current state of the keyboard keys. Set a binding to convert specific keys into abstract
+input states on the `InputState`. Uses `KeyboardSystem`  ex:
+
+```javascript
+player
+    .addComponent(InputState)
+    .addComponent(KeyboardState, {
+        mapping: {
+            'w':'up',
+            'a':'left',
+            's':'down',
+            'd':'right',
+            ' ':'jump',
+            'ArrowLeft':'left',
+            'ArrowRight':'right',
+            'ArrowUp':'up',
+            'ArrowDown':'down',
+        }
+    })
+
+// now read from inputState.states.left, inputState.states.right, etc.
+```
+
+#### MouseState
+
+Current cursor position and button state.
+
+
+### Audio
+
+Audio plays sounds using the Audio() DOM element. Used for recorded sounds from WAV and MP3s.
+
+
+#### SoundEffect
+
+Play a sound effect.  Will not actually be played until you add the PlaySoundEffect component.
+
+```javascript
+// create bullet object
+let bullet = world.createEntity()
+    .addComponent(SoundEffect, { src: "audio/fire.wav"})
+
+// play sound by adding PlaySoundEffect component
+bullet.addComponent(PlaySoundEffect)
+```
+
+
+### Music
+
+Music plays sounds using synth notes using the tone.js library.
+
+ 
+#### BackgroundNotes
+Play a sequence of notes, looping forever.
+
+```javascript
+    view.addComponent(BackgroundNotes, {notes:[
+            "C3","D3","E3",
+            "C3","D3","E3",
+            "C3","D3","E3",
+            "C3","D3","E3",
+
+            "D3","E3","F3",
+            "D3","E3","F3",
+            "D3","E3","F3",
+            "D3","E3","F3",
+        ]})
+```
+
+#### Notes
+
+Play a short sequence of notes once.
 
 
 

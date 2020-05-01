@@ -1,19 +1,6 @@
 import {Component, System} from "../node_modules/ecsy/build/ecsy.module.js"
+import {InputState} from './ecsy-two.js'
 
-export class InputState extends Component {
-    constructor() {
-        super();
-        this.states = {}
-        this.changed = true
-        this.released = false
-    }
-    anyChanged() {
-        return this.changed
-    }
-    anyReleased() {
-        return this.released
-    }
-}
 export class KeyboardState extends Component {
     constructor() {
         super();

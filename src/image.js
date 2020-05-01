@@ -1,5 +1,5 @@
-import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
-import {Camera, CameraFollowsSprite, Canvas, DebugOutline, FilledSprite, Sprite} from './src/ecsy-two.js'
+import {Component, System, World} from "../node_modules/ecsy/build/ecsy.module.js"
+import {Camera, CameraFollowsSprite, Canvas, DebugOutline, FilledSprite, Sprite} from './ecsy-two.js'
 
 export class ImageSprite extends Component {
     constructor() {

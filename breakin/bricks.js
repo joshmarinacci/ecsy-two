@@ -7,14 +7,14 @@ import {
     Canvas,
     DebugOutline,
     ECSYTwoSystem,
-    ImageSprite,
+    ImageSprite, InputState,
     Sprite,
     SpriteSystem,
     startWorld
 } from '../src/ecsy-two.js'
-import {InputState, KeyboardState, KeyboardSystem} from '../src/keyboard.js'
+import {KeyboardState, KeyboardSystem} from '../src/keyboard.js'
 import {MouseInputSystem, MouseState} from '../src/mouse.js'
-import {SpriteSheet} from '../image.js'
+import {SpriteSheet} from '../src/image.js'
 
 // let world = new World()
 // world.registerSystem(ECSYTwoSystem)

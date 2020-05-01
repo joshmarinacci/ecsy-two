@@ -1,7 +1,7 @@
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
 import {Camera, Canvas} from './src/ecsy-two.js'
 import {make_point} from './utils.js'
-import {load_image_from_url, SpriteSheet} from './image.js'
+import {load_image_from_url, SpriteSheet} from './src/image.js'
 
 export function make_tile(size, palette, data) {
     if(!palette || !palette.length) throw new Error("make_tile: palette must be an array of colors")

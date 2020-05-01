@@ -6,11 +6,11 @@ import {
     startWorld,
     BackgroundFill,
     Camera,
-    CameraFollowsSprite,
+    CameraFollowsSprite, InputState
 } from "../../src/ecsy-two.js"
-import {KeyboardSystem, KeyboardState, InputState} from '../../src/keyboard.js'
+import {KeyboardSystem, KeyboardState} from '../../src/keyboard.js'
 import {load_tilemap_from_url, TileMap, TileMapSystem} from '../../tiles.js'
-import {BackgroundMusic} from '../../src/music.js'
+import {BackgroundNotes} from '../../src/music.js'
 import {ParticleSystem} from '../../particles.js'
 import {PlatformerPhysicsSystem, PlayerPhysics} from '../../platformer_controls.js'
 import {
@@ -21,7 +21,7 @@ import {
     WaitForInput
 } from '../../dialogs.js'
 import {FullscreenButton, FullscreenSystem} from '../../src/fullscreen.js'
-import {AnimatedSprite, ImageSprite, SpriteSystem} from '../../image.js'
+import {AnimatedSprite, ImageSprite, SpriteSystem} from '../../src/image.js'
 
 class Player extends Component {}
 
@@ -337,7 +337,7 @@ Promise.all([
 startWorld(world)
 
 // document.addEventListener('mousedown',()=>{
-    view.addComponent(BackgroundMusic, {notes:[
+    view.addComponent(BackgroundNotes, {notes:[
             "C3","D3","E3",
             "C3","D3","E3",
             "C3","D3","E3",

@@ -2,8 +2,8 @@
 // https://developer.mozilla.org/en-US/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript/Create_the_Canvas_and_draw_on_it
 
 import {Component, System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
-import {BackgroundFill, Canvas, ECSYTwoSystem, Sprite, startWorld} from '../../src/ecsy-two.js'
-import {InputState, KeyboardState, KeyboardSystem} from '../../src/keyboard.js'
+import {BackgroundFill, Canvas, ECSYTwoSystem, InputState, Sprite, startWorld} from '../../src/ecsy-two.js'
+import {KeyboardState, KeyboardSystem} from '../../src/keyboard.js'
 import {MouseInputSystem, MouseState} from '../../src/mouse.js'
 
 let world = new World()

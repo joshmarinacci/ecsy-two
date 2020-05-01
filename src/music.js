@@ -2,7 +2,7 @@ import {Component, System} from "../node_modules/ecsy/build/ecsy.module.js"
 
 let Tone = window.Tone
 
-export class BackgroundMusic extends Component {
+export class BackgroundNotes extends Component {
     constructor() {
         super();
         this.notes = "E4 B4"
@@ -10,7 +10,7 @@ export class BackgroundMusic extends Component {
     }
 }
 
-export class Sound extends Component {
+export class Notes extends Component {
     constructor() {
         super();
         this.notes = ["E3","B4"]
@@ -21,7 +21,7 @@ export class Sound extends Component {
 export class MusicSystem extends System {
     execute(delta, time) {
         this.queries.bg.added.forEach(ent => {
-            let music = ent.getComponent(BackgroundMusic)
+            let music = ent.getComponent(BackgroundNotes)
             const synth = (new Tone.Synth()).toMaster();
             let cb = (t,n)=>synth.triggerAttackRelease(n,'8n',t)
             let seq = new Tone.Sequence(cb, music.notes, "4n")
@@ -29,7 +29,7 @@ export class MusicSystem extends System {
             Tone.Transport.start()
         })
         this.queries.sounds.added.forEach(ent => {
-            let music = ent.getComponent(Sound)
+            let music = ent.getComponent(Notes)
             const synth = (new Tone.Synth()).toMaster();
             let cb = (t,n)=>synth.triggerAttackRelease(n,'8n',t)
             let seq = new Tone.Sequence(cb, music.notes, music.noteLength)
@@ -38,21 +38,21 @@ export class MusicSystem extends System {
             Tone.Transport.start()
         })
         this.queries.sounds.results.forEach(ent => {
-            ent.removeComponent(Sound)
+            ent.removeComponent(Notes)
         })
     }
 }
 
 MusicSystem.queries = {
     bg: {
-        components:[BackgroundMusic],
+        components:[BackgroundNotes],
         listen:{
             added:true,
             removed:true,
         }
     },
     sounds: {
-        components:[Sound],
+        components:[Notes],
         listen:{
             added:true,
         }

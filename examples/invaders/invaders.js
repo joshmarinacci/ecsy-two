@@ -3,14 +3,14 @@ import {
     BackgroundFill,
     Camera,
     Canvas, ECSYTwoSystem,
-    FilledSprite,
+    FilledSprite, InputState,
     Sprite,
     startWorld
 } from '../../src/ecsy-two.js'
-import {InputState, KeyboardState, KeyboardSystem} from '../../src/keyboard.js'
+import {KeyboardState, KeyboardSystem} from '../../src/keyboard.js'
 import {Emitter, ParticleSystem} from '../../particles.js'
 import {AudioSystem, PlaySoundEffect, SoundEffect} from '../../src/audio.js'
-import {AnimatedSprite, ImageSprite, SpriteSystem} from '../../image.js'
+import {AnimatedSprite, ImageSprite, SpriteSystem} from '../../src/image.js'
 
 
 let world = new World()
