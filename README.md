@@ -294,4 +294,17 @@ by End3r.
 ![image](screenshots/breakout.png)    
 
 ### Invaders
+
+A space invaders clone, adapted from 
+the [Space Invaders tutorial](https://www.briankoponen.com/html5-javascript-game-tutorial/) by
+[Brian Koponen](https://www.briankoponen.com/)
+
+
+![screenshot of space invaders clone](screenshots/invaders.png)
+ 
 ### Platformer
+
+A simple platformer game using tilemaps and mario style physics. Created by joshmarinacci.
+
+![screenshot of a simple platformer game](screenshots/platformer.png)
+
