@@ -1,4 +1,4 @@
-import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js"
+import {Component, System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
 import {
     Canvas,
     ECSYTwoSystem,
@@ -8,14 +8,12 @@ import {
     SpriteSystem,
     BackgroundFill,
     Camera, CameraFollowsSprite, ImageSprite
-} from "./src/ecsy-two.js"
-import {KeyboardSystem, KeyboardState, InputState} from './src/keyboard.js'
-import {load_tilemap_from_url, make_bounds, make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
-import {BackgroundMusic, MusicSystem, Sound} from './src/music.js'
-import {Emitter, ParticleSystem} from './particles.js'
-import {load_image_from_url, SpriteSheet} from './image.js'
-import {PlatformerPhysicsSystem, PlayerPhysics} from './platformer_controls.js'
-// import {FadeTransition, TransitionSystem} from './transitions.js'
+} from "../../src/ecsy-two.js"
+import {KeyboardSystem, KeyboardState, InputState} from '../../src/keyboard.js'
+import {load_tilemap_from_url, TileMap, TileMapSystem} from '../../tiles.js'
+import {BackgroundMusic, MusicSystem, Sound} from '../../src/music.js'
+import {Emitter, ParticleSystem} from '../../particles.js'
+import {PlatformerPhysicsSystem, PlayerPhysics} from '../../platformer_controls.js'
 import {
     Dialog,
     DialogSystem,
@@ -24,8 +22,8 @@ import {
     StateMachineSystem,
     VariableWidthFont,
     WaitForInput
-} from './dialogs.js'
-import {FullscreenButton, FullscreenSystem} from './src/fullscreen.js'
+} from '../../dialogs.js'
+import {FullscreenButton, FullscreenSystem} from '../../src/fullscreen.js'
 
 class Player extends Component {}
 
