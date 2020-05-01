@@ -21,8 +21,8 @@ Built on top of ECSY.io.  A companion lib for ECSY-three.
 
 # Getting Started
 
-Install the library ecsy-two library via npm or any of the other usual ways.  Also install ecsy. Create an HTML page
-and import the `ecsytwo.js` module to start.
+Install the library `ecsy-two` library via npm or any of the other usual ways.  Also install `ecsy` if it's
+not already installed. Create an HTML page and import the `ecsytwo.js` module to start.
 
 ```html
 <!DOCTYPE html>
@@ -44,20 +44,26 @@ import {} from 'node_modules/ecsy-two/src/ecsy-two.js';
 
 The following code makes a blue rectangle that you can move around with the keyboard.
 ```javascript
-let world = new World();
+let world = new World();  // make a new world
+
+// register the systems we will need
+world.registerSystem(EcsyTwoSystem)
+world.registerSystem(SpriteSystem)
+world.registerSystem(KeyboardSystem)
+
+// make the game area
 let game = world.createEntity()
     .addComponent(Canvas, { width: 100, height: 100, scale: 3} )
     .addComponent(InputState)
     .addComponent(KeyboardState)
 
-world.createEntity()
+// make the playe sprite
+let player = world.createEntity()
     .addComponent(Sprite, { x: 50, y: 50, width: 10, height: 10} )
     .addComponent(FilledSprite, { color: 'blue'})
 
-world.registerSystem(EcsyTwoSystem)
-world.registerSystem(SpriteSystem)
-world.registerSystem(KeyboardSystem)
 
+// a system to move the player around using input events
 class MyGame extends System {
     execute(delta, time) {
         this.queries.input.results.forEach(ent => {
@@ -115,8 +121,29 @@ the input state. The `execute` function of the `MyGame` system is called on ever
 (typically 60 times per second).
 
 
-## Additional Classes
+# more
 
-The full docs are available here.  Components and Systems you may find interesting.
+The full docs are available here.  
+
+Components and Systems you may find interesting.
+
+
+### ImageSprite
+
+### AnimatedSprite
+
+### Audio, BackgroundMusic and Sound Effects
+
+### GamepadInput
+
+### MouseInput
+
+### Fullscreen Support
+
+### Touchscreen Support
+
+### WebXR Support
+
+### Tilemap and platformer physics
 
 
