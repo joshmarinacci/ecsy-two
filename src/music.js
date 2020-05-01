@@ -1,4 +1,4 @@
-import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
+import {Component, System} from "../node_modules/ecsy/build/ecsy.module.js"
 
 let Tone = window.Tone
 

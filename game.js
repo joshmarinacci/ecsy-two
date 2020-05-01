@@ -8,10 +8,10 @@ import {
     SpriteSystem,
     BackgroundFill,
     Camera, CameraFollowsSprite, ImageSprite
-} from "./ecsytwo.js"
-import {KeyboardSystem, KeyboardState, InputState} from './keyboard.js'
+} from "./src/ecsy-two.js"
+import {KeyboardSystem, KeyboardState, InputState} from './src/keyboard.js'
 import {load_tilemap_from_url, make_bounds, make_map, make_tile, TileMap, TileMapSystem} from './tiles.js'
-import {BackgroundMusic, MusicSystem, Sound} from './music.js'
+import {BackgroundMusic, MusicSystem, Sound} from './src/music.js'
 import {Emitter, ParticleSystem} from './particles.js'
 import {load_image_from_url, SpriteSheet} from './image.js'
 import {PlatformerPhysicsSystem, PlayerPhysics} from './platformer_controls.js'
@@ -25,7 +25,7 @@ import {
     VariableWidthFont,
     WaitForInput
 } from './dialogs.js'
-import {FullscreenButton, FullscreenSystem} from './fullscreen.js'
+import {FullscreenButton, FullscreenSystem} from './src/fullscreen.js'
 
 class Player extends Component {}
 

@@ -1,5 +1,5 @@
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
-import {AnimatedSprite, Camera, Canvas, SpriteBounds, SpriteLocation} from './ecsytwo.js'
+import {AnimatedSprite, Camera, Canvas, SpriteBounds, SpriteLocation} from './src/ecsy-two.js'
 
 export class FadeTransition extends Component {
     constructor() {

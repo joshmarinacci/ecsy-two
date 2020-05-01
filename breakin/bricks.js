@@ -11,9 +11,9 @@ import {
     Sprite,
     SpriteSystem,
     startWorld
-} from '../ecsytwo.js'
-import {InputState, KeyboardState, KeyboardSystem} from '../keyboard.js'
-import {MouseInputSystem, MouseState} from '../mouse.js'
+} from '../src/ecsy-two.js'
+import {InputState, KeyboardState, KeyboardSystem} from '../src/keyboard.js'
+import {MouseInputSystem, MouseState} from '../src/mouse.js'
 import {SpriteSheet} from '../image.js'
 
 // let world = new World()

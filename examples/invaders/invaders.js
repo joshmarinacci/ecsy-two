@@ -9,10 +9,10 @@ import {
     Sprite,
     SpriteSystem,
     startWorld
-} from '../../ecsytwo.js'
-import {InputState, KeyboardState, KeyboardSystem} from '../../keyboard.js'
+} from '../../src/ecsy-two.js'
+import {InputState, KeyboardState, KeyboardSystem} from '../../src/keyboard.js'
 import {Emitter, ParticleSystem} from '../../particles.js'
-import {AudioSystem, PlaySoundEffect, SoundEffect} from '../../audio.js'
+import {AudioSystem, PlaySoundEffect, SoundEffect} from '../../src/audio.js'
 
 
 let world = new World()

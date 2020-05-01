@@ -2,7 +2,7 @@
   "name": "ecsy-two",
   "version": "0.0.1",
   "description": "2d HTML Canvas bindings for ECSY.i",
-  "main": "game.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

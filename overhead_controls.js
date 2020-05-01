@@ -1,8 +1,8 @@
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
-import {KeyboardState} from './keyboard.js'
-import {AnimatedSprite, SpriteBounds, SpriteLocation} from './ecsytwo.js'
+import {KeyboardState} from './src/keyboard.js'
+import {AnimatedSprite, SpriteBounds, SpriteLocation} from './src/ecsy-two.js'
 import {make_bounds, TileMap} from './tiles.js'
-import {Sound} from './music.js'
+import {Sound} from './src/music.js'
 
 export class Player extends Component {}
 

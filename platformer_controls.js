@@ -1,7 +1,7 @@
 import {Component, System} from "./node_modules/ecsy/build/ecsy.module.js"
-import {AnimatedSprite, Camera, Canvas, Sprite} from './ecsytwo.js'
+import {AnimatedSprite, Camera, Canvas, Sprite} from './src/ecsy-two.js'
 import {make_bounds, TileMap} from './tiles.js'
-import {InputState} from './keyboard.js'
+import {InputState} from './src/keyboard.js'
 import {make_point} from './utils.js'
 
 const UP='UP'

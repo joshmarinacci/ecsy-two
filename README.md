@@ -22,7 +22,7 @@ Built on top of ECSY.io.  A companion lib for ECSY-three.
 # Getting Started
 
 Install the library `ecsy-two` library via npm or any of the other usual ways.  Also install `ecsy` if it's
-not already installed. Create an HTML page and import the `ecsytwo.js` module to start.
+not already installed. Create an HTML page and import the `ecsy-two.js` module to start.
 
 ```html
 <!DOCTYPE html>
