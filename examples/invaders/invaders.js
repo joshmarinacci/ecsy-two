@@ -1,4 +1,4 @@
-import {Component, System, World} from "./node_modules/ecsy/build/ecsy.module.js"
+import {Component, System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
 import {
     AnimatedSprite,
     BackgroundFill,
@@ -9,10 +9,10 @@ import {
     Sprite,
     SpriteSystem,
     startWorld
-} from './ecsytwo.js'
-import {InputState, KeyboardState, KeyboardSystem} from './keyboard.js'
-import {Emitter, ParticleSystem} from './particles.js'
-import {AudioSystem, PlaySoundEffect, SoundEffect} from './audio.js'
+} from '../../ecsytwo.js'
+import {InputState, KeyboardState, KeyboardSystem} from '../../keyboard.js'
+import {Emitter, ParticleSystem} from '../../particles.js'
+import {AudioSystem, PlaySoundEffect, SoundEffect} from '../../audio.js'
 
 
 let world = new World()
@@ -127,7 +127,7 @@ world.createEntity()
     .addComponent(SoundEffect, { src: 'audio/PlayerDidFire.wav'})
     .addComponent(Sprite, { x: 100, y: 150-20, width: 40, height: 20}) // gives it x,y,w,h
     // .addComponent(FilledSprite, {color: 'blue'}) // gives it a color until we put in images
-    .addComponent(ImageSprite, {src:'imgs/invaders/player.png'} )
+    .addComponent(ImageSprite, {src:'images/player.png'} )
     .addComponent(PhysicsSprite, { speed: 90, direction: new Vector2D(0,0)})
     .addComponent(InputState)
     .addComponent(KeyboardState, {
@@ -201,8 +201,8 @@ class GameLogic extends System {
                         width: 16,
                         height: 16,
                         frame_count: 1,
-                        // src: `imgs/invaders/enemy${rank}.png`
-                        src: 'imgs/invaders/creeper.png',
+                        // src: `images/enemy${rank}.png`
+                        src: 'images/creeper.png',
                     })
                     .addComponent(PhysicsSprite, {
                         direction:direction,
