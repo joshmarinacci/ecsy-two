@@ -1,18 +1,16 @@
-import {Component, System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
+import {System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
 import {
-    AnimatedSprite,
     BackgroundFill,
     Camera,
-    Canvas, DebugOutline,
-    ECSYTwoSystem,
-    FilledSprite, ImageSprite,
+    Canvas, ECSYTwoSystem,
+    FilledSprite,
     Sprite,
-    SpriteSystem,
     startWorld
 } from '../../src/ecsy-two.js'
 import {InputState, KeyboardState, KeyboardSystem} from '../../src/keyboard.js'
 import {Emitter, ParticleSystem} from '../../particles.js'
 import {AudioSystem, PlaySoundEffect, SoundEffect} from '../../src/audio.js'
+import {AnimatedSprite, ImageSprite, SpriteSystem} from '../../image.js'
 
 
 let world = new World()

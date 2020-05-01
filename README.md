@@ -78,11 +78,14 @@ class MyGame extends System {
         })    
     }
 };
+//define the queries the system will use
 MyGame.queries = { 
     player: { components: [Sprite]},
     input: { components: [InputState]}, 
 };
-world.registerSystem(MyGame)
+world.registerSystem(MyGame) // register the system to use it
+
+startWorld(world) // start the main event loop
 ```
 The above code first creates a new `world`. This is the global system. Everything in your app
 will be tied to this world. If you want multiple apps in a single page you can have multiple worlds.
@@ -127,12 +130,62 @@ The full docs are available here.
 
 Components and Systems you may find interesting.
 
+## Core API
+#### Canvas
+
+Creates an HTML canvas in the page. Default width and height are 100. Default scale is 1. Set pixelMode:true
+to disable image smoothing. Set the target canvas with 'target'. If no target is set, then it will create
+a new canvas and append it to the document. 
+
+#### BackgroundFill
+
+Fills the canvas with a color.  ex:
+  
+``` javascript
+addComponent(BackgroundFill, { color:'yellow'})
+```
+
+#### Camera
+
+`Camera` translates the canvas drawing. Can be used with
+`CameraFollowsSprite` to make the canvas always draw
+with the player sprite in the center.
+
+#### Sprite
+
+An object on screen with width height x and y. You must add
+another sprite component like FilledSprite to actually see it drawn
+on screen.
+
+#### FilledSprite
+
+Fills a sprite with a color.
+
+#### DebugOutline
+
+Draws a red border around a sprite. Helpfully when debugging the
+location of your sprites.
 
 ### ImageSprite
 
+Draws a sprite with an image. Can load the image from a url. ex:
+
+```javascript
+let player = world.createEntity()
+    .addComponent(Sprite, { width: 16, height: 16})
+    .addComponent(ImageSprite, { src: "images/player.png"})
+```
+
 ### AnimatedSprite
 
+Draws a sprite from a set of animation frames.
+
+
+
 ### Audio, BackgroundMusic and Sound Effects
+
+
+
 
 ### GamepadInput
 
@@ -147,3 +200,9 @@ Components and Systems you may find interesting.
 ### Tilemap and platformer physics
 
 
+
+# Examples
+
+### Breakout
+### Invaders
+### Platformer

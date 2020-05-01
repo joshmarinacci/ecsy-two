@@ -3,27 +3,25 @@ import {
     Canvas,
     ECSYTwoSystem,
     Sprite,
-    AnimatedSprite,
     startWorld,
-    SpriteSystem,
     BackgroundFill,
-    Camera, CameraFollowsSprite, ImageSprite
+    Camera,
+    CameraFollowsSprite,
 } from "../../src/ecsy-two.js"
 import {KeyboardSystem, KeyboardState, InputState} from '../../src/keyboard.js'
 import {load_tilemap_from_url, TileMap, TileMapSystem} from '../../tiles.js'
-import {BackgroundMusic, MusicSystem, Sound} from '../../src/music.js'
-import {Emitter, ParticleSystem} from '../../particles.js'
+import {BackgroundMusic} from '../../src/music.js'
+import {ParticleSystem} from '../../particles.js'
 import {PlatformerPhysicsSystem, PlayerPhysics} from '../../platformer_controls.js'
 import {
     Dialog,
     DialogSystem,
-    FixedWidthFont,
     StateMachine,
     StateMachineSystem,
-    VariableWidthFont,
     WaitForInput
 } from '../../dialogs.js'
 import {FullscreenButton, FullscreenSystem} from '../../src/fullscreen.js'
+import {AnimatedSprite, ImageSprite, SpriteSystem} from '../../image.js'
 
 class Player extends Component {}
 
