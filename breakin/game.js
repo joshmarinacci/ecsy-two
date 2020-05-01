@@ -50,14 +50,14 @@ class ActionSystem extends System {
             this.world.getSystem(OverheadControls).enabled = false
             let action = ent.getComponent(ShowSignAction)
             console.log("showing dialog with text", action.text)
-            view.addComponent(Dialog, {
+            GLOBALS.view.addComponent(Dialog, {
                 text:action.text,
                 tilemap:LEVELS.dialog.data,
                 text_offset: make_point(50,50),
                 text_color: 'green',
             })
-            view.addComponent(WaitForInput, {onDone:()=>{
-                    view.removeComponent(Dialog)
+            GLOBALS.view.addComponent(WaitForInput, {onDone:()=>{
+                    GLOBALS.view.removeComponent(Dialog)
                     ent.removeComponent(ShowSignAction)
                     this.world.getSystem(OverheadControls).enabled = true
                 }})
@@ -126,7 +126,7 @@ world.registerSystem(OverheadControls)
 
 GLOBALS.view = world.createEntity()
     .addComponent(Canvas, {
-        scale: 2,
+        scale: 3,
         width:TILE_SIZE*16,
         height: TILE_SIZE*14,
         pixelMode:true})
@@ -200,8 +200,8 @@ function switch_to_rpg(globals, world) {
 }
 
 
-// start_rpg(GLOBALS,world)
-start_bricks(GLOBALS,world)
+start_rpg(GLOBALS,world)
+// start_bricks(GLOBALS,world)
 
 
 startWorld(world)

@@ -73,65 +73,7 @@ export class TileMap extends Component {
     set_tile_at(layerIndex,coords,v) {
         return this.layer_by_name(layerIndex).data[coords.y*this.width+coords.x] = v
     }
-    // collide_bounds(bounds, types) {
-    //     let cols = []
-    //
-    //     {
-    //         // upper left
-    //         let coords = {
-    //             x: Math.floor(bounds.x / this.tileSize),
-    //             y: Math.floor(bounds.y / this.tileSize),
-    //         }
-    //         let tile = this.tile_at(coords);
-    //         if (types.indexOf(tile) >= 0) {
-    //             cols.push(this.make_collision(tile, coords))
-    //         }
-    //     }
-    //
-    //     {
-    //         // lower left
-    //         let coords = {
-    //             x: Math.floor(bounds.x / this.tileSize),
-    //             y: Math.floor((bounds.y+bounds.height) / this.tileSize),
-    //         }
-    //         let tile = this.tile_at(coords);
-    //         if (types.indexOf(tile) >= 0) {
-    //             cols.push(this.make_collision(tile, coords))
-    //         }
-    //     }
-    //
-    //     {
-    //         // upper right
-    //         let coords = {
-    //             x: Math.floor((bounds.x+bounds.width) / this.tileSize),
-    //             y: Math.floor((bounds.y) / this.tileSize),
-    //         }
-    //         let tile = this.tile_at(coords);
-    //         if (types.indexOf(tile) >= 0) {
-    //             cols.push(this.make_collision(tile, coords))
-    //         }
-    //     }
-    //     {
-    //         //lower right
-    //         let coords = {
-    //             x: Math.floor((bounds.x+bounds.width) / this.tileSize),
-    //             y: Math.floor((bounds.y+bounds.height) / this.tileSize),
-    //         }
-    //         let tile = this.tile_at(coords);
-    //         if (types.indexOf(tile) >= 0) {
-    //             cols.push(this.make_collision(tile, coords))
-    //         }
-    //     }
-    //     return cols
-    // }
 
-    // make_collision(tile, coords) {
-    //     return {
-    //         type:'collision',
-    //         tile_type:tile,
-    //         tile_coords:coords,
-    //     }
-    // }
     layer_by_name(name) {
         return this.layers.find(layer=>layer.name === name)
     }
@@ -178,7 +120,7 @@ export class TileMapSystem extends System {
         layer.objects.forEach(obj => {
             if(obj.gid) {
                 let tile = map.index[obj.gid]
-                if(!tile) throw new Error("missing tile " + tile_index + " " + tile)
+                if(!tile) throw new Error("missing tile " + obj.gid + " " + tile)
                 if(tile)  ctx.drawImage(tile,obj.x, obj.y-obj.height)
             }
         })

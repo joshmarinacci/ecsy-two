@@ -284,7 +284,7 @@ export class DialogSystem extends System {
                     let dy = 8
                     dialog.text.split("\n").forEach(line => {
                         let bounds = ctx.measureText(line)
-                        dy += bounds.actualBoundingBoxAscent + bounds.actualBoundingBoxDescent
+                        dy += Math.floor((bounds.actualBoundingBoxAscent + bounds.actualBoundingBoxDescent)*1.4)
                         dy += 1
                         ctx.fillText(line, 10, dy)
                     })
