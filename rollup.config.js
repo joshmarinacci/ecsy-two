@@ -3,7 +3,7 @@ import { terser } from "rollup-plugin-terser";
 
 export default [
     {
-        input: "src/ecsy-two.js",
+        input: "src/index.js",
         plugins: [json({ exclude: ["node_modules/**"] })],
         output: [
             {
@@ -21,7 +21,7 @@ export default [
         ]
     },
     {
-        input: "src/ecsy-two.js",
+        input: "src/index.js",
         plugins: [json({ exclude: ["node_modules/**"] }), terser()],
         output: [
             {

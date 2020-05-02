@@ -9,17 +9,17 @@ import {
     CameraFollowsSprite, InputState
 } from "../../src/ecsy-two.js"
 import {KeyboardSystem, KeyboardState} from '../../src/keyboard.js'
-import {load_tilemap_from_url, TileMap, TileMapSystem} from '../../extensions/tiles.js'
+import {load_tilemap_from_url, TileMap, TileMapSystem} from '../../src/extensions/tiles.js'
 import {BackgroundNotes} from '../../src/music.js'
-import {ParticleSystem} from '../../extensions/particles.js'
-import {PlatformerPhysicsSystem, PlayerPhysics} from '../../extensions/platformer_controls.js'
+import {ParticleSystem} from '../../src/extensions/particles.js'
+import {PlatformerPhysicsSystem, PlayerPhysics} from '../../src/extensions/platformer_controls.js'
 import {
     Dialog,
     DialogSystem,
     StateMachine,
     StateMachineSystem,
     WaitForInput
-} from '../../extensions/dialogs.js'
+} from '../../src/extensions/dialogs.js'
 import {FullscreenButton, FullscreenSystem} from '../../src/fullscreen.js'
 import {AnimatedSprite, ImageSprite, SpriteSystem} from '../../src/image.js'
 

@@ -1,7 +1,7 @@
-import {Component, System} from "../node_modules/ecsy/build/ecsy.module.js"
-import {Camera, Canvas} from '../src/ecsy-two.js'
+import {Component, System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
+import {Camera, Canvas} from '../ecsy-two.js'
 import {make_point} from '../utils.js'
-import {load_image_from_url, SpriteSheet} from '../src/image.js'
+import {load_image_from_url, SpriteSheet} from '../image.js'
 
 export function make_tile(size, palette, data) {
     if(!palette || !palette.length) throw new Error("make_tile: palette must be an array of colors")
@@ -110,7 +110,7 @@ export class TileMapSystem extends System {
                 let tile_index = layer.data[n]
                 if (tile_index === 0) continue
                 let tile = map.index[tile_index]
-                if(!tile) throw new Error("missing tile " + tile_index + " " + tile)
+                if(!tile) console.error("missing tile " + tile_index + " " + tile)
                 if(tile)  ctx.drawImage(tile,x*map.tilewidth, y*map.tileheight)
             }
         }

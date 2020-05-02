@@ -8,7 +8,7 @@ import {
     startWorld
 } from '../../src/ecsy-two.js'
 import {KeyboardState, KeyboardSystem} from '../../src/keyboard.js'
-import {Emitter, ParticleSystem} from '../../extensions/particles.js'
+import {Emitter, ParticleSystem} from '../../src/extensions/particles.js'
 import {AudioSystem, PlaySoundEffect, SoundEffect} from '../../src/audio.js'
 import {AnimatedSprite, ImageSprite, SpriteSystem} from '../../src/image.js'
 
