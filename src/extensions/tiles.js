@@ -3,6 +3,13 @@ import {Camera, Canvas} from '../ecsy-two.js'
 import {make_point} from '../utils.js'
 import {load_image_from_url, SpriteSheet} from '../image.js'
 
+const FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
+const FLIPPED_VERTICALLY_FLAG   = 0x40000000;
+const FLIPPED_DIAGONALLY_FLAG   = 0x20000000;
+function is_flipped_horizontally(index) {
+    return ((index & FLIPPED_HORIZONTALLY_FLAG) !== 0)
+}
+
 export function make_tile(size, palette, data) {
     if(!palette || !palette.length) throw new Error("make_tile: palette must be an array of colors")
     if(!data || !data.length) throw new Error("make_tile: data must be a string of numbers")
@@ -107,11 +114,23 @@ export class TileMapSystem extends System {
         for(let y=0; y<layer.height; y++) {
             for(let x=0; x<layer.width; x++) {
                 let n = y*layer.width+x
-                let tile_index = layer.data[n]
+                let tile_index_raw = layer.data[n]
+                let tile_index = (tile_index_raw & (~ (FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_DIAGONALLY_FLAG)))
                 if (tile_index === 0) continue
                 let tile = map.index[tile_index]
                 if(!tile) console.error("missing tile " + tile_index + " " + tile)
-                if(tile)  ctx.drawImage(tile,x*map.tilewidth, y*map.tileheight)
+                // if(!tile && tile_index < 1000) continue
+                if(!tile) throw new Error("missing tile " + tile_index + " " + tile)
+                if(tile)  {
+                    ctx.save()
+                    ctx.translate(x * map.tilewidth, y * map.tileheight)
+                    if(is_flipped_horizontally(tile_index_raw)) {
+                        ctx.scale(-1.0,1.0)
+                        ctx.translate(-map.tilewidth,0)
+                    }
+                    ctx.drawImage(tile, 0,0)
+                    ctx.restore()
+                }
             }
         }
     }
