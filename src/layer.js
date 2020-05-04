@@ -68,7 +68,7 @@ export class LayerRenderingSystem extends System {
             }
             this.layer_order.forEach(layer => {
                 let children = this.layer_index[layer.name]
-                if(children) children.forEach(ch => ch.draw(ctx))
+                if(children) children.forEach(ch => ch.draw(ctx, canvas_ent))
             })
             ctx.restore()
         })
@@ -120,12 +120,19 @@ export class DrawImage {
         this.bounds = bounds
         this.sprite = image_sprite
     }
-    draw(ctx) {
+    draw(ctx, ent) {
         if(this.sprite && this.sprite.image) {
             ctx.save()
             if(this.sprite.flipY) {
                 ctx.scale(-1,1)
                 ctx.translate(-this.sprite.width,0)
+            }
+            if(this.bounds.fixed && ent.hasComponent(Camera)) {
+                let canvas = ent.getComponent(Canvas)
+                let camera = ent.getComponent(Camera)
+                ctx.translate(
+                    +camera.x - canvas.width/2,
+                    +camera.y - canvas.height/2)
             }
             ctx.translate(this.bounds.x,this.bounds.y)
             ctx.drawImage(this.sprite.image, 0, 0)
