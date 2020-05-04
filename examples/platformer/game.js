@@ -9,7 +9,7 @@ import {
     CameraFollowsSprite, InputState,
     KeyboardState, KeyboardSystem,
     FullscreenButton, FullscreenSystem,
-    AnimatedSprite, ImageSprite, SpriteSystem,
+    AnimatedSprite, ImageSprite, SpriteSystem, LayerParent, LayerRenderingSystem
 } from "../../src/index.js"
 
 import {load_tilemap_from_url, TileMap, TileMapSystem} from '../../src/extensions/tiles.js'
@@ -84,6 +84,7 @@ FishSystem.queries = {
 }
 
 world.registerSystem(ECSYTwoSystem)
+world.registerSystem(LayerRenderingSystem)
 world.registerSystem(KeyboardSystem)
 world.registerSystem(TileMapSystem)
 world.registerSystem(SpriteSystem)
@@ -323,6 +324,7 @@ Promise.all([
                 player.getMutableComponent(Sprite).y = LEVELS.simple.start.y
                 view.removeComponent(TileMap)
                 view.addComponent(TileMap, LEVELS.simple.data)
+                view.addComponent(LayerParent)
                 world.getSystem(PlatformerPhysicsSystem).enabled = true
             }
         ]})

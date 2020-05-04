@@ -2,6 +2,7 @@ import {Component, System, World} from "../../node_modules/ecsy/build/ecsy.modul
 import {Camera, Canvas} from '../ecsy-two.js'
 import {make_point} from '../utils.js'
 import {load_image_from_url, SpriteSheet} from '../image.js'
+import {LayerParent} from '../layer.js'
 
 const FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
 const FLIPPED_VERTICALLY_FLAG   = 0x40000000;
@@ -10,35 +11,35 @@ function is_flipped_horizontally(index) {
     return ((index & FLIPPED_HORIZONTALLY_FLAG) !== 0)
 }
 
-export function make_tile(size, palette, data) {
-    if(!palette || !palette.length) throw new Error("make_tile: palette must be an array of colors")
-    if(!data || !data.length) throw new Error("make_tile: data must be a string of numbers")
-    let canvas = document.createElement('canvas')
-    canvas.width = size
-    canvas.height = size
-    let ctx = canvas.getContext('2d')
-    ctx.fillStyle = 'white'
-    ctx.clearRect(0,0,size,size)
-
-    let x = 0
-    let y = 0
-    let count = 0
-    for (let i=0; i<data.length; i++) {
-        let ch = data[i]
-        if(is_whitespace(ch)) continue
-        let n = parseInt(ch,16)
-        ctx.fillStyle = palette[n]
-        ctx.fillRect(x,y,1,1)
-        x = x + 1
-        count = count + 1
-        if( x >= size) {
-            x = 0
-            y = y + 1
-        }
-    }
-    if(count !== size*size) console.warn("pixel count less than width x height",count,size*size)
-    return canvas
-}
+// export function make_tile(size, palette, data) {
+//     if(!palette || !palette.length) throw new Error("make_tile: palette must be an array of colors")
+//     if(!data || !data.length) throw new Error("make_tile: data must be a string of numbers")
+//     let canvas = document.createElement('canvas')
+//     canvas.width = size
+//     canvas.height = size
+//     let ctx = canvas.getContext('2d')
+//     ctx.fillStyle = 'white'
+//     ctx.clearRect(0,0,size,size)
+//
+//     let x = 0
+//     let y = 0
+//     let count = 0
+//     for (let i=0; i<data.length; i++) {
+//         let ch = data[i]
+//         if(is_whitespace(ch)) continue
+//         let n = parseInt(ch,16)
+//         ctx.fillStyle = palette[n]
+//         ctx.fillRect(x,y,1,1)
+//         x = x + 1
+//         count = count + 1
+//         if( x >= size) {
+//             x = 0
+//             y = y + 1
+//         }
+//     }
+//     if(count !== size*size) console.warn("pixel count less than width x height",count,size*size)
+//     return canvas
+// }
 export function is_whitespace(ch) {
     if(ch === ' ') return true
     if(ch === '\t') return true
@@ -90,23 +91,19 @@ export class TileMapSystem extends System {
     execute(delta, time) {
         this.queries.maps.results.forEach(ent => {
             let map = ent.getComponent(TileMap)
-            this.queries.screen.results.forEach(ent => {
-                let canvas = ent.getComponent(Canvas)
-                let camera = ent.getComponent(Camera)
-                let ctx = canvas.dom.getContext('2d')
-                ctx.imageSmoothingEnabled = !canvas.pixelMode
-                ctx.save()
-                ctx.scale(canvas.scale,canvas.scale)
-                ctx.translate(
-                    -camera.x + canvas.width/2,
-                    -camera.y + canvas.height/2
-                )
-                map.layers.forEach(layer => {
-                    if(layer.type === 'tilelayer') this.drawTileLayer(map, ctx, layer)
-                    if(layer.type === 'objectgroup') this.drawObjectLayer(map, ctx, layer)
-                })
-                ctx.restore()
-            })
+            let layer = ent.getComponent(LayerParent)
+            layer.draw_object = {
+                draw:(ctx)=>{
+                    this.drawMap(map,ctx)
+                }
+            }
+        })
+    }
+
+    drawMap(map,ctx) {
+        map.layers.forEach(layer => {
+            if (layer.type === 'tilelayer') this.drawTileLayer(map, ctx, layer)
+            if (layer.type === 'objectgroup') this.drawObjectLayer(map, ctx, layer)
         })
     }
 
@@ -151,7 +148,7 @@ TileMapSystem.queries = {
         components:[Canvas, Camera]
     },
     maps: {
-        components:[TileMap],
+        components:[TileMap, LayerParent],
     }
 }
 export function make_map(width, height, data) {
