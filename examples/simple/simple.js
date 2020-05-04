@@ -1,10 +1,11 @@
-import {Component, System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
+import {System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
 import {
     BackgroundFill, Canvas,
     ECSYTwoSystem,
     Sprite, startWorld,
     FilledSprite, SpriteSystem, InputState, KeyboardState,
     KeyboardSystem,
+    Layer, LayerParent, LayerRenderingSystem,
 } from '../../src/index.js'
 
 
@@ -12,6 +13,7 @@ let world = new World()
 world.registerSystem(ECSYTwoSystem)
 world.registerSystem(SpriteSystem)
 world.registerSystem(KeyboardSystem)
+world.registerSystem(LayerRenderingSystem)
 
 
 let view = world.createEntity()
@@ -20,19 +22,15 @@ let view = world.createEntity()
     .addComponent(InputState)
     .addComponent(KeyboardState)
 
+// world.createEntity().addComponent(Layer, { name: "default", depth:0})
+// world.createEntity().addComponent(Layer, { name: "middle", depth:50})
+world.createEntity().addComponent(Layer, { name: "front", depth:100})
 
 class Player {
     constructor() {
         this.speed = 10
     }
 }
-
-//create the player
-world.createEntity()
-    .addComponent(Player, { speed: 4})
-    .addComponent(Sprite, { x: 10, y: 10, width: 50, height:50})
-    .addComponent(FilledSprite, { color: 'red'})
-
 
 function clamp(min, val, max) {
     if(val < min) return min
@@ -59,6 +57,7 @@ class PlayerControls extends System {
         })
     }
 }
+// system needs player and input
 PlayerControls.queries = {
     input: { components: [ InputState]},
     player: {components: [Player, Sprite] },
@@ -68,12 +67,22 @@ PlayerControls.queries = {
 world.registerSystem(PlayerControls)
 
 
+//create the player
+world.createEntity()
+    .addComponent(Player, { speed: 4})
+    .addComponent(Sprite, { x: 10, y: 10, width: 50, height:50, layer:"front"})
+    .addComponent(FilledSprite, { color: 'red'})
+
+// create enemy 1
 world.createEntity()
     .addComponent(Sprite, { x: 100, y: 10, width:50, height:50})
     .addComponent(FilledSprite, { color: 'green'})
+    // .addComponent(LayerParent, { name: "middle"})
 
+// create enemy 2
 world.createEntity()
     .addComponent(Sprite, { x: 200, y: 10, width:50, height:50})
     .addComponent(FilledSprite, { color: 'yellow'})
+    // .addComponent(LayerParent, { name: "back"})
 
 startWorld(world)

@@ -41,6 +41,8 @@ export class Sprite extends  Component {
         this.y = 0
         this.width = 10
         this.height = 10
+        this.layer = "default"
+        this.draw_object = null
     }
     left() {
         return this.x

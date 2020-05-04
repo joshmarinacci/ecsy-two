@@ -1,5 +1,6 @@
 import {Component, System, World} from "../node_modules/ecsy/build/ecsy.module.js"
 import {Camera, CameraFollowsSprite, Canvas, DebugOutline, FilledSprite, Sprite} from './ecsy-two.js'
+import {DrawFilledrect, LayerParent} from './layer.js'
 
 export class ImageSprite extends Component {
     constructor() {
@@ -61,12 +62,12 @@ export class SpriteSystem extends System {
             this.queries.filled_sprites.results.forEach(ent => {
                 let sprite = ent.getComponent(Sprite)
                 let color = ent.getComponent(FilledSprite)
-                ctx.fillStyle = color.color
-                ctx.fillRect(sprite.x, sprite.y, sprite.width, sprite.height)
+                sprite.draw_object = new DrawFilledrect(sprite,color.color)
             })
             // draw image sprites
             this.queries.sprites.results.forEach(ent => {
                 let sprite = ent.getComponent(Sprite)
+                /*
                 ctx.save()
                 if(sprite.fixed && canvas_ent.hasComponent(Camera)) {
                     let camera = canvas_ent.getComponent(Camera)
@@ -75,15 +76,17 @@ export class SpriteSystem extends System {
                         +camera.y - canvas.height/2)
                 }
                 ctx.translate(sprite.x, sprite.y)
+                 */
                 let image_sprite = ent.getComponent(ImageSprite)
-                if(image_sprite.flipY) {
-                    ctx.scale(-1,1)
-                    ctx.translate(-sprite.width,0)
-                }
-                if(image_sprite.image) {
-                    ctx.drawImage(image_sprite.image, 0, 0)
-                }
-                ctx.restore()
+                sprite.draw_object = new DrawImage(sprite,image_sprite)
+                // if(image_sprite.flipY) {
+                //     ctx.scale(-1,1)
+                //     ctx.translate(-sprite.width,0)
+                // }
+                // if(image_sprite.image) {
+                //     ctx.drawImage(image_sprite.image, 0, 0)
+                // }
+                // ctx.restore()
             })
 
             // draw animated images sprites
