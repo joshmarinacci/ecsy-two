@@ -1692,4 +1692,48 @@ FullscreenSystem.queries = {
     }
 };
 
-export { AnimatedSprite, BackgroundFill, Camera, CameraFollowsSprite, Canvas, DebugOutline, Dialog, DialogSystem, ECSYTwoSystem, FilledSprite, FullscreenButton, FullscreenMode, FullscreenSystem, ImageSprite, InputState, KeyboardState, KeyboardSystem, MouseInputSystem, MouseState, Sprite, SpriteSheet, SpriteSystem, TileMap, TileMapSystem, WaitForInput, load_image_from_url, load_tilemap_from_url, make_point, startWorld };
+class SoundEffect {
+    constructor() {
+        this.audio = null;
+        this.src = null;
+    }
+}
+class PlaySoundEffect {
+
+}
+class AudioSystem extends System {
+    execute(delta, time) {
+        this.queries.sound_effects.added.forEach(ent => {
+            let effect = ent.getComponent(SoundEffect);
+            if(effect.src && !this.audio) {
+                effect.audio = new Audio();
+                console.log("loading the audio",effect.src);
+                effect.audio.addEventListener('loadeddata', () => {
+                    console.log("loaded audio from src",effect.src);
+                });
+                effect.audio.src = effect.src;
+            }
+        });
+        this.queries.play.added.forEach(ent => {
+            let sound = ent.getComponent(SoundEffect);
+            sound.audio.play();
+            ent.removeComponent(PlaySoundEffect);
+        });
+    }
+}
+AudioSystem.queries = {
+    sound_effects: {
+        components:[SoundEffect],
+        listen: {
+            added:true,
+        }
+    },
+    play: {
+        components:[SoundEffect, PlaySoundEffect],
+        listen: {
+            added:true,
+        }
+    }
+};
+
+export { AnimatedSprite, AudioSystem, BackgroundFill, Camera, CameraFollowsSprite, Canvas, DebugOutline, Dialog, DialogSystem, ECSYTwoSystem, FilledSprite, FullscreenButton, FullscreenMode, FullscreenSystem, ImageSprite, InputState, KeyboardState, KeyboardSystem, MouseInputSystem, MouseState, PlaySoundEffect, SoundEffect, Sprite, SpriteSheet, SpriteSystem, TileMap, TileMapSystem, WaitForInput, load_image_from_url, load_tilemap_from_url, make_point, startWorld };
