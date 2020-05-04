@@ -5,16 +5,17 @@ import {
     Canvas, ECSYTwoSystem,
     FilledSprite, InputState,
     Sprite,
-    startWorld
-} from '../../src/ecsy-two.js'
-import {KeyboardState, KeyboardSystem} from '../../src/keyboard.js'
+    startWorld,
+    KeyboardSystem, KeyboardState,
+    SpriteSystem, ImageSprite, AnimatedSprite,
+    AudioSystem, SoundEffect, PlaySoundEffect, LayerRenderingSystem, DebugOutline,
+} from '../../src/index.js'
 import {Emitter, ParticleSystem} from '../../src/extensions/particles.js'
-import {AudioSystem, PlaySoundEffect, SoundEffect} from '../../src/audio.js'
-import {AnimatedSprite, ImageSprite, SpriteSystem} from '../../src/image.js'
 
 
 let world = new World()
 world.registerSystem(ECSYTwoSystem)
+world.registerSystem(LayerRenderingSystem)
 world.registerSystem(KeyboardSystem)
 world.registerSystem(SpriteSystem)
 world.registerSystem(AudioSystem)

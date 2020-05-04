@@ -1,5 +1,5 @@
 import {Component, System, Not} from "../node_modules/ecsy/build/ecsy.module.js"
-import {Canvas, Sprite} from './ecsy-two.js'
+import {Camera, Canvas, Sprite} from './ecsy-two.js'
 
 
 export class Layer extends Component{
@@ -56,10 +56,21 @@ export class LayerRenderingSystem extends System {
         this.queries.canvas.results.forEach(canvas_ent => {
             let canvas = canvas_ent.getComponent(Canvas)
             let ctx = canvas.dom.getContext('2d')
+            ctx.save()
+            ctx.scale(canvas.scale,canvas.scale)
+            if(canvas_ent.hasComponent(Camera)) {
+                let camera = canvas_ent.getComponent(Camera)
+                if (camera.centered) {
+                    ctx.translate(
+                        -camera.x + canvas.width / 2,
+                        -camera.y + canvas.height / 2)
+                }
+            }
             this.layer_order.forEach(layer => {
                 let children = this.layer_index[layer.name]
                 if(children) children.forEach(ch => ch.draw(ctx))
             })
+            ctx.restore()
         })
     }
 }
@@ -82,7 +93,7 @@ LayerRenderingSystem.queries = {
 }
 
 
-export class DrawFilledrect {
+export class DrawFilledRect {
     constructor(bounds,color) {
         this.bounds = bounds
         this.color = color
@@ -92,16 +103,32 @@ export class DrawFilledrect {
         ctx.fillRect(this.bounds.x,this.bounds.y,this.bounds.width,this.bounds.height)
     }
 }
-export class DrawImage {
-    constructor(bounds, image) {
+
+export class DrawStrokedRect {
+    constructor(bounds,color) {
         this.bounds = bounds
-        this.image = image
+        this.color = color
     }
     draw(ctx) {
-        if(this.image) {
+        ctx.strokeStyle = this.color
+        ctx.strokeRect(this.bounds.x,this.bounds.y,this.bounds.width,this.bounds.height)
+    }
+}
+
+export class DrawImage {
+    constructor(bounds, image_sprite) {
+        this.bounds = bounds
+        this.sprite = image_sprite
+    }
+    draw(ctx) {
+        if(this.sprite && this.sprite.image) {
             ctx.save()
+            if(this.sprite.flipY) {
+                ctx.scale(-1,1)
+                ctx.translate(-this.sprite.width,0)
+            }
             ctx.translate(this.bounds.x,this.bounds.y)
-            ctx.drawImage(this.image, 0, 0)
+            ctx.drawImage(this.sprite.image, 0, 0)
             ctx.restore()
         }
 

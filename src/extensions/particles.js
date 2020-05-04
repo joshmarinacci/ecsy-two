@@ -1,6 +1,5 @@
-import {Component, System} from "ecsy"
-import {FilledSprite, Sprite} from '../ecsy-two.js'
-import {ImageSprite} from '../image.js'
+import {Component, System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
+import {FilledSprite, Sprite, ImageSprite} from '../index.js'
 
 export class Emitter extends Component {
     constructor() {
