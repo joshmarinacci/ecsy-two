@@ -6,9 +6,12 @@ import {
     startWorld,
     BackgroundFill,
     Camera,
-    CameraFollowsSprite, InputState
-} from "../../src/ecsy-two.js"
-import {KeyboardSystem, KeyboardState} from '../../src/keyboard.js'
+    CameraFollowsSprite, InputState,
+    KeyboardState, KeyboardSystem,
+    FullscreenButton, FullscreenSystem,
+    AnimatedSprite, ImageSprite, SpriteSystem,
+} from "../../src/index.js"
+
 import {load_tilemap_from_url, TileMap, TileMapSystem} from '../../src/extensions/tiles.js'
 import {BackgroundNotes} from '../../src/music.js'
 import {ParticleSystem} from '../../src/extensions/particles.js'
@@ -20,8 +23,6 @@ import {
     StateMachineSystem,
     WaitForInput
 } from '../../src/extensions/dialogs.js'
-import {FullscreenButton, FullscreenSystem} from '../../src/fullscreen.js'
-import {AnimatedSprite, ImageSprite, SpriteSystem} from '../../src/image.js'
 
 class Player extends Component {}
 

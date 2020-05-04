@@ -1,8 +1,9 @@
-import {Component, System} from "ecsy"
-import {Camera, Canvas, InputState, Sprite} from '../ecsy-two.js'
+import {Component, System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
+import {Camera, Canvas, InputState, Sprite,
+    make_point,
+    AnimatedSprite,
+} from '../index.js'
 import {make_bounds, TileMap} from './tiles.js'
-import {make_point} from '../utils.js'
-import {AnimatedSprite} from '../image.js'
 
 const UP='UP'
 const DOWN='DOWN'
