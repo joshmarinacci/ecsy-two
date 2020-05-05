@@ -721,6 +721,8 @@ class Sprite extends  Component {
         this.y = 0;
         this.width = 10;
         this.height = 10;
+        this.layer = "default";
+        this.draw_object = null;
     }
     left() {
         return this.x
@@ -828,6 +830,146 @@ class InputState extends Component {
     }
 }
 
+class Layer extends Component{
+    constructor() {
+        super();
+        this.name = "unnamed-layer";
+        this.depth = 100000;
+    }
+}
+class LayerParent extends Component {
+    constructor() {
+        super();
+        this.name = "default";
+        this.draw_object = null;
+    }
+}
+
+
+class LayerRenderingSystem extends System {
+    init() {
+        this.layer_order = [];
+        this.layer_index = {};
+    }
+    execute(delta, time) {
+        //this creates a default layer for anything that doesn't specify a layer
+        this.queries.canvas.added.forEach(ent => {
+            ent.addComponent(Layer, { name:'default', depth: 0});
+        });
+        this.update_layer_order();
+        this.update_layer_index();
+        this.draw_layers();
+    }
+
+    update_layer_order() {
+        this.layer_order = this.queries.layers.results.map(ent => ent.getComponent(Layer));
+        this.layer_order.sort((a,b)=> a.depth - b.depth);
+    }
+
+    update_layer_index() {
+        this.layer_index = {};
+        this.queries.layer_children.results.forEach(ent => {
+            let ch = ent.getComponent(LayerParent);
+            if(!this.layer_index[ch.name]) this.layer_index[ch.name] = [];
+            if(ch.draw_object) this.layer_index[ch.name].push(ch.draw_object);
+        });
+        this.queries.sprite_children.results.forEach(ent => {
+            let ch = ent.getComponent(Sprite);
+            if(!this.layer_index[ch.layer]) this.layer_index[ch.layer] = [];
+            if(ch.draw_object) this.layer_index[ch.layer].push(ch.draw_object);
+        });
+    }
+
+    draw_layers() {
+        this.queries.canvas.results.forEach(canvas_ent => {
+            let canvas = canvas_ent.getComponent(Canvas);
+            let ctx = canvas.dom.getContext('2d');
+            ctx.save();
+            ctx.scale(canvas.scale,canvas.scale);
+            if(canvas_ent.hasComponent(Camera)) {
+                let camera = canvas_ent.getComponent(Camera);
+                if (camera.centered) {
+                    ctx.translate(
+                        -camera.x + canvas.width / 2,
+                        -camera.y + canvas.height / 2);
+                }
+            }
+            this.layer_order.forEach(layer => {
+                let children = this.layer_index[layer.name];
+                if(children) children.forEach(ch => ch.draw(ctx, canvas_ent));
+            });
+            ctx.restore();
+        });
+    }
+}
+LayerRenderingSystem.queries = {
+    canvas: {
+        components: [Canvas],
+        listen: {
+            added:true
+        }
+    },
+    layers: {
+        components:[Layer]
+    },
+    layer_children: {
+        components: [LayerParent]
+    },
+    sprite_children: {
+        components: [Sprite]
+    },
+};
+
+
+class DrawFilledRect {
+    constructor(bounds,color) {
+        this.bounds = bounds;
+        this.color = color;
+    }
+    draw(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.bounds.x,this.bounds.y,this.bounds.width,this.bounds.height);
+    }
+}
+
+class DrawStrokedRect {
+    constructor(bounds,color) {
+        this.bounds = bounds;
+        this.color = color;
+    }
+    draw(ctx) {
+        ctx.strokeStyle = this.color;
+        ctx.strokeRect(this.bounds.x,this.bounds.y,this.bounds.width,this.bounds.height);
+    }
+}
+
+class DrawImage {
+    constructor(bounds, image_sprite) {
+        this.bounds = bounds;
+        this.sprite = image_sprite;
+    }
+    draw(ctx, ent) {
+        if(this.sprite && this.sprite.image) {
+            ctx.save();
+            if(this.sprite.flipY) {
+                ctx.scale(-1,1);
+                ctx.translate(-this.sprite.width,0);
+            }
+            if(this.bounds.fixed && ent.hasComponent(Camera)) {
+                let canvas = ent.getComponent(Canvas);
+                let camera = ent.getComponent(Camera);
+                ctx.translate(
+                    +camera.x - canvas.width/2,
+                    +camera.y - canvas.height/2);
+            }
+            ctx.translate(this.bounds.x,this.bounds.y);
+            ctx.drawImage(this.sprite.image, 0, 0);
+            ctx.restore();
+        }
+
+    }
+}
+
 class ImageSprite extends Component {
     constructor() {
         super();
@@ -888,29 +1030,21 @@ class SpriteSystem extends System {
             this.queries.filled_sprites.results.forEach(ent => {
                 let sprite = ent.getComponent(Sprite);
                 let color = ent.getComponent(FilledSprite);
-                ctx.fillStyle = color.color;
-                ctx.fillRect(sprite.x, sprite.y, sprite.width, sprite.height);
+                sprite.draw_object = new DrawFilledRect(sprite,color.color);
             });
             // draw image sprites
             this.queries.sprites.results.forEach(ent => {
                 let sprite = ent.getComponent(Sprite);
-                ctx.save();
+                /*
                 if(sprite.fixed && canvas_ent.hasComponent(Camera)) {
-                    let camera = canvas_ent.getComponent(Camera);
+                    let camera = canvas_ent.getComponent(Camera)
                     ctx.translate(
                         +camera.x - canvas.width/2,
-                        +camera.y - canvas.height/2);
+                        +camera.y - canvas.height/2)
                 }
-                ctx.translate(sprite.x, sprite.y);
+                 */
                 let image_sprite = ent.getComponent(ImageSprite);
-                if(image_sprite.flipY) {
-                    ctx.scale(-1,1);
-                    ctx.translate(-sprite.width,0);
-                }
-                if(image_sprite.image) {
-                    ctx.drawImage(image_sprite.image, 0, 0);
-                }
-                ctx.restore();
+                sprite.draw_object = new DrawImage(sprite,image_sprite);
             });
 
             // draw animated images sprites
@@ -939,6 +1073,7 @@ class SpriteSystem extends System {
             this.queries.debug_sprites.results.forEach(ent => {
                 let sprite = ent.getComponent(Sprite);
                 let debug = ent.getComponent(DebugOutline);
+                sprite.draw_object = new DrawStrokedRect(sprite,debug.color);
                 ctx.strokeStyle = debug.color;
                 ctx.strokeRect(sprite.x, sprite.y, sprite.width, sprite.height);
             });
@@ -1040,12 +1175,221 @@ function load_image_from_url(src) {
     })
 }
 
+class KeyboardState extends Component {
+    constructor() {
+        super();
+        this.states = {};
+        this.mapping = {
+            ' ':'jump',
+            'ArrowLeft':'left',
+            'ArrowRight':'right',
+            'ArrowUp':'up',
+            'ArrowDown':'down',
+        };
+        this.on_keydown = (e) => {
+            this.setKeyState(e.key,'down');
+        };
+        this.on_keyup = (e) => {
+            this.setKeyState(e.key,'up');
+        };
+    }
+    setKeyState(key,value) {
+        let state = this.getKeyState(key);
+        state.prev = state.current;
+        state.current = value;
+    }
+    getKeyState(key) {
+        if(!this.states[key]) {
+            this.states[key] = {
+                prev:'up',
+                current:'up',
+            };
+        }
+        return this.states[key]
+    }
+    isPressed(name) {
+        return this.getKeyState(name).current === 'down'
+    }
+}
+class KeyboardSystem extends System {
+    execute(delta, time) {
+        this.queries.controls.added.forEach( ent => {
+            let cont = ent.getMutableComponent(KeyboardState);
+            document.addEventListener('keydown',cont.on_keydown);
+            document.addEventListener('keyup',cont.on_keyup);
+        });
+        this.queries.controls.results.forEach(ent => {
+            let kb = ent.getComponent(KeyboardState);
+            let inp = ent.getMutableComponent(InputState);
+            inp.changed = false;
+            inp.released = false;
+            Object.keys(kb.mapping).forEach(key => {
+                let name = kb.mapping[key];
+                let state = kb.getKeyState(key);
+                if(state.current === 'down' && state.prev === 'up') {
+                    inp.states[name] = (state.current === 'down');
+                    inp.changed = true;
+                }
+                if(state.current === 'up' && state.prev === 'down') {
+                    inp.states[name] = (state.current === 'down');
+                    inp.changed = true;
+                    inp.released = true;
+                }
+                state.prev = state.current;
+            });
+            // console.log("key mapping", kb.mapping['a'], kb.states['a'], "left state",inp.states['left'])
+        });
+    }
+}
+KeyboardSystem.queries = {
+    controls: {
+        components:[KeyboardState, InputState],
+        listen: { added:true, removed: true},
+    },
+};
+
+class MouseState {
+    constructor() {
+        this.clientX = 0;
+        this.clientY = 0;
+    }
+}
+class MouseInputSystem extends System {
+    execute(delta, time) {
+        this.queries.mouse.added.forEach(ent => {
+            let mouse = ent.getMutableComponent(MouseState);
+            mouse.moveHandler = (e) =>  {
+                mouse.clientX = e.clientX;
+                mouse.lastTimestamp = e.timeStamp;
+            };
+            document.addEventListener('mousemove', mouse.moveHandler, false);
+        });
+        this.queries.mouse.results.forEach(ent => {
+            // console.log("current mouse",ent.getComponent(MouseState))
+        });
+        this.queries.mouse.removed.forEach(ent => {
+            let mouse = ent.getMutableComponent(MouseState);
+            document.removeEventListener('mousemove', mouse.moveHandler);
+        });
+    }
+}
+MouseInputSystem.queries = {
+    mouse: {
+        components:[MouseState],
+        listen: {
+            added:true,
+            removed:true
+        }
+    }
+};
+
 function make_point(tx, ty) {
     return {
         x: tx,
         y: ty
     }
 }
+
+class FullscreenMode extends Component {
+}
+
+class FullscreenButton extends Component {
+}
+
+class FullscreenSystem extends  System {
+    execute(delta, time) {
+        this.queries.buttons.added.forEach(ent => {
+            let elem = document.createElement('button');
+            elem.innerText = "fullscreen";
+            elem.classList.add("fullscreen");
+            elem.addEventListener('click',(e)=>{
+                e.stopPropagation();
+                e.preventDefault();
+                ent.addComponent(FullscreenMode);
+            });
+            document.documentElement.append(elem);
+        });
+        this.queries.active.added.forEach(ent => {
+            console.log("turned on full screen");
+            let mode = ent.getMutableComponent(FullscreenMode);
+            mode.fullscreenchangeHandler = () => {
+                console.log("entered full screen");
+                if(document.fullscreenElement || document.webkitFullscreenElement) {
+                    console.log("entered");
+                } else {
+                    console.log("exited");
+                    ent.removeComponent(FullscreenMode);
+                }
+            };
+            document.addEventListener('fullscreenchange',mode.fullscreenchangeHandler);
+            document.addEventListener('webkitfullscreenchange',mode.fullscreenchangeHandler);
+            const domElement = document.querySelector("canvas");
+            domElement.requestFullscreen();
+        });
+        this.queries.active.removed.forEach(ent => {
+            console.log("removed the fullscreen mode");
+        });
+    }
+}
+FullscreenSystem.queries = {
+    buttons: {
+        components: [FullscreenButton],
+        listen: {
+            added:true
+        }
+    },
+    active: {
+        components: [FullscreenMode],
+        listen: {
+            added:true,
+            removed:true,
+        }
+    }
+};
+
+class SoundEffect {
+    constructor() {
+        this.audio = null;
+        this.src = null;
+    }
+}
+class PlaySoundEffect {
+
+}
+class AudioSystem extends System {
+    execute(delta, time) {
+        this.queries.sound_effects.added.forEach(ent => {
+            let effect = ent.getComponent(SoundEffect);
+            if(effect.src && !this.audio) {
+                effect.audio = new Audio();
+                console.log("loading the audio",effect.src);
+                effect.audio.addEventListener('loadeddata', () => {
+                    console.log("loaded audio from src",effect.src);
+                });
+                effect.audio.src = effect.src;
+            }
+        });
+        this.queries.play.added.forEach(ent => {
+            let sound = ent.getComponent(SoundEffect);
+            sound.audio.play();
+            ent.removeComponent(PlaySoundEffect);
+        });
+    }
+}
+AudioSystem.queries = {
+    sound_effects: {
+        components:[SoundEffect],
+        listen: {
+            added:true,
+        }
+    },
+    play: {
+        components:[SoundEffect, PlaySoundEffect],
+        listen: {
+            added:true,
+        }
+    }
+};
 
 const FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
 const FLIPPED_VERTICALLY_FLAG   = 0x40000000;
@@ -1087,23 +1431,19 @@ class TileMapSystem extends System {
     execute(delta, time) {
         this.queries.maps.results.forEach(ent => {
             let map = ent.getComponent(TileMap);
-            this.queries.screen.results.forEach(ent => {
-                let canvas = ent.getComponent(Canvas);
-                let camera = ent.getComponent(Camera);
-                let ctx = canvas.dom.getContext('2d');
-                ctx.imageSmoothingEnabled = !canvas.pixelMode;
-                ctx.save();
-                ctx.scale(canvas.scale,canvas.scale);
-                ctx.translate(
-                    -camera.x + canvas.width/2,
-                    -camera.y + canvas.height/2
-                );
-                map.layers.forEach(layer => {
-                    if(layer.type === 'tilelayer') this.drawTileLayer(map, ctx, layer);
-                    if(layer.type === 'objectgroup') this.drawObjectLayer(map, ctx, layer);
-                });
-                ctx.restore();
-            });
+            let layer = ent.getComponent(LayerParent);
+            layer.draw_object = {
+                draw:(ctx)=>{
+                    this.drawMap(map,ctx);
+                }
+            };
+        });
+    }
+
+    drawMap(map,ctx) {
+        map.layers.forEach(layer => {
+            if (layer.type === 'tilelayer') this.drawTileLayer(map, ctx, layer);
+            if (layer.type === 'objectgroup') this.drawObjectLayer(map, ctx, layer);
         });
     }
 
@@ -1148,7 +1488,7 @@ TileMapSystem.queries = {
         components:[Canvas, Camera]
     },
     maps: {
-        components:[TileMap],
+        components:[TileMap, LayerParent],
     }
 };
 
@@ -1232,79 +1572,6 @@ function load_tilemap_from_url(source) {
 //         }
 //     })
 // }
-
-class KeyboardState extends Component {
-    constructor() {
-        super();
-        this.states = {};
-        this.mapping = {
-            ' ':'jump',
-            'ArrowLeft':'left',
-            'ArrowRight':'right',
-            'ArrowUp':'up',
-            'ArrowDown':'down',
-        };
-        this.on_keydown = (e) => {
-            this.setKeyState(e.key,'down');
-        };
-        this.on_keyup = (e) => {
-            this.setKeyState(e.key,'up');
-        };
-    }
-    setKeyState(key,value) {
-        let state = this.getKeyState(key);
-        state.prev = state.current;
-        state.current = value;
-    }
-    getKeyState(key) {
-        if(!this.states[key]) {
-            this.states[key] = {
-                prev:'up',
-                current:'up',
-            };
-        }
-        return this.states[key]
-    }
-    isPressed(name) {
-        return this.getKeyState(name).current === 'down'
-    }
-}
-class KeyboardSystem extends System {
-    execute(delta, time) {
-        this.queries.controls.added.forEach( ent => {
-            let cont = ent.getMutableComponent(KeyboardState);
-            document.addEventListener('keydown',cont.on_keydown);
-            document.addEventListener('keyup',cont.on_keyup);
-        });
-        this.queries.controls.results.forEach(ent => {
-            let kb = ent.getComponent(KeyboardState);
-            let inp = ent.getMutableComponent(InputState);
-            inp.changed = false;
-            inp.released = false;
-            Object.keys(kb.mapping).forEach(key => {
-                let name = kb.mapping[key];
-                let state = kb.getKeyState(key);
-                if(state.current === 'down' && state.prev === 'up') {
-                    inp.states[name] = (state.current === 'down');
-                    inp.changed = true;
-                }
-                if(state.current === 'up' && state.prev === 'down') {
-                    inp.states[name] = (state.current === 'down');
-                    inp.changed = true;
-                    inp.released = true;
-                }
-                state.prev = state.current;
-            });
-            // console.log("key mapping", kb.mapping['a'], kb.states['a'], "left state",inp.states['left'])
-        });
-    }
-}
-KeyboardSystem.queries = {
-    controls: {
-        components:[KeyboardState, InputState],
-        listen: { added:true, removed: true},
-    },
-};
 
 /*
 
@@ -1600,140 +1867,16 @@ DialogSystem.queries = {
     }
 };
 
-class MouseState {
-    constructor() {
-        this.clientX = 0;
-        this.clientY = 0;
-    }
-}
-class MouseInputSystem extends System {
-    execute(delta, time) {
-        this.queries.mouse.added.forEach(ent => {
-            let mouse = ent.getMutableComponent(MouseState);
-            mouse.moveHandler = (e) =>  {
-                mouse.clientX = e.clientX;
-                mouse.lastTimestamp = e.timeStamp;
-            };
-            document.addEventListener('mousemove', mouse.moveHandler, false);
-        });
-        this.queries.mouse.results.forEach(ent => {
-            // console.log("current mouse",ent.getComponent(MouseState))
-        });
-        this.queries.mouse.removed.forEach(ent => {
-            let mouse = ent.getMutableComponent(MouseState);
-            document.removeEventListener('mousemove', mouse.moveHandler);
-        });
-    }
-}
-MouseInputSystem.queries = {
-    mouse: {
-        components:[MouseState],
-        listen: {
-            added:true,
-            removed:true
-        }
-    }
-};
-
-class FullscreenMode extends Component {
-}
-
-class FullscreenButton extends Component {
-}
-
-class FullscreenSystem extends  System {
-    execute(delta, time) {
-        this.queries.buttons.added.forEach(ent => {
-            let elem = document.createElement('button');
-            elem.innerText = "fullscreen";
-            elem.classList.add("fullscreen");
-            elem.addEventListener('click',(e)=>{
-                e.stopPropagation();
-                e.preventDefault();
-                ent.addComponent(FullscreenMode);
-            });
-            document.documentElement.append(elem);
-        });
-        this.queries.active.added.forEach(ent => {
-            console.log("turned on full screen");
-            let mode = ent.getMutableComponent(FullscreenMode);
-            mode.fullscreenchangeHandler = () => {
-                console.log("entered full screen");
-                if(document.fullscreenElement || document.webkitFullscreenElement) {
-                    console.log("entered");
-                } else {
-                    console.log("exited");
-                    ent.removeComponent(FullscreenMode);
-                }
-            };
-            document.addEventListener('fullscreenchange',mode.fullscreenchangeHandler);
-            document.addEventListener('webkitfullscreenchange',mode.fullscreenchangeHandler);
-            const domElement = document.querySelector("canvas");
-            domElement.requestFullscreen();
-        });
-        this.queries.active.removed.forEach(ent => {
-            console.log("removed the fullscreen mode");
-        });
-    }
-}
-FullscreenSystem.queries = {
-    buttons: {
-        components: [FullscreenButton],
-        listen: {
-            added:true
-        }
+const ecsytwo = {
+    initialize : function (world) {
+        world.registerSystem(ECSYTwoSystem);
+        world.registerSystem(SpriteSystem);
+        world.registerSystem(KeyboardSystem);
+        world.registerSystem(MouseInputSystem);
+        world.registerSystem(LayerRenderingSystem);
     },
-    active: {
-        components: [FullscreenMode],
-        listen: {
-            added:true,
-            removed:true,
-        }
-    }
+    start: startWorld
 };
 
-class SoundEffect {
-    constructor() {
-        this.audio = null;
-        this.src = null;
-    }
-}
-class PlaySoundEffect {
-
-}
-class AudioSystem extends System {
-    execute(delta, time) {
-        this.queries.sound_effects.added.forEach(ent => {
-            let effect = ent.getComponent(SoundEffect);
-            if(effect.src && !this.audio) {
-                effect.audio = new Audio();
-                console.log("loading the audio",effect.src);
-                effect.audio.addEventListener('loadeddata', () => {
-                    console.log("loaded audio from src",effect.src);
-                });
-                effect.audio.src = effect.src;
-            }
-        });
-        this.queries.play.added.forEach(ent => {
-            let sound = ent.getComponent(SoundEffect);
-            sound.audio.play();
-            ent.removeComponent(PlaySoundEffect);
-        });
-    }
-}
-AudioSystem.queries = {
-    sound_effects: {
-        components:[SoundEffect],
-        listen: {
-            added:true,
-        }
-    },
-    play: {
-        components:[SoundEffect, PlaySoundEffect],
-        listen: {
-            added:true,
-        }
-    }
-};
-
-export { AnimatedSprite, AudioSystem, BackgroundFill, Camera, CameraFollowsSprite, Canvas, DebugOutline, Dialog, DialogSystem, ECSYTwoSystem, FilledSprite, FullscreenButton, FullscreenMode, FullscreenSystem, ImageSprite, InputState, KeyboardState, KeyboardSystem, MouseInputSystem, MouseState, PlaySoundEffect, SoundEffect, Sprite, SpriteSheet, SpriteSystem, TileMap, TileMapSystem, WaitForInput, load_image_from_url, load_tilemap_from_url, make_point, startWorld };
+export default ecsytwo;
+export { AnimatedSprite, AudioSystem, BackgroundFill, Camera, CameraFollowsSprite, Canvas, DebugOutline, Dialog, DialogSystem, DrawFilledRect, DrawImage, DrawStrokedRect, ECSYTwoSystem, FilledSprite, FullscreenButton, FullscreenMode, FullscreenSystem, ImageSprite, InputState, KeyboardState, KeyboardSystem, Layer, LayerParent, LayerRenderingSystem, MouseInputSystem, MouseState, PlaySoundEffect, SoundEffect, Sprite, SpriteSheet, SpriteSystem, TileMap, TileMapSystem, WaitForInput, load_image_from_url, load_tilemap_from_url, make_point, startWorld };
