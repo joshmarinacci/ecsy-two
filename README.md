@@ -186,6 +186,59 @@ let player = world.createEntity()
 Draws a sprite from a set of animation frames.
 
 
+## Layers
+
+You can control the drawing order of objects on screen by using layers. By default all objects will draw into
+a default layer, but you can add new layers and choose the layer yourself. ex:
+
+Create two layers, one containing an image and the other a filled rectangle.
+
+```javascript
+let backg = world.createEntity().addComponent(Layer, { name: "background", depth:50})
+let front = world.createEntity().addComponent(Layer, { name: "front", depth:100})
+
+world.createEntity()
+    // set size, position, and put on the front layer
+    .addComponent(Sprite, { x: 10, y: 10, width: 50, height:50, layer:"background"})
+    .addComponent(ImageSprite, { src:"image.png"})
+
+world.createEntity()
+    .addComponent(Sprite, { x: 15, y: 15, width: 100, height:50, layer:"front"})
+    .addComponent(FilledSprite, { color: 'red'})
+```
+
+
+All standard drawing components like FilledSprite, ImageSprite, etc. know how to draw into layers. If you want to
+do custom drawing you can add a LayerParent component to your entity which specifies the layer to draw into and a layer drawing command object,
+which is just an object with a `draw` method on it.
+
+ex: a custom circle component
+
+```javascript
+class Circle {
+    constructor() {
+        this.x = 0
+        this.y = 0
+        this.radius = 10
+        this.color = 'red' 
+    }
+}
+const CircleDrawer = {
+    draw:(ctx, canvas_ent, target_ent) => {
+        let c = target_ent.getComponent(Circle)
+        ctx.beginPath()
+        ctx.fillStyle = c.color
+        ctx.arc(c.x,c.y,c.radius,0,Math.PI*2)
+        ctx.fill()
+    }
+}
+
+world.createEntity()
+    .addComponent(Circle, { x: 50, y: 50, radius: 20, color: 'blue'})
+    .addComponent(LayerParent, { layer:'background', draw_object:CircleDrawer })
+```
+
+
 
 ## Inputs
 
@@ -225,12 +278,13 @@ Current cursor position and button state.
 
 ### Audio
 
-Audio plays sounds using the Audio() DOM element. Used for recorded sounds from WAV and MP3s.
+The AudioSystem plays sounds using the Audio() DOM element. Used for recorded sounds from WAV and MP3s.  Due to
+browser security concerns, no actual audio will be heard until the first click or touch from the user on the document.
 
 
 #### SoundEffect
 
-Play a sound effect.  Will not actually be played until you add the PlaySoundEffect component.
+Play a sound effect.  Will not actually be played until you add the PlaySoundEffect component. Default volume is 1.0.
 
 ```javascript
 // create bullet object
@@ -241,10 +295,19 @@ let bullet = world.createEntity()
 bullet.addComponent(PlaySoundEffect)
 ```
 
+#### Background Music
+
+Play a  sound waveform (`.wav`, `.mp3`, etc) on a loop. Will automatically play once added. Remove it to stop it. Default volume is 0.5.
+
+```javascript
+world.createEntity()
+    .addComponent(BackgroundMusic, { src:'song.mp3', volume: 0.7})
+```
+
 
 ### Music
 
-Music plays sounds using synth notes using the tone.js library.
+Music plays sounds using synth notes using the `tone.js` library.
 
  
 #### BackgroundNotes
@@ -290,6 +353,14 @@ Play a short sequence of notes once.
 ### Overhead RPG like controls
 
 # Examples
+
+
+### 
+Simple: move a player sprite around the screen using the keyboard.  Render two enemy sprites.
+Use layers to make the player sprite be drawn above the other two. 
+
+[source](examples/simple/)
+
 
 ### Breakout
 

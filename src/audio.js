@@ -4,6 +4,7 @@ export class SoundEffect {
     constructor() {
         this.audio = null
         this.src = null
+        this.volume = 1.0
     }
 }
 export class BackgroundMusic {
@@ -32,6 +33,7 @@ export class AudioSystem extends System {
                 console.log("loading the audio",effect.src)
                 effect.audio.addEventListener('loadeddata', () => {
                     console.log("loaded audio from src",effect.src)
+                    effect.audio.volume = effect.volume
                 })
                 effect.audio.src = effect.src
             }
