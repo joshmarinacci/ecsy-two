@@ -3,16 +3,19 @@ import ECSYTWO, {
     BackgroundFill, Canvas, Layer,
     Sprite, FilledSprite,
     InputState, KeyboardState,
+    GamepadSystem, SimpleGamepadState,
 } from '../../build/ecsy-two.module.js'
 
 let world = new World()
 ECSYTWO.initialize(world)
+world.registerSystem(GamepadSystem)
 
 let view = world.createEntity()
     .addComponent(Canvas, { width: 300, height: 300})
     .addComponent(BackgroundFill, {color: 'black'})
     .addComponent(InputState)
     .addComponent(KeyboardState)
+    .addComponent(SimpleGamepadState)
 
 // create a front layer so the player can always be above the others
 world.createEntity().addComponent(Layer, { name: "front", depth:100})

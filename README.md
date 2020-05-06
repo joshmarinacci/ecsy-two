@@ -244,7 +244,8 @@ world.createEntity()
 
 #### InputState
 
-Abstract representation of the input states.  Just a set of booleans.
+Abstract representation of the input states.  Just a set of booleans.  For example: input.states.left === true
+means the user wants to go left.
 
 #### KeyboardState
 
@@ -274,6 +275,25 @@ player
 #### MouseState
 
 Current cursor position and button state.
+
+### Gamepad
+
+Register `GamepadSystem` to use gamepads. It is not registered by default. 
+
+Then add a `SimpleGamepadState` component to wherever you have 
+your `InputState` component. The `SimpleGamepadState` component will set the
+`left`, `right`, `up`, and `down` states of the InputState component it is added 
+to. You can configure the threshold for analog sticks using 
+the `axis_threshold` property, which is 0.4 by default.
+
+Currently recognizing the more advance states of complex controllers is not supported.
+You would have to copy and fork the the gamepad.js to get additional data. Or please
+[file an issue](https://github.com/joshmarinacci/ecsy-two/issues) with 
+the data you want to access.
+
+*Note that the Gamepad API is very flaky, and for security reasons a gamepad
+controller may not be visible to your game unless the user presses a specific
+button on the controller or disconnects and connects it to their computer.*
 
 
 ### Audio
