@@ -21,7 +21,7 @@ export {Layer, LayerParent, LayerRenderingSystem, DrawFilledRect, DrawImage, Dra
 //full screen support
 export {FullscreenMode, FullscreenButton, FullscreenSystem} from "./fullscreen.js"
 //audio
-export {AudioSystem, SoundEffect, PlaySoundEffect} from "./audio.js"
+export {AudioSystem, SoundEffect, PlaySoundEffect, BackgroundMusic, AudioEnabled} from "./audio.js"
 
 export {load_tilemap_from_url, TileMap, TileMapSystem} from "./extensions/tiles.js"
 export {Dialog, DialogSystem, WaitForInput} from "./extensions/dialogs.js"
