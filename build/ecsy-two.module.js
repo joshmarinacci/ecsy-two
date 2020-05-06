@@ -1351,6 +1351,7 @@ class SoundEffect {
     constructor() {
         this.audio = null;
         this.src = null;
+        this.volume = 1.0;
     }
 }
 class BackgroundMusic {
@@ -1379,6 +1380,7 @@ class AudioSystem extends System {
                 console.log("loading the audio",effect.src);
                 effect.audio.addEventListener('loadeddata', () => {
                     console.log("loaded audio from src",effect.src);
+                    effect.audio.volume = effect.volume;
                 });
                 effect.audio.src = effect.src;
             }
@@ -1452,8 +1454,7 @@ class AudioSystem extends System {
     }
     stop_background_music(ent) {
         let music = ent.getComponent(BackgroundMusic);
-        console.log('music is', music);
-        if(music.audio) {
+        if(music && music.audio) {
             music.audio.pause();
         }
     }
