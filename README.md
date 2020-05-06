@@ -274,9 +274,10 @@ player
 
 #### MouseState
 
-Current cursor position and button state.
+Current cursor position and button state. `clientX` and `clientY` represent the current x and y of the mouse
+cursor.
 
-### Gamepad
+#### Gamepad
 
 Register `GamepadSystem` to use gamepads. It is not registered by default. 
 
