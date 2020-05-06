@@ -287,6 +287,9 @@ your `InputState` component. The `SimpleGamepadState` component will set the
 to. You can configure the threshold for analog sticks using 
 the `axis_threshold` property, which is 0.4 by default.
 
+See the [simple example](examples/simple) for an example
+of using both the keyboard and gamepad together.
+
 Currently recognizing the more advance states of complex controllers is not supported.
 You would have to copy and fork the the gamepad.js to get additional data. Or please
 [file an issue](https://github.com/joshmarinacci/ecsy-two/issues) with 
