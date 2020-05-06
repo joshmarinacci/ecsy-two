@@ -1368,6 +1368,7 @@
 	    constructor() {
 	        this.audio = null;
 	        this.src = null;
+	        this.volume = 0.5;
 	    }
 	}
 	class PlaySoundEffect { }
@@ -1395,6 +1396,9 @@
 	        });
 	        this.queries.music.added.forEach(ent => {
 	            this.whenReady(()=>this.start_background_music(ent));
+	        });
+	        this.queries.music.removed.forEach(ent => {
+	            this.stop_background_music(ent);
 	        });
 	        this.queries.play.added.forEach(ent => {
 	            this.whenReady(()=>this.play_soundeffect(ent));
@@ -1448,12 +1452,20 @@
 	            music.audio = new Audio();
 	            console.log("starting the background music");
 	            music.audio.loop = true;
+	            music.audio.volume = music.volume;
 	            console.log("loading the audio",music.src);
 	            music.audio.addEventListener('loadeddata', () => {
 	                console.log("loaded audio from src",music.src);
 	                music.audio.play();
 	            });
 	            music.audio.src = music.src;
+	        }
+	    }
+	    stop_background_music(ent) {
+	        let music = ent.getComponent(BackgroundMusic);
+	        console.log('music is', music);
+	        if(music.audio) {
+	            music.audio.pause();
 	        }
 	    }
 
@@ -1474,6 +1486,7 @@
 	        components:[BackgroundMusic],
 	        listen: {
 	            added:true,
+	            removed:true,
 	        }
 	    },
 	    play: {
