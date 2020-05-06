@@ -1,20 +1,12 @@
 import {System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
-import {
-    BackgroundFill, Canvas,
-    ECSYTwoSystem,
-    Sprite, startWorld,
-    FilledSprite, SpriteSystem, InputState, KeyboardState,
-    KeyboardSystem,
-    Layer, LayerParent, LayerRenderingSystem,
-} from '../../src/index.js'
-
+import ECSYTWO, {
+    BackgroundFill, Canvas, Layer,
+    Sprite, FilledSprite,
+    InputState, KeyboardState,
+} from '../../build/ecsy-two.module.js'
 
 let world = new World()
-world.registerSystem(ECSYTwoSystem)
-world.registerSystem(SpriteSystem)
-world.registerSystem(KeyboardSystem)
-world.registerSystem(LayerRenderingSystem)
-
+ECSYTWO.initialize(world)
 
 let view = world.createEntity()
     .addComponent(Canvas, { width: 300, height: 300})
@@ -22,10 +14,11 @@ let view = world.createEntity()
     .addComponent(InputState)
     .addComponent(KeyboardState)
 
-// world.createEntity().addComponent(Layer, { name: "default", depth:0})
-// world.createEntity().addComponent(Layer, { name: "middle", depth:50})
+// create a front layer so the player can always be above the others
 world.createEntity().addComponent(Layer, { name: "front", depth:100})
 
+
+// the player has a speed
 class Player {
     constructor() {
         this.speed = 10
@@ -38,7 +31,7 @@ function clamp(min, val, max) {
     return val
 }
 
-// system to move player using input directions
+// system to move player using input directions at player.speed
 class PlayerControls extends System {
     execute(delta, time) {
         this.queries.input.results.forEach(ent => {
@@ -57,6 +50,7 @@ class PlayerControls extends System {
         })
     }
 }
+
 // system needs player and input
 PlayerControls.queries = {
     input: { components: [ InputState]},
@@ -70,19 +64,21 @@ world.registerSystem(PlayerControls)
 //create the player
 world.createEntity()
     .addComponent(Player, { speed: 4})
+    // set size, position, and put on the front layer
     .addComponent(Sprite, { x: 10, y: 10, width: 50, height:50, layer:"front"})
     .addComponent(FilledSprite, { color: 'red'})
 
 // create enemy 1
 world.createEntity()
+    // no layer set, so using the default layer at depth=0
     .addComponent(Sprite, { x: 100, y: 10, width:50, height:50})
     .addComponent(FilledSprite, { color: 'green'})
-    // .addComponent(LayerParent, { name: "middle"})
 
 // create enemy 2
 world.createEntity()
+    // no layer set, so using the default layer at depth=0
     .addComponent(Sprite, { x: 200, y: 10, width:50, height:50})
     .addComponent(FilledSprite, { color: 'yellow'})
-    // .addComponent(LayerParent, { name: "back"})
 
-startWorld(world)
+//start everything
+ECSYTWO.start(world)

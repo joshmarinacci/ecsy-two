@@ -34,7 +34,7 @@ not already installed. Create an HTML page and import the `ecsy-two.js` module t
 <body>
 <script type="module">
 import {System, World, Component} from 'node_modules/ecsy/build/ecsy.module.js';
-import {} from 'node_modules/ecsy-two/src/ecsy-two.js';
+import ECSYTWO, {Canvas, InputState, KeyboardState, Sprite, FilledSprite} from 'node_modules/ecsy-two/src/ecsy-two.js';
 
 
 </script>
@@ -46,10 +46,15 @@ The following code makes a blue rectangle that you can move around with the keyb
 ```javascript
 let world = new World();  // make a new world
 
+
 // register the systems we will need
-world.registerSystem(EcsyTwoSystem)
-world.registerSystem(SpriteSystem)
-world.registerSystem(KeyboardSystem)
+// world.registerSystem(EcsyTwoSystem)
+// world.registerSystem(SpriteSystem)
+// world.registerSystem(KeyboardSystem)
+
+// ECSYTWO.initialize() will register the commonly used systems for core, sprites, keyboard, mouse, and layers
+// fullscreen and audio require separate registrations
+ECSYTWO.initialize(world)
 
 // make the game area
 let game = world.createEntity()
@@ -57,7 +62,7 @@ let game = world.createEntity()
     .addComponent(InputState)
     .addComponent(KeyboardState)
 
-// make the playe sprite
+// make the player sprite be a blue square
 let player = world.createEntity()
     .addComponent(Sprite, { x: 50, y: 50, width: 10, height: 10} )
     .addComponent(FilledSprite, { color: 'blue'})
@@ -85,7 +90,7 @@ MyGame.queries = {
 };
 world.registerSystem(MyGame) // register the system to use it
 
-startWorld(world) // start the main event loop
+ECSYTWO.start(world) // start the main event loop
 ```
 The above code first creates a new `world`. This is the global system. Everything in your app
 will be tied to this world. If you want multiple apps in a single page you can have multiple worlds.

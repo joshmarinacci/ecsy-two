@@ -2,10 +2,10 @@
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
 	(global = global || self, (function () {
-		var current = global.ECSY;
-		var exports = global.ECSY = {};
+		var current = global.ECSYTwo;
+		var exports = global.ECSYTwo = {};
 		factory(exports);
-		exports.noConflict = function () { global.ECSY = current; return exports; };
+		exports.noConflict = function () { global.ECSYTwo = current; return exports; };
 	}()));
 }(this, (function (exports) { 'use strict';
 
@@ -1186,12 +1186,221 @@
 	    })
 	}
 
+	class KeyboardState extends Component {
+	    constructor() {
+	        super();
+	        this.states = {};
+	        this.mapping = {
+	            ' ':'jump',
+	            'ArrowLeft':'left',
+	            'ArrowRight':'right',
+	            'ArrowUp':'up',
+	            'ArrowDown':'down',
+	        };
+	        this.on_keydown = (e) => {
+	            this.setKeyState(e.key,'down');
+	        };
+	        this.on_keyup = (e) => {
+	            this.setKeyState(e.key,'up');
+	        };
+	    }
+	    setKeyState(key,value) {
+	        let state = this.getKeyState(key);
+	        state.prev = state.current;
+	        state.current = value;
+	    }
+	    getKeyState(key) {
+	        if(!this.states[key]) {
+	            this.states[key] = {
+	                prev:'up',
+	                current:'up',
+	            };
+	        }
+	        return this.states[key]
+	    }
+	    isPressed(name) {
+	        return this.getKeyState(name).current === 'down'
+	    }
+	}
+	class KeyboardSystem extends System {
+	    execute(delta, time) {
+	        this.queries.controls.added.forEach( ent => {
+	            let cont = ent.getMutableComponent(KeyboardState);
+	            document.addEventListener('keydown',cont.on_keydown);
+	            document.addEventListener('keyup',cont.on_keyup);
+	        });
+	        this.queries.controls.results.forEach(ent => {
+	            let kb = ent.getComponent(KeyboardState);
+	            let inp = ent.getMutableComponent(InputState);
+	            inp.changed = false;
+	            inp.released = false;
+	            Object.keys(kb.mapping).forEach(key => {
+	                let name = kb.mapping[key];
+	                let state = kb.getKeyState(key);
+	                if(state.current === 'down' && state.prev === 'up') {
+	                    inp.states[name] = (state.current === 'down');
+	                    inp.changed = true;
+	                }
+	                if(state.current === 'up' && state.prev === 'down') {
+	                    inp.states[name] = (state.current === 'down');
+	                    inp.changed = true;
+	                    inp.released = true;
+	                }
+	                state.prev = state.current;
+	            });
+	            // console.log("key mapping", kb.mapping['a'], kb.states['a'], "left state",inp.states['left'])
+	        });
+	    }
+	}
+	KeyboardSystem.queries = {
+	    controls: {
+	        components:[KeyboardState, InputState],
+	        listen: { added:true, removed: true},
+	    },
+	};
+
+	class MouseState {
+	    constructor() {
+	        this.clientX = 0;
+	        this.clientY = 0;
+	    }
+	}
+	class MouseInputSystem extends System {
+	    execute(delta, time) {
+	        this.queries.mouse.added.forEach(ent => {
+	            let mouse = ent.getMutableComponent(MouseState);
+	            mouse.moveHandler = (e) =>  {
+	                mouse.clientX = e.clientX;
+	                mouse.lastTimestamp = e.timeStamp;
+	            };
+	            document.addEventListener('mousemove', mouse.moveHandler, false);
+	        });
+	        this.queries.mouse.results.forEach(ent => {
+	            // console.log("current mouse",ent.getComponent(MouseState))
+	        });
+	        this.queries.mouse.removed.forEach(ent => {
+	            let mouse = ent.getMutableComponent(MouseState);
+	            document.removeEventListener('mousemove', mouse.moveHandler);
+	        });
+	    }
+	}
+	MouseInputSystem.queries = {
+	    mouse: {
+	        components:[MouseState],
+	        listen: {
+	            added:true,
+	            removed:true
+	        }
+	    }
+	};
+
 	function make_point(tx, ty) {
 	    return {
 	        x: tx,
 	        y: ty
 	    }
 	}
+
+	class FullscreenMode extends Component {
+	}
+
+	class FullscreenButton extends Component {
+	}
+
+	class FullscreenSystem extends  System {
+	    execute(delta, time) {
+	        this.queries.buttons.added.forEach(ent => {
+	            let elem = document.createElement('button');
+	            elem.innerText = "fullscreen";
+	            elem.classList.add("fullscreen");
+	            elem.addEventListener('click',(e)=>{
+	                e.stopPropagation();
+	                e.preventDefault();
+	                ent.addComponent(FullscreenMode);
+	            });
+	            document.documentElement.append(elem);
+	        });
+	        this.queries.active.added.forEach(ent => {
+	            console.log("turned on full screen");
+	            let mode = ent.getMutableComponent(FullscreenMode);
+	            mode.fullscreenchangeHandler = () => {
+	                console.log("entered full screen");
+	                if(document.fullscreenElement || document.webkitFullscreenElement) {
+	                    console.log("entered");
+	                } else {
+	                    console.log("exited");
+	                    ent.removeComponent(FullscreenMode);
+	                }
+	            };
+	            document.addEventListener('fullscreenchange',mode.fullscreenchangeHandler);
+	            document.addEventListener('webkitfullscreenchange',mode.fullscreenchangeHandler);
+	            const domElement = document.querySelector("canvas");
+	            domElement.requestFullscreen();
+	        });
+	        this.queries.active.removed.forEach(ent => {
+	            console.log("removed the fullscreen mode");
+	        });
+	    }
+	}
+	FullscreenSystem.queries = {
+	    buttons: {
+	        components: [FullscreenButton],
+	        listen: {
+	            added:true
+	        }
+	    },
+	    active: {
+	        components: [FullscreenMode],
+	        listen: {
+	            added:true,
+	            removed:true,
+	        }
+	    }
+	};
+
+	class SoundEffect {
+	    constructor() {
+	        this.audio = null;
+	        this.src = null;
+	    }
+	}
+	class PlaySoundEffect {
+
+	}
+	class AudioSystem extends System {
+	    execute(delta, time) {
+	        this.queries.sound_effects.added.forEach(ent => {
+	            let effect = ent.getComponent(SoundEffect);
+	            if(effect.src && !this.audio) {
+	                effect.audio = new Audio();
+	                console.log("loading the audio",effect.src);
+	                effect.audio.addEventListener('loadeddata', () => {
+	                    console.log("loaded audio from src",effect.src);
+	                });
+	                effect.audio.src = effect.src;
+	            }
+	        });
+	        this.queries.play.added.forEach(ent => {
+	            let sound = ent.getComponent(SoundEffect);
+	            sound.audio.play();
+	            ent.removeComponent(PlaySoundEffect);
+	        });
+	    }
+	}
+	AudioSystem.queries = {
+	    sound_effects: {
+	        components:[SoundEffect],
+	        listen: {
+	            added:true,
+	        }
+	    },
+	    play: {
+	        components:[SoundEffect, PlaySoundEffect],
+	        listen: {
+	            added:true,
+	        }
+	    }
+	};
 
 	const FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
 	const FLIPPED_VERTICALLY_FLAG   = 0x40000000;
@@ -1374,79 +1583,6 @@
 	//         }
 	//     })
 	// }
-
-	class KeyboardState extends Component {
-	    constructor() {
-	        super();
-	        this.states = {};
-	        this.mapping = {
-	            ' ':'jump',
-	            'ArrowLeft':'left',
-	            'ArrowRight':'right',
-	            'ArrowUp':'up',
-	            'ArrowDown':'down',
-	        };
-	        this.on_keydown = (e) => {
-	            this.setKeyState(e.key,'down');
-	        };
-	        this.on_keyup = (e) => {
-	            this.setKeyState(e.key,'up');
-	        };
-	    }
-	    setKeyState(key,value) {
-	        let state = this.getKeyState(key);
-	        state.prev = state.current;
-	        state.current = value;
-	    }
-	    getKeyState(key) {
-	        if(!this.states[key]) {
-	            this.states[key] = {
-	                prev:'up',
-	                current:'up',
-	            };
-	        }
-	        return this.states[key]
-	    }
-	    isPressed(name) {
-	        return this.getKeyState(name).current === 'down'
-	    }
-	}
-	class KeyboardSystem extends System {
-	    execute(delta, time) {
-	        this.queries.controls.added.forEach( ent => {
-	            let cont = ent.getMutableComponent(KeyboardState);
-	            document.addEventListener('keydown',cont.on_keydown);
-	            document.addEventListener('keyup',cont.on_keyup);
-	        });
-	        this.queries.controls.results.forEach(ent => {
-	            let kb = ent.getComponent(KeyboardState);
-	            let inp = ent.getMutableComponent(InputState);
-	            inp.changed = false;
-	            inp.released = false;
-	            Object.keys(kb.mapping).forEach(key => {
-	                let name = kb.mapping[key];
-	                let state = kb.getKeyState(key);
-	                if(state.current === 'down' && state.prev === 'up') {
-	                    inp.states[name] = (state.current === 'down');
-	                    inp.changed = true;
-	                }
-	                if(state.current === 'up' && state.prev === 'down') {
-	                    inp.states[name] = (state.current === 'down');
-	                    inp.changed = true;
-	                    inp.released = true;
-	                }
-	                state.prev = state.current;
-	            });
-	            // console.log("key mapping", kb.mapping['a'], kb.states['a'], "left state",inp.states['left'])
-	        });
-	    }
-	}
-	KeyboardSystem.queries = {
-	    controls: {
-	        components:[KeyboardState, InputState],
-	        listen: { added:true, removed: true},
-	    },
-	};
 
 	/*
 
@@ -1742,140 +1878,15 @@
 	    }
 	};
 
-	class MouseState {
-	    constructor() {
-	        this.clientX = 0;
-	        this.clientY = 0;
-	    }
-	}
-	class MouseInputSystem extends System {
-	    execute(delta, time) {
-	        this.queries.mouse.added.forEach(ent => {
-	            let mouse = ent.getMutableComponent(MouseState);
-	            mouse.moveHandler = (e) =>  {
-	                mouse.clientX = e.clientX;
-	                mouse.lastTimestamp = e.timeStamp;
-	            };
-	            document.addEventListener('mousemove', mouse.moveHandler, false);
-	        });
-	        this.queries.mouse.results.forEach(ent => {
-	            // console.log("current mouse",ent.getComponent(MouseState))
-	        });
-	        this.queries.mouse.removed.forEach(ent => {
-	            let mouse = ent.getMutableComponent(MouseState);
-	            document.removeEventListener('mousemove', mouse.moveHandler);
-	        });
-	    }
-	}
-	MouseInputSystem.queries = {
-	    mouse: {
-	        components:[MouseState],
-	        listen: {
-	            added:true,
-	            removed:true
-	        }
-	    }
-	};
-
-	class FullscreenMode extends Component {
-	}
-
-	class FullscreenButton extends Component {
-	}
-
-	class FullscreenSystem extends  System {
-	    execute(delta, time) {
-	        this.queries.buttons.added.forEach(ent => {
-	            let elem = document.createElement('button');
-	            elem.innerText = "fullscreen";
-	            elem.classList.add("fullscreen");
-	            elem.addEventListener('click',(e)=>{
-	                e.stopPropagation();
-	                e.preventDefault();
-	                ent.addComponent(FullscreenMode);
-	            });
-	            document.documentElement.append(elem);
-	        });
-	        this.queries.active.added.forEach(ent => {
-	            console.log("turned on full screen");
-	            let mode = ent.getMutableComponent(FullscreenMode);
-	            mode.fullscreenchangeHandler = () => {
-	                console.log("entered full screen");
-	                if(document.fullscreenElement || document.webkitFullscreenElement) {
-	                    console.log("entered");
-	                } else {
-	                    console.log("exited");
-	                    ent.removeComponent(FullscreenMode);
-	                }
-	            };
-	            document.addEventListener('fullscreenchange',mode.fullscreenchangeHandler);
-	            document.addEventListener('webkitfullscreenchange',mode.fullscreenchangeHandler);
-	            const domElement = document.querySelector("canvas");
-	            domElement.requestFullscreen();
-	        });
-	        this.queries.active.removed.forEach(ent => {
-	            console.log("removed the fullscreen mode");
-	        });
-	    }
-	}
-	FullscreenSystem.queries = {
-	    buttons: {
-	        components: [FullscreenButton],
-	        listen: {
-	            added:true
-	        }
+	const ecsytwo = {
+	    initialize : function (world) {
+	        world.registerSystem(ECSYTwoSystem);
+	        world.registerSystem(SpriteSystem);
+	        world.registerSystem(KeyboardSystem);
+	        world.registerSystem(MouseInputSystem);
+	        world.registerSystem(LayerRenderingSystem);
 	    },
-	    active: {
-	        components: [FullscreenMode],
-	        listen: {
-	            added:true,
-	            removed:true,
-	        }
-	    }
-	};
-
-	class SoundEffect {
-	    constructor() {
-	        this.audio = null;
-	        this.src = null;
-	    }
-	}
-	class PlaySoundEffect {
-
-	}
-	class AudioSystem extends System {
-	    execute(delta, time) {
-	        this.queries.sound_effects.added.forEach(ent => {
-	            let effect = ent.getComponent(SoundEffect);
-	            if(effect.src && !this.audio) {
-	                effect.audio = new Audio();
-	                console.log("loading the audio",effect.src);
-	                effect.audio.addEventListener('loadeddata', () => {
-	                    console.log("loaded audio from src",effect.src);
-	                });
-	                effect.audio.src = effect.src;
-	            }
-	        });
-	        this.queries.play.added.forEach(ent => {
-	            let sound = ent.getComponent(SoundEffect);
-	            sound.audio.play();
-	            ent.removeComponent(PlaySoundEffect);
-	        });
-	    }
-	}
-	AudioSystem.queries = {
-	    sound_effects: {
-	        components:[SoundEffect],
-	        listen: {
-	            added:true,
-	        }
-	    },
-	    play: {
-	        components:[SoundEffect, PlaySoundEffect],
-	        listen: {
-	            added:true,
-	        }
-	    }
+	    start: startWorld
 	};
 
 	exports.AnimatedSprite = AnimatedSprite;
@@ -1912,6 +1923,7 @@
 	exports.TileMap = TileMap;
 	exports.TileMapSystem = TileMapSystem;
 	exports.WaitForInput = WaitForInput;
+	exports.default = ecsytwo;
 	exports.load_image_from_url = load_image_from_url;
 	exports.load_tilemap_from_url = load_tilemap_from_url;
 	exports.make_point = make_point;

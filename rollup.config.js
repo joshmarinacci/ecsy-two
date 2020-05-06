@@ -8,7 +8,7 @@ export default [
         output: [
             {
                 format: "umd",
-                name: "ECSY",
+                name: "ECSYTwo",
                 noConflict: true,
                 file: "build/ecsy-two.js",
                 indent: "\t"
@@ -26,7 +26,7 @@ export default [
         output: [
             {
                 format: "umd",
-                name: "ECSY-Two",
+                name: "ECSYTwo",
                 noConflict: true,
                 file: "build/ecsy-two.min.js",
                 indent: "\t"
