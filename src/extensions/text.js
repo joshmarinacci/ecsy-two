@@ -13,61 +13,49 @@ export class PixelFont extends Component {
     constructor() {
         super();
         this.src = null
-        this.metrics_src = null
-
-        this.charHeight = 5
-        this.charWidth = 4
-        this.lineHeight = 7
-        this.charsPerLine = 11
-        this._debug_drawn = false
-        this.widths = {
-            G:4, J:4, M:5, N:4, O:4, P:4, Q:4, R:4, S:4, U:4, W:5,
-            f:2, i:1,l:1, m:5, s:2,w:5,
-            ' ':3,
+        this.metrics = {
+            A: { x: 194, y: 1, w: 6, h:9},
+            C: { x: 210, y: 1, w: 6, h:9},
+            E: { x: 225, y: 1, w: 7, h:9},
+            I: { x: 258, y: 1, w: 5, h:9},
+            N: { x: 291, y: 1, w: 8, h:9},
+            P: { x: 306, y: 1, w: 7, h:9},
+            R: { x: 321, y: 1, w: 7, h:9},
+            T: { x: 336, y: 1, w: 7, h:9},
+            ' ': { x: 0, y: 0, w: 7, h: 9}
         }
-
-        this.positions = {
-            '!':{x:8, y:7},
-        }
-
+        this.charWidth = 5
+        this.lineHeight = 10
+        this.spaceWidth = 0
+        this.charsPerLine = 50
     }
     drawCharCode(ctx,ch) {
         // space
-        let cw = this.charWidth
-        cw = 3
         let str = String.fromCharCode(ch)
-        //
-        if(this.widths[str]) cw = this.widths[str]
-
-        //space
-        if(ch === 32) return cw
+        // console.log('drawing',ch,str)
         let sx = 0
         let sy = 0
-        // if between A and Z
-        if(ch >= 65 && ch <= 90) {
-            sx = ch-65
-            sy = Math.floor(sx/this.charsPerLine)
-            sx = sx % this.charsPerLine
+        let metrics = {
+            x:0,
+            y:0,
+            w:0,
+            h:0,
         }
-        // if between a and z
-        if(ch >= 97 && ch <= 122) {
-            sx = ch-97
-            sy = Math.floor(sx/this.charsPerLine) + 3
-            sx = sx % this.charsPerLine
+        if(this.metrics[str]) {
+            metrics = this.metrics[str]
         }
-        if(this.positions[str]) {
-            sx = this.positions[str].x
-            sy = this.positions[str].y
-        }
-        if(sx >= 0) {
+        if(metrics.w > 0) {
+            // console.log("really drawing",ch,str)
             ctx.drawImage(this.image,
                 //src
-                sx*this.charWidth, sy*(this.charHeight), cw, this.charHeight,
+                metrics.x, metrics.y, metrics.w, metrics.h,
                 //dst
-                0,0, cw, this.charHeight
+                0, 0, metrics.w, metrics.h
             )
+        } else {
+            // console.log("skipping",str)
         }
-        return cw+1
+        return metrics.w + this.spaceWidth
     }
 }
 
@@ -79,7 +67,6 @@ export class TextSystem extends System {
 
     load_pixel_font(ent) {
         let font = ent.getComponent(PixelFont)
-        font.src = "./imgs/font_5@1x.png"
         font.image = new Image()
         font.image.src = font.src
     }

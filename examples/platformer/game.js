@@ -288,25 +288,9 @@ Promise.all([
             machine => {
                 console.log("showing a dialog")
                 splash.removeAllComponents()
-                // let widths = {
-                //     G:4, J:4, M:5, N:4, O:4, P:4, Q:4, R:4, S:4, U:4, W:5,
-                //     f:2, i:1,l:1, m:5, s:2,w:5,
-                //     ' ':3,
-                // }
-                // view.addComponent(VariableWidthFont, {
-                //     src:"./imgs/font_5@1x.png",
-                //     charHeight: 5,
-                //     charWidth: 6,
-                //     charsPerLine: 11,
-                //     widths: widths,
-                //     positions: {
-                //         '!':{x:8, y:7},
-                //     }
-                // })
-                // view.addComponent(Dialog, { text:"Cat Prince!\nWe need \nyour help!" , tilemap:LEVELS.dialog.data})
                 view.addComponent(Sprite, { x:0, y: 0, width: 200, height: 200, fixed:true})
-                view.addComponent(PixelFont, {metrics_src:"fonts/font1.fnt", src:"fonts/font1.png"})
-                view.addComponent(TextBox, { text:'Cat Prince', })
+                view.addComponent(PixelFont, {src:"fonts/BitScript.png"})
+                view.addComponent(TextBox, { text:'CAT \nPRINCE', })
                 view.addComponent(WaitForInput)
             },
             () => {
