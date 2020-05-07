@@ -15,14 +15,17 @@ export class PixelFont extends Component {
         this.src = null
         this.metrics = {
             A: { x: 194, y: 1, w: 6, h:9},
-            C: { x: 210, y: 1, w: 6, h:9},
-            E: { x: 225, y: 1, w: 7, h:9},
+            C: { x: 210, y: 1, w: 6, h:7},
+            E: { x: 225, y: 1, w: 7, h:7},
             I: { x: 258, y: 1, w: 5, h:9},
             N: { x: 291, y: 1, w: 8, h:9},
             P: { x: 306, y: 1, w: 7, h:9},
             R: { x: 321, y: 1, w: 7, h:9},
             T: { x: 336, y: 1, w: 7, h:9},
-            ' ': { x: 0, y: 0, w: 7, h: 9}
+            ' ': { x: 0, y: 0, w: 7, h: 9},
+            a: { x: 426, y: 1, w: 6, h:7},
+            t: { x: 536, y: 1, w: 4, h:7},
+
         }
         this.charWidth = 5
         this.lineHeight = 10

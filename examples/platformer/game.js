@@ -290,7 +290,7 @@ Promise.all([
                 splash.removeAllComponents()
                 view.addComponent(Sprite, { x:0, y: 0, width: 200, height: 200, fixed:true})
                 view.addComponent(PixelFont, {src:"fonts/BitScript.png"})
-                view.addComponent(TextBox, { text:'CAT \nPRINCE', })
+                view.addComponent(TextBox, { text:'Cat\nPRINCE', })
                 view.addComponent(WaitForInput)
             },
             () => {
