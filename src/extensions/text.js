@@ -13,24 +13,10 @@ export class PixelFont extends Component {
     constructor() {
         super();
         this.src = null
-        this.metrics = {
-            A: { x: 194, y: 1, w: 6, h:9},
-            C: { x: 210, y: 1, w: 6, h:7},
-            E: { x: 225, y: 1, w: 7, h:7},
-            I: { x: 258, y: 1, w: 5, h:9},
-            N: { x: 291, y: 1, w: 8, h:9},
-            P: { x: 306, y: 1, w: 7, h:9},
-            R: { x: 321, y: 1, w: 7, h:9},
-            T: { x: 336, y: 1, w: 7, h:9},
-            ' ': { x: 0, y: 0, w: 7, h: 9},
-            a: { x: 426, y: 1, w: 6, h:7},
-            t: { x: 536, y: 1, w: 4, h:7},
-
-        }
+        this.stuff = null
         this.charWidth = 5
         this.lineHeight = 10
         this.spaceWidth = 0
-        this.charsPerLine = 50
     }
     drawCharCode(ctx,ch) {
         // space
@@ -44,14 +30,15 @@ export class PixelFont extends Component {
             w:0,
             h:0,
         }
-        if(this.metrics[str]) {
-            metrics = this.metrics[str]
+        if(this.stuff.metrics[ch]) {
+            metrics = this.stuff.metrics[ch]
         }
+        console.log("Metrics are",metrics)
         if(metrics.w > 0) {
             // console.log("really drawing",ch,str)
             ctx.drawImage(this.image,
                 //src
-                metrics.x, metrics.y, metrics.w, metrics.h,
+                this.stuff.offset + metrics.x, metrics.y, metrics.w, metrics.h,
                 //dst
                 0, 0, metrics.w, metrics.h
             )
@@ -70,8 +57,15 @@ export class TextSystem extends System {
 
     load_pixel_font(ent) {
         let font = ent.getComponent(PixelFont)
+        console.log("setting up pixel font",font)
         font.image = new Image()
         font.image.src = font.src
+        if(font.metrics_src) {
+            console.log("loading ",font.metrics_src)
+            fetch(font.metrics_src).then(res => res.json()).then(data=>{
+                console.log("got the data",data)
+            })
+        }
     }
 
     setup_text_view(tv) {

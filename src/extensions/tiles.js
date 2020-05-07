@@ -199,7 +199,7 @@ export function load_tilemap_from_url(source) {
             })
         })).then(()=>{
             data.index = tile_index
-            console.log("blocking is",blocking)
+            // console.log("blocking is",blocking)
             data.wall_types = blocking
             return data
         })

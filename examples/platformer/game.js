@@ -289,8 +289,8 @@ Promise.all([
                 console.log("showing a dialog")
                 splash.removeAllComponents()
                 view.addComponent(Sprite, { x:0, y: 0, width: 200, height: 200, fixed:true})
-                view.addComponent(PixelFont, {src:"fonts/BitScript.png"})
-                view.addComponent(TextBox, { text:'Cat\nPRINCE', })
+                view.addComponent(PixelFont, {src:"fonts/BitScript.png", metrics_src:'fonts/BitScript.json'})
+                view.addComponent(TextBox, { text:'CA', })
                 view.addComponent(WaitForInput)
             },
             () => {
