@@ -23,6 +23,7 @@ import {
     StateMachineSystem,
     WaitForInput
 } from '../../src/extensions/dialogs.js'
+import {PixelFont, TextBox, TextSystem} from '../../src/extensions/text.js'
 
 class Player extends Component {}
 
@@ -96,6 +97,7 @@ world.registerSystem(PlatformerPhysicsSystem)
 world.registerSystem(StateMachineSystem)
 world.registerSystem(DialogSystem)
 world.registerSystem(FullscreenSystem)
+world.registerSystem(TextSystem)
 
 let TILE_SIZE = 8
 let FISH1 = 8
@@ -286,11 +288,11 @@ Promise.all([
             machine => {
                 console.log("showing a dialog")
                 splash.removeAllComponents()
-                let widths = {
-                    G:4, J:4, M:5, N:4, O:4, P:4, Q:4, R:4, S:4, U:4, W:5,
-                    f:2, i:1,l:1, m:5, s:2,w:5,
-                    ' ':3,
-                }
+                // let widths = {
+                //     G:4, J:4, M:5, N:4, O:4, P:4, Q:4, R:4, S:4, U:4, W:5,
+                //     f:2, i:1,l:1, m:5, s:2,w:5,
+                //     ' ':3,
+                // }
                 // view.addComponent(VariableWidthFont, {
                 //     src:"./imgs/font_5@1x.png",
                 //     charHeight: 5,
@@ -301,7 +303,10 @@ Promise.all([
                 //         '!':{x:8, y:7},
                 //     }
                 // })
-                view.addComponent(Dialog, { text:"Cat Prince!\nWe need \nyour help!" , tilemap:LEVELS.dialog.data})
+                // view.addComponent(Dialog, { text:"Cat Prince!\nWe need \nyour help!" , tilemap:LEVELS.dialog.data})
+                view.addComponent(Sprite, { x:0, y: 0, width: 200, height: 200, fixed:true})
+                view.addComponent(PixelFont, {metrics_src:"fonts/font1.fnt", src:"fonts/font1.png"})
+                view.addComponent(TextBox, { text:'Cat Prince', })
                 view.addComponent(WaitForInput)
             },
             () => {
