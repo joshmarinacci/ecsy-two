@@ -19,6 +19,7 @@ export class PixelFont extends Component {
         this.spaceWidth = 0
     }
     drawCharCode(ctx,ch) {
+        if(!this.stuff) return
         // space
         let str = String.fromCharCode(ch)
         // console.log('drawing',ch,str)
@@ -33,7 +34,6 @@ export class PixelFont extends Component {
         if(this.stuff.metrics[ch]) {
             metrics = this.stuff.metrics[ch]
         }
-        console.log("Metrics are",metrics)
         if(metrics.w > 0) {
             // console.log("really drawing",ch,str)
             ctx.drawImage(this.image,
@@ -62,9 +62,7 @@ export class TextSystem extends System {
         font.image.src = font.src
         if(font.metrics_src) {
             console.log("loading ",font.metrics_src)
-            fetch(font.metrics_src).then(res => res.json()).then(data=>{
-                console.log("got the data",data)
-            })
+            fetch(font.metrics_src).then(res => res.json()).then(data=>font.stuff = data)
         }
     }
 
