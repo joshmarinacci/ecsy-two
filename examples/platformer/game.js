@@ -292,16 +292,14 @@ Promise.all([
                 view.addComponent(PixelFont, {
                     src:"fonts/cat prince@1.png",
                     metrics_src:'fonts/cat prince@1.json'})
-                view.addComponent(TextBox, {
-                    text:'Cat Prince'
-                })
+                view.addComponent(TextBox, {  text:'Cat\nPrince' })
                 view.addComponent(WaitForInput)
             },
             () => {
                 console.log("showing a dialog")
                 view.removeComponent(TextBox)
                 view.addComponent(TextBox, {
-                    text:"Your father \nthe Cat King \nhas been\nkidnapped!".toUpperCase()
+                    text:"Your father \nthe Cat King \nhas been\nkidnapped!"
                     })
                 view.addComponent(WaitForInput)
             },
