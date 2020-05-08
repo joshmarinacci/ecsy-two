@@ -289,25 +289,34 @@ Promise.all([
                 console.log("showing a dialog")
                 splash.removeAllComponents()
                 view.addComponent(Sprite, { x:0, y: 0, width: 200, height: 200, fixed:true})
-                view.addComponent(PixelFont, {src:"fonts/BitScript.png", metrics_src:'fonts/BitScript.json'})
-                view.addComponent(TextBox, { text:'CA', })
+                view.addComponent(PixelFont, {
+                    src:"fonts/cat prince@1.png",
+                    metrics_src:'fonts/cat prince@1.json'})
+                view.addComponent(TextBox, {
+                    text:'Cat Prince'
+                })
                 view.addComponent(WaitForInput)
             },
             () => {
                 console.log("showing a dialog")
-                view.removeComponent(Dialog)
-                view.addComponent(Dialog, { text:"Your father \nthe Cat King \nhas been\nkidnapped!", tilemap:LEVELS.dialog.data })
+                view.removeComponent(TextBox)
+                view.addComponent(TextBox, {
+                    text:"Your father \nthe Cat King \nhas been\nkidnapped!".toUpperCase()
+                    })
                 view.addComponent(WaitForInput)
             },
             (machine) => {
                 console.log("showing a dialog")
-                view.removeComponent(Dialog)
-                view.addComponent(Dialog, { text:"Please rescue\nhim!", tilemap:LEVELS.dialog.data })
+                view.removeComponent(TextBox)
+                view.addComponent(TextBox, {
+                    text:"You must\nrescue\nhim!".toUpperCase()
+                })
                 view.addComponent(WaitForInput)
             },
             machine => {
                 console.log("done with the state machine")
-                view.removeComponent(Dialog)
+                view.removeComponent(Sprite)
+                view.removeComponent(TextBox)
                 view.removeComponent(StateMachine)
                 player.getMutableComponent(Sprite).x = LEVELS.simple.start.x
                 player.getMutableComponent(Sprite).y = LEVELS.simple.start.y
