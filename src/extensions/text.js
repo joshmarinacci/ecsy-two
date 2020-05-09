@@ -16,7 +16,8 @@ export class PixelFont extends Component {
         this.stuff = null
         this.charWidth = 5
         this.lineHeight = 10
-        this.spaceWidth = 0
+        this.spaceWidth = 1
+        this.ascent = 8
     }
     drawCharCode(ctx,ch) {
         if(!this.stuff) return
@@ -40,7 +41,7 @@ export class PixelFont extends Component {
                 //src
                 this.stuff.offset + metrics.x, metrics.y, metrics.w, metrics.h,
                 //dst
-                0, 0+metrics.h, metrics.w, metrics.h
+                0, this.ascent-metrics.h, metrics.w, metrics.h
             )
         } else {
             // console.log("skipping",str)
@@ -82,7 +83,7 @@ export class TextSystem extends System {
                 let font = tv.getComponent(PixelFont)
                 let view = tv.getComponent(TextBox)
                 ctx.translate(sprite.x,sprite.y)
-                ctx.fillStyle = 'red'
+                ctx.fillStyle = 'white'
                 ctx.fillRect(0,0,sprite.width,sprite.height)
 
                 let dy = 0

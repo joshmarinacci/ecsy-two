@@ -307,7 +307,7 @@ Promise.all([
                 console.log("showing a dialog")
                 view.removeComponent(TextBox)
                 view.addComponent(TextBox, {
-                    text:"You must\nrescue\nhim!".toUpperCase()
+                    text:"You must\nrescue\nhim!"
                 })
                 view.addComponent(WaitForInput)
             },
