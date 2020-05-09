@@ -41,7 +41,7 @@ export class PixelFont extends Component {
                 //src
                 this.stuff.offset + metrics.x, metrics.y, metrics.w, metrics.h,
                 //dst
-                0, this.ascent-metrics.h, metrics.w, metrics.h
+                0, this.ascent-metrics.h-metrics.baseline, metrics.w, metrics.h
             )
         } else {
             // console.log("skipping",str)
