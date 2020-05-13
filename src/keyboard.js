@@ -47,8 +47,6 @@ export class KeyboardSystem extends System {
         this.queries.controls.results.forEach(ent => {
             let kb = ent.getComponent(KeyboardState)
             let inp = ent.getMutableComponent(InputState)
-            inp.changed = false
-            inp.released = false
             Object.keys(kb.mapping).forEach(key => {
                 let name = kb.mapping[key]
                 let state = kb.getKeyState(key)

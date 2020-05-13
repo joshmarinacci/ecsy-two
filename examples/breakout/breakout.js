@@ -60,9 +60,10 @@ class TouchInputSystem extends System {
         this.queries.input.added.forEach(ent => {
             let touch = ent.getMutableComponent(TouchState)
             touch.moveHandler = (e) =>  {
-                let tch = e.changedTouches[0]
-                console.log("touch is",e,tch)
-                touch.clientX = tch.clientX
+                e.changedTouches.forEach(tch => {
+                    touch.clientX = tch.clientX
+                    touch.clientY = tch.clientY
+                })
                 touch.lastTimestamp = e.timeStamp
             }
             document.addEventListener('touchmove', touch.moveHandler, false)

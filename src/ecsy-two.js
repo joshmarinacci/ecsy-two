@@ -82,6 +82,23 @@ export class FilledSprite extends Component {
     }
 }
 
+export class InputState extends Component {
+    constructor() {
+        super()
+        this.states = {}
+        this.changed = true
+        this.released = false
+    }
+
+    anyChanged() {
+        return this.changed
+    }
+
+    anyReleased() {
+        return this.released
+    }
+}
+
 export class ECSYTwoSystem extends  System {
     execute(delta, time) {
         this.queries.canvas.added.forEach(ent => {
@@ -104,6 +121,11 @@ export class ECSYTwoSystem extends  System {
             })
             ctx.restore()
         })
+        this.queries.inputs.results.forEach(ent => {
+            let inp = ent.getMutableComponent(InputState)
+            inp.changed = false
+            inp.released = false
+        })
     }
 }
 ECSYTwoSystem.queries = {
@@ -115,6 +137,9 @@ ECSYTwoSystem.queries = {
     },
     background: {
         components: [BackgroundFill]
+    },
+    inputs: {
+        components: [InputState]
     }
 }
 
@@ -133,19 +158,3 @@ export function startWorld(world) {
     run()
 }
 
-export class InputState extends Component {
-    constructor() {
-        super()
-        this.states = {}
-        this.changed = true
-        this.released = false
-    }
-
-    anyChanged() {
-        return this.changed
-    }
-
-    anyReleased() {
-        return this.released
-    }
-}

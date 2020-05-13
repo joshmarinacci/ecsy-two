@@ -9,7 +9,8 @@ import {
     CameraFollowsSprite, InputState,
     KeyboardState, KeyboardSystem,
     FullscreenButton, FullscreenSystem,
-    AnimatedSprite, ImageSprite, SpriteSystem, LayerParent, LayerRenderingSystem
+    AnimatedSprite, ImageSprite, SpriteSystem, LayerParent, LayerRenderingSystem,
+    MouseInputSystem, MouseState,
 } from "../../src/index.js"
 
 import {load_tilemap_from_url, TileMap, TileMapSystem} from '../../src/extensions/tiles.js'
@@ -84,9 +85,56 @@ FishSystem.queries = {
     }
 }
 
+
+class TouchState extends Component {
+    constructor() {
+        super();
+        this.clientX = 0
+        this.clientY = 0
+        this.lastTimestamp = 0
+    }
+}
+
+class TouchInputSystem extends System {
+    execute(delta, time) {
+        this.queries.input.added.forEach(ent => {
+            let touch = ent.getMutableComponent(TouchState)
+            touch.startHandler = (e) => {
+                e.changedTouches.forEach(tch => {
+
+                })
+            }
+            touch.moveHandler = (e) =>  {
+                e.changedTouches.forEach(tch => {
+                    touch.clientX = tch.clientX
+                    touch.clientY = tch.clientY
+                })
+                // let tch = e.changedTouches[0]
+                touch.lastTimestamp = e.timeStamp
+            }
+            document.addEventListener('touchstart', touch.startHandler, false)
+            document.addEventListener('touchmove', touch.moveHandler, false)
+        })
+        this.queries.input.results.forEach(ent => {
+            let touch = ent.getMutableComponent(TouchState)
+        })
+    }
+}
+TouchInputSystem.queries = {
+    input: {
+        components:[TouchState],
+        listen: {
+            added:true,
+        }
+    }
+}
+
+
 world.registerSystem(ECSYTwoSystem)
 world.registerSystem(LayerRenderingSystem)
 world.registerSystem(KeyboardSystem)
+world.registerSystem(MouseInputSystem)
+world.registerSystem(TouchInputSystem)
 world.registerSystem(TileMapSystem)
 world.registerSystem(SpriteSystem)
 // world.registerSystem(MusicSystem)
@@ -258,6 +306,7 @@ let player = world.createEntity()
             'ArrowDown':'down',
         }
     })
+    .addComponent(MouseState)
     .addComponent(PlayerPhysics, {
         ay: 200,
         max_vx:50,

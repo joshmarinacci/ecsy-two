@@ -773,6 +773,23 @@
 	    }
 	}
 
+	class InputState extends Component {
+	    constructor() {
+	        super();
+	        this.states = {};
+	        this.changed = true;
+	        this.released = false;
+	    }
+
+	    anyChanged() {
+	        return this.changed
+	    }
+
+	    anyReleased() {
+	        return this.released
+	    }
+	}
+
 	class ECSYTwoSystem extends  System {
 	    execute(delta, time) {
 	        this.queries.canvas.added.forEach(ent => {
@@ -795,6 +812,11 @@
 	            });
 	            ctx.restore();
 	        });
+	        this.queries.inputs.results.forEach(ent => {
+	            let inp = ent.getMutableComponent(InputState);
+	            inp.changed = false;
+	            inp.released = false;
+	        });
 	    }
 	}
 	ECSYTwoSystem.queries = {
@@ -806,6 +828,9 @@
 	    },
 	    background: {
 	        components: [BackgroundFill]
+	    },
+	    inputs: {
+	        components: [InputState]
 	    }
 	};
 
@@ -822,23 +847,6 @@
 	        requestAnimationFrame(run);
 	    }
 	    run();
-	}
-
-	class InputState extends Component {
-	    constructor() {
-	        super();
-	        this.states = {};
-	        this.changed = true;
-	        this.released = false;
-	    }
-
-	    anyChanged() {
-	        return this.changed
-	    }
-
-	    anyReleased() {
-	        return this.released
-	    }
 	}
 
 	class Layer extends Component{
@@ -1232,8 +1240,6 @@
 	        this.queries.controls.results.forEach(ent => {
 	            let kb = ent.getComponent(KeyboardState);
 	            let inp = ent.getMutableComponent(InputState);
-	            inp.changed = false;
-	            inp.released = false;
 	            Object.keys(kb.mapping).forEach(key => {
 	                let name = kb.mapping[key];
 	                let state = kb.getKeyState(key);
@@ -1259,24 +1265,68 @@
 	    },
 	};
 
+	const BUTTONS = {
+	    LEFT:'left-button',
+	    PRESSED:'down',
+	    RELEASED:'up',
+	};
 	class MouseState {
 	    constructor() {
 	        this.clientX = 0;
 	        this.clientY = 0;
+	        this.states = {};
+	        this.downHandler = (e) => {
+	            this.setKeyState(BUTTONS.LEFT,BUTTONS.PRESSED);
+	        };
+	        this.moveHandler = (e) =>  {
+	            this.clientX = e.clientX;
+	            this.lastTimestamp = e.timeStamp;
+	        };
+	        this.upHandler = (e) => {
+	            this.setKeyState(BUTTONS.LEFT,BUTTONS.RELEASED);
+	        };
+
+	    }
+	    setKeyState(key,value) {
+	        let state = this.getKeyState(key);
+	        state.prev = state.current;
+	        state.current = value;
+	    }
+	    getKeyState(key) {
+	        if(!this.states[key]) {
+	            this.states[key] = {
+	                prev:BUTTONS.RELEASED,
+	                current:BUTTONS.RELEASED,
+	            };
+	        }
+	        return this.states[key]
 	    }
 	}
 	class MouseInputSystem extends System {
 	    execute(delta, time) {
 	        this.queries.mouse.added.forEach(ent => {
 	            let mouse = ent.getMutableComponent(MouseState);
-	            mouse.moveHandler = (e) =>  {
-	                mouse.clientX = e.clientX;
-	                mouse.lastTimestamp = e.timeStamp;
-	            };
 	            document.addEventListener('mousemove', mouse.moveHandler, false);
+	            document.addEventListener('mousedown', mouse.downHandler, false);
+	            document.addEventListener('mouseup',   mouse.upHandler,   false);
 	        });
 	        this.queries.mouse.results.forEach(ent => {
-	            // console.log("current mouse",ent.getComponent(MouseState))
+	            let mouse = ent.getComponent(MouseState);
+	            let inp = ent.getMutableComponent(InputState);
+	            let name = BUTTONS.LEFT;
+	            let state = mouse.getKeyState(name);
+	            // just pressed down
+	            if(state.current === BUTTONS.PRESSED && state.prev === BUTTONS.RELEASED) {
+	                inp.states[name] = (state.current === BUTTONS.PRESSED);
+	                inp.changed = true;
+	            }
+	            // just released up
+	            if(state.current === BUTTONS.RELEASED && state.prev === BUTTONS.PRESSED) {
+	                inp.states[name] = (state.current === BUTTONS.PRESSED);
+	                inp.changed = true;
+	                inp.released = true;
+	            }
+	            state.prev = state.current;
 	        });
 	        this.queries.mouse.removed.forEach(ent => {
 	            let mouse = ent.getMutableComponent(MouseState);
@@ -1286,7 +1336,7 @@
 	}
 	MouseInputSystem.queries = {
 	    mouse: {
-	        components:[MouseState],
+	        components:[MouseState, InputState],
 	        listen: {
 	            added:true,
 	            removed:true
@@ -1714,7 +1764,7 @@
 	            })
 	        })).then(()=>{
 	            data.index = tile_index;
-	            console.log("blocking is",blocking);
+	            // console.log("blocking is",blocking)
 	            data.wall_types = blocking;
 	            return data
 	        })
