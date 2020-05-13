@@ -46,6 +46,41 @@ class GameState extends Component {
 }
 class Won {}
 
+class TouchState extends Component {
+    constructor() {
+        super();
+        this.clientX = 0
+        this.clientY = 0
+        this.lastTimestamp = 0
+    }
+}
+
+class TouchInputSystem extends System {
+    execute(delta, time) {
+        this.queries.input.added.forEach(ent => {
+            let touch = ent.getMutableComponent(TouchState)
+            touch.moveHandler = (e) =>  {
+                let tch = e.changedTouches[0]
+                console.log("touch is",e,tch)
+                touch.clientX = tch.clientX
+                touch.lastTimestamp = e.timeStamp
+            }
+            document.addEventListener('touchmove', touch.moveHandler, false)
+        })
+        this.queries.input.results.forEach(ent => {
+            let touch = ent.getMutableComponent(TouchState)
+        })
+    }
+}
+TouchInputSystem.queries = {
+    input: {
+        components:[TouchState],
+        listen: {
+            added:true,
+        }
+    }
+}
+
 class BreakoutInput extends System {
     execute(delta, time) {
         this.queries.canvas.results.forEach(ent => {
@@ -74,6 +109,13 @@ class BreakoutInput extends System {
                             paddle.x = relativeX - paddle.width/2
                         }
                     }
+                    let touch = ent.getComponent(TouchState)
+                    if(time - touch.lastTimestamp < 100) {
+                        let relativeX = touch.clientX - canvas.dom.offsetLeft
+                        if(relativeX > 0 && relativeX < canvas.width) {
+                            paddle.x = relativeX - paddle.width/2
+                        }
+                    }
                 })
             })
         })
@@ -90,7 +132,7 @@ BreakoutInput.queries = {
         }
     },
     input: {
-        components: [KeyboardState, InputState, MouseState]
+        components: [KeyboardState, InputState, MouseState, TouchState]
     },
 }
 
@@ -314,6 +356,7 @@ world.registerSystem(BreakoutLogic)
 world.registerSystem(BreakoutRenderer)
 world.registerSystem(KeyboardSystem)
 world.registerSystem(MouseInputSystem)
+world.registerSystem(TouchInputSystem)
 
 world.createEntity()
     .addComponent(Canvas, { width: 480, height: 320, pixelMode:false})
@@ -333,6 +376,7 @@ world.createEntity()
     .addComponent(InputState)
     .addComponent(KeyboardState)
     .addComponent(MouseState)
+    .addComponent(TouchState)
 
 startWorld(world)
 
