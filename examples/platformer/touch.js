@@ -69,7 +69,7 @@ export class TouchInputSystem extends System {
                 touch.changed = false
             }
         })
-        this.queries.buttons.results.forEach(ent => {
+        this.queries.buttons.changed.forEach(ent => {
             let button = ent.getComponent(TouchButton)
             this.queries.input.results.forEach(ent => {
                 let inp = ent.getMutableComponent(InputState)
@@ -110,14 +110,6 @@ export class TouchInputSystem extends System {
 
         })
     }
-    clearButtonsDown() {
-        this.queries.buttons.results.forEach(ent => {
-            let button = ent.getComponent(TouchButton)
-            if(button.pressed !== false) {
-                ent.getMutableComponent(TouchButton).pressed = false
-            }
-        })
-    }
 }
 TouchInputSystem.queries = {
     canvas: {
@@ -130,7 +122,10 @@ TouchInputSystem.queries = {
         }
     },
     buttons: {
-        components: [Sprite, TouchButton]
+        components: [Sprite, TouchButton],
+        listen: {
+            changed:true,
+        }
     }
 }
 
