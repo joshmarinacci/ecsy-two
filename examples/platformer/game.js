@@ -9,8 +9,8 @@ import {
     CameraFollowsSprite, InputState,
     KeyboardState, KeyboardSystem,
     FullscreenButton, FullscreenSystem,
-    AnimatedSprite, ImageSprite, SpriteSystem, LayerParent, LayerRenderingSystem,
-    MouseInputSystem, MouseState,
+    AnimatedSprite, ImageSprite, SpriteSystem, LayerParent, LayerRenderingSystem, Layer,
+    MouseInputSystem, MouseState, FilledSprite, make_point
 } from "../../src/index.js"
 
 import {load_tilemap_from_url, TileMap, TileMapSystem} from '../../src/extensions/tiles.js'
@@ -25,6 +25,7 @@ import {
     WaitForInput
 } from '../../src/extensions/dialogs.js'
 import {PixelFont, TextBox, TextSystem} from '../../src/extensions/text.js'
+import {HoverEffectSystem, TouchButton, TouchInputSystem, TouchState} from './touch.js'
 
 class Player extends Component {}
 
@@ -86,72 +87,13 @@ FishSystem.queries = {
 }
 
 
-class TouchState extends Component {
-    constructor() {
-        super();
-        this.clientX = 0
-        this.clientY = 0
-        this.lastTimestamp = 0
-        this.rightDown = false
-    }
-}
-
-class TouchInputSystem extends System {
-    execute(delta, time) {
-        this.queries.input.added.forEach(ent => {
-            let touch = ent.getMutableComponent(TouchState)
-            touch.startHandler = (e) => {
-                Array.from(e.changedTouches).forEach(tch => {
-                    console.log("tch = ",tch)
-                    if(tch.clientX > 300) {
-                        console.log("on the jump side")
-                        touch.rightDown = true
-                    } else {
-                        touch.leftDown = true
-                    }
-                })
-            }
-            touch.moveHandler = (e) =>  {
-                Array.from(e.changedTouches).forEach(tch => {
-                    touch.clientX = tch.clientX
-                    touch.clientY = tch.clientY
-                })
-                touch.lastTimestamp = e.timeStamp
-            }
-            touch.endHandler = (e) => {
-                touch.rightDown = false
-            }
-            document.addEventListener('touchstart', touch.startHandler, false)
-            document.addEventListener('touchmove', touch.moveHandler, false)
-            document.addEventListener('touchend', touch.endHandler, false)
-        })
-        this.queries.input.results.forEach(ent => {
-            let touch = ent.getMutableComponent(TouchState)
-            let inp = ent.getMutableComponent(InputState)
-            if(touch.rightDown) {
-                inp.changed = true
-                inp.states.jump = true
-            } else {
-                inp.states.jump = false
-            }
-        })
-    }
-}
-TouchInputSystem.queries = {
-    input: {
-        components:[TouchState, InputState],
-        listen: {
-            added:true,
-        }
-    }
-}
-
 
 world.registerSystem(ECSYTwoSystem)
 world.registerSystem(LayerRenderingSystem)
 world.registerSystem(KeyboardSystem)
 world.registerSystem(MouseInputSystem)
 world.registerSystem(TouchInputSystem)
+world.registerSystem(HoverEffectSystem)
 world.registerSystem(TileMapSystem)
 world.registerSystem(SpriteSystem)
 // world.registerSystem(MusicSystem)
@@ -295,7 +237,7 @@ TubeSystem.queries = {
 world.registerSystem(TubeSystem)
 
 let view = world.createEntity()
-    .addComponent(Canvas, { scale: 10, width:TILE_SIZE*8, height: TILE_SIZE*8, pixelMode:true})
+    .addComponent(Canvas, { scale: 5, width:TILE_SIZE*8, height: TILE_SIZE*8, pixelMode:true})
     .addComponent(BackgroundFill, {color: PALETTE[0xC]})
     .addComponent(Camera, { x:1*TILE_SIZE, y:0*TILE_SIZE})
     .addComponent(FullscreenButton)
@@ -335,7 +277,29 @@ let player = world.createEntity()
         debug:false,
     })
 
+
 view.addComponent(CameraFollowsSprite, { target: player})
+
+world.createEntity()
+    .addComponent(Layer, { name:'splash', depth: 100 })
+world.createEntity()
+    .addComponent(Layer, { name:'controls', depth: 1000 })
+
+world.createEntity()
+    .addComponent(Sprite, { x: 0, y: 54, width: 10, height: 10, fixed:true, layer:'controls'})
+    .addComponent(FilledSprite)
+    .addComponent(TouchButton, { name:'left'})
+world.createEntity()
+    .addComponent(Sprite, { x: 11, y: 54, width: 10, height: 10, fixed:true, layer:'controls'})
+    .addComponent(FilledSprite)
+    .addComponent(TouchButton, { name:'right'})
+
+world.createEntity()
+    .addComponent(Sprite, { x: 50, y: 54, width: 10, height: 10, fixed:true, layer:'controls'})
+    .addComponent(FilledSprite)
+    .addComponent(TouchButton, {name:'jump'})
+
+
 
 Promise.all([
     // prom4,
@@ -347,7 +311,7 @@ Promise.all([
             (machine)=>{
                 world.getSystem(PlatformerPhysicsSystem).enabled = false
                 splash = world.createEntity()
-                splash.addComponent(Sprite, { x: 0, y:0, fixed:true})
+                splash.addComponent(Sprite, { x: 0, y:0, fixed:true, layer:'splash'})
                 splash.addComponent(ImageSprite, { src:"./imgs/splash@1x.png"})
                 view.addComponent(WaitForInput)
                 console.log("making splash")
