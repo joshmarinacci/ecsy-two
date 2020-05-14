@@ -92,6 +92,7 @@ class TouchState extends Component {
         this.clientX = 0
         this.clientY = 0
         this.lastTimestamp = 0
+        this.rightDown = false
     }
 }
 
@@ -100,29 +101,45 @@ class TouchInputSystem extends System {
         this.queries.input.added.forEach(ent => {
             let touch = ent.getMutableComponent(TouchState)
             touch.startHandler = (e) => {
-                e.changedTouches.forEach(tch => {
-
+                Array.from(e.changedTouches).forEach(tch => {
+                    console.log("tch = ",tch)
+                    if(tch.clientX > 300) {
+                        console.log("on the jump side")
+                        touch.rightDown = true
+                    } else {
+                        touch.leftDown = true
+                    }
                 })
             }
             touch.moveHandler = (e) =>  {
-                e.changedTouches.forEach(tch => {
+                Array.from(e.changedTouches).forEach(tch => {
                     touch.clientX = tch.clientX
                     touch.clientY = tch.clientY
                 })
-                // let tch = e.changedTouches[0]
                 touch.lastTimestamp = e.timeStamp
+            }
+            touch.endHandler = (e) => {
+                touch.rightDown = false
             }
             document.addEventListener('touchstart', touch.startHandler, false)
             document.addEventListener('touchmove', touch.moveHandler, false)
+            document.addEventListener('touchend', touch.endHandler, false)
         })
         this.queries.input.results.forEach(ent => {
             let touch = ent.getMutableComponent(TouchState)
+            let inp = ent.getMutableComponent(InputState)
+            if(touch.rightDown) {
+                inp.changed = true
+                inp.states.jump = true
+            } else {
+                inp.states.jump = false
+            }
         })
     }
 }
 TouchInputSystem.queries = {
     input: {
-        components:[TouchState],
+        components:[TouchState, InputState],
         listen: {
             added:true,
         }
@@ -307,6 +324,7 @@ let player = world.createEntity()
         }
     })
     .addComponent(MouseState)
+    .addComponent(TouchState)
     .addComponent(PlayerPhysics, {
         ay: 200,
         max_vx:50,
