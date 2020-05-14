@@ -69,6 +69,13 @@ export class Sprite extends  Component {
         sprite.height = Math.max( r1.bottom(), r2.bottom() ) - Math.min( r1.top(),  r2.top() );
         return sprite
     }
+    contains(pt) {
+        if(this.left() > pt.x) return false
+        if(this.right() < pt.x) return false
+        if(this.top() > pt.y) return false
+        if(this.bottom() < pt.y) return false
+        return true
+    }
 }
 export class DebugOutline {
     constructor() {

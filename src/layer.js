@@ -98,9 +98,19 @@ export class DrawFilledRect {
         this.bounds = bounds
         this.color = color
     }
-    draw(ctx) {
+    draw(ctx, ent) {
+        ctx.save()
+        if(this.bounds.fixed && ent.hasComponent(Camera)) {
+            let canvas = ent.getComponent(Canvas)
+            let camera = ent.getComponent(Camera)
+            ctx.translate(
+                +camera.x - canvas.width/2,
+                +camera.y - canvas.height/2)
+        }
+
         ctx.fillStyle = this.color
         ctx.fillRect(this.bounds.x,this.bounds.y,this.bounds.width,this.bounds.height)
+        ctx.restore()
     }
 }
 
