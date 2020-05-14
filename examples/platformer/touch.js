@@ -140,9 +140,9 @@ export class HoverEffectSystem extends System {
             let button = ent.getComponent(TouchButton)
             let filled = ent.getComponent(FilledSprite)
             if(button.pressed) {
-                filled.color = 'pink'
+                filled.color = 'rgba(255,200,200,0.5)'
             } else {
-                filled.color = 'red'
+                filled.color = 'rgba(255,0,0,0.5)'
             }
         })
     }

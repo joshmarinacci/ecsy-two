@@ -287,16 +287,16 @@ world.createEntity()
 
 world.createEntity()
     .addComponent(Sprite, { x: 0, y: 54, width: 10, height: 10, fixed:true, layer:'controls'})
-    .addComponent(FilledSprite)
+    .addComponent(FilledSprite, {color:'rgba(255,0,0,0.5)'})
     .addComponent(TouchButton, { name:'left'})
 world.createEntity()
     .addComponent(Sprite, { x: 11, y: 54, width: 10, height: 10, fixed:true, layer:'controls'})
-    .addComponent(FilledSprite)
+    .addComponent(FilledSprite, {color:'rgba(255,0,0,0.5)'})
     .addComponent(TouchButton, { name:'right'})
 
 world.createEntity()
     .addComponent(Sprite, { x: 50, y: 54, width: 10, height: 10, fixed:true, layer:'controls'})
-    .addComponent(FilledSprite)
+    .addComponent(FilledSprite, {color:'rgba(255,0,0,0.5)'})
     .addComponent(TouchButton, {name:'jump'})
 
 
