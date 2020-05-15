@@ -1,5 +1,5 @@
 import {System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
-import {
+import ECSYTWO, {
     BackgroundFill,
     Camera,
     Canvas, ECSYTwoSystem,
@@ -9,15 +9,13 @@ import {
     KeyboardSystem, KeyboardState,
     SpriteSystem, ImageSprite, AnimatedSprite,
     AudioSystem, SoundEffect, PlaySoundEffect, LayerRenderingSystem, DebugOutline,
+    Layer,
 } from '../../src/index.js'
 import {Emitter, ParticleSystem} from '../../src/extensions/particles.js'
 
 
 let world = new World()
-world.registerSystem(ECSYTwoSystem)
-world.registerSystem(LayerRenderingSystem)
-world.registerSystem(KeyboardSystem)
-world.registerSystem(SpriteSystem)
+ECSYTWO.initialize(world)
 world.registerSystem(AudioSystem)
 
 class GameState {
@@ -61,6 +59,8 @@ let game = world.createEntity()
     .addComponent(Camera, { centered:false }) /// Why is the camera required?
     .addComponent(BackgroundFill, {color: "gray"})
     .addComponent(GameState)
+
+world.createEntity().addComponent(Layer, {name:"particles", depth:100})
 
 class Vector2D {
     constructor(x,y) {
@@ -332,12 +332,13 @@ class CollisionSystem extends System {
                     let enemy = enemy_ent.getComponent(Enemy)
                     enemy.hp--
                     world.createEntity()
-                        .addComponent(Sprite, { x:en.x, y: en.y, width: 2, height: 2})
+                        .addComponent(Sprite, { x:en.x, y: en.y, width: 2, height: 2, layer:'particles'})
                         .addComponent(FilledSprite, { color: 'yellow'})
                         .addComponent(Emitter, {
                             velocity: 10, velocity_jitter:100,
                             angle: 0, angle_jitter: 2*Math.PI,
-                            duration: 0.3, lifetime: 1,
+                            duration: 0.3,
+                            lifetime: 1,
                             tick_rate: 1
                         })
                     if(enemy.hp <=0) {

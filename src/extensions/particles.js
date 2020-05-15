@@ -32,7 +32,7 @@ export class ParticleSystem extends System {
         this.queries.emitters.added.forEach(ent => {
             let emitter = ent.getComponent(Emitter)
             emitter.start_time = time/1000
-        })
+         })
         this.queries.emitters.results.forEach(ent => {
             let emitter = ent.getComponent(Emitter)
             let loc = ent.getComponent(Sprite)
@@ -47,11 +47,12 @@ export class ParticleSystem extends System {
                     lifetime: emitter.lifetime,
                     start_time: time/1000,
                 })
-                part.addComponent(ImageSprite, {image:emitter.image})
-                if(!emitter.image) {
+                if(emitter.image) {
+                    part.addComponent(ImageSprite, {image: emitter.image})
+                } else {
                     part.addComponent(FilledSprite, { color: 'yellow'})
                 }
-                part.addComponent(Sprite, {x: loc.x, y: loc.y, width:loc.width, height: loc.height})
+                part.addComponent(Sprite, {x: loc.x, y: loc.y, width:loc.width, height: loc.height, layer: loc.layer})
             }
             if(emitter.duration !== -1 && time/1000 - emitter.start_time > emitter.duration) {
                 ent.removeComponent(Emitter)
