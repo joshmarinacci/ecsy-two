@@ -2,9 +2,21 @@
 // https://developer.mozilla.org/en-US/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript/Create_the_Canvas_and_draw_on_it
 
 import {Component, System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
-import {BackgroundFill, Canvas, ECSYTwoSystem, InputState, Sprite, startWorld} from '../../src/ecsy-two.js'
+import {
+    BackgroundFill,
+    Canvas,
+    ECSYTwoSystem,
+    InputState,
+    Sprite,
+    FilledSprite,
+    startWorld,
+    DebugOutline
+} from '../../src/index.js'
 import {KeyboardState, KeyboardSystem} from '../../src/keyboard.js'
 import {MouseInputSystem, MouseState} from '../../src/mouse.js'
+import {Layer, LayerRenderingSystem} from '../../src/layer.js'
+import {CanvasFont, TextBox, TextSystem} from '../../src/extensions/text.js'
+import ECSYTWO, {SpriteSystem, } from '../../src/index.js'
 
 let world = new World()
 world.registerSystem(ECSYTwoSystem)
@@ -45,6 +57,8 @@ class GameState extends Component {
     }
 }
 class Won {}
+class ScoreView {}
+class LivesView {}
 
 class TouchState extends Component {
     constructor() {
@@ -186,6 +200,15 @@ class BreakoutLogic extends System {
                 })
             })
         })
+        this.queries.gamestate.results.forEach(ent => {
+            let state = ent.getMutableComponent(GameState)
+            this.queries.scoreview.results.forEach(ent => {
+                ent.getMutableComponent(TextBox).text = `Score ${state.score}`
+            })
+            this.queries.livesview.results.forEach(ent => {
+                ent.getMutableComponent(TextBox).text = `Lives ${state.lives}`
+            })
+        })
     }
     brickCollisionDetection(ball, bloc, bricks, score) {
         for(let c=0; c<bricks.columnCount; c++) {
@@ -237,6 +260,12 @@ BreakoutLogic.queries = {
     },
     gamestate: {
         components: [GameState]
+    },
+    scoreview: {
+        components: [ScoreView, TextBox]
+    },
+    livesview: {
+        components: [LivesView, TextBox]
     }
 }
 
@@ -258,11 +287,6 @@ class BreakoutRenderer extends  System {
             this.queries.bricks.results.forEach(ent => {
                 let bricks = ent.getComponent(Bricks)
                 this.drawBricks(ctx,bricks)
-            })
-            this.queries.gamestate.results.forEach(ent => {
-                let state = ent.getComponent(GameState)
-                this.drawScore(ctx, state)
-                this.drawLives(canvas, ctx, state)
             })
             this.queries.won.results.forEach(ent => {
                 this.drawWinBanner(canvas, ctx)
@@ -307,23 +331,12 @@ class BreakoutRenderer extends  System {
         ctx.restore()
     }
 
-    drawScore(ctx, score) {
-        ctx.font = '16px Arial'
-        ctx.fillStyle = "#0095dd"
-        ctx.fillText('Score: ' + score.score, 8, 20)
-    }
-
     drawWinBanner(canvas, ctx) {
         ctx.font = '16px Arial'
         ctx.fillStyle = "black"
         ctx.fillText('YOU WIN!', canvas.width/2 - 30, 20)
     }
 
-    drawLives(canvas, ctx, lives) {
-        ctx.font = '16px Arial'
-        ctx.fillStyle = '#0095dd'
-        ctx.fillText("Lives: " + lives.lives, canvas.width-65, 20)
-    }
 }
 BreakoutRenderer.queries = {
     canvas: {
@@ -352,11 +365,11 @@ BreakoutRenderer.queries = {
     },
 }
 
+world.registerSystem(BreakoutRenderer)
+ECSYTWO.initialize(world)
 world.registerSystem(BreakoutInput)
 world.registerSystem(BreakoutLogic)
-world.registerSystem(BreakoutRenderer)
-world.registerSystem(KeyboardSystem)
-world.registerSystem(MouseInputSystem)
+world.registerSystem(TextSystem)
 world.registerSystem(TouchInputSystem)
 
 world.createEntity()
@@ -378,6 +391,19 @@ world.createEntity()
     .addComponent(KeyboardState)
     .addComponent(MouseState)
     .addComponent(TouchState)
+
+world.createEntity()
+    .addComponent(Layer, { depth: 100, name:'overlay'})
+let score_ent = world.createEntity()
+    .addComponent(Sprite, { x: 20, y: 5, width: 200, height: 40})
+    .addComponent(TextBox, { text: "score"})
+    .addComponent(CanvasFont, { color: 'white', size: 20})
+    .addComponent(ScoreView)
+let lives_ent = world.createEntity()
+    .addComponent(Sprite, { x: 320, y: 5, width: 150, height: 40})
+    .addComponent(TextBox, { text: "lives"})
+    .addComponent(CanvasFont, { color: 'white', size: 20, halign:'right'})
+    .addComponent(LivesView)
 
 startWorld(world)
 

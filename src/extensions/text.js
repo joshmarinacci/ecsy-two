@@ -1,5 +1,5 @@
 import {Component, System, World} from "../../node_modules/ecsy/build/ecsy.module.js"
-import {Camera, Canvas, Sprite} from '../ecsy-two.js'
+import {Camera, Canvas, DebugOutline, Sprite} from '../ecsy-two.js'
 
 export class TextBox extends Component {
     constructor() {
@@ -54,11 +54,36 @@ export class CanvasFont extends Component {
     constructor() {
         super();
         this.family = 'sans-serif'
-        this.size = '12pt'
-        this.weight = 'regular'
+        this.size = 15
+        this.weight = 'normal'
         this.color = 'black'
         this.halign = 'left'
         this.valign = 'top'
+    }
+}
+function draw_canvas_text(ctx,font,sprite,text) {
+    let x = 0
+    let y = 0
+    ctx.font = `${font.weight} ${font.size}px ${font.family}`
+    // console.log("ctx.font",ctx.font)
+    text.split('\n').forEach(line => {
+        ctx.fillStyle = font.color
+        let metrics = ctx.measureText(line)
+        // console.log(metrics.fontBoundingBoxDescent)
+        // y += metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
+        if(font.halign === 'right') {
+            x = sprite.width - metrics.width
+        }
+        y += font.size
+        ctx.fillText(line,x,y)
+        if(font.debug) {
+            ctx.fillStyle = 'yellow'
+            ctx.fillRect(x, y, metrics.width,1)
+        }
+    })
+    if(font.debug) {
+        ctx.strokeStyle = 'red'
+        ctx.strokeRect(0,0,sprite.width,sprite.height)
     }
 }
 export class TextSystem extends System {
@@ -124,18 +149,7 @@ export class TextSystem extends System {
                 let font = tv.getComponent(CanvasFont)
                 let text = tv.getComponent(TextBox).text
                 ctx.translate(sprite.x,sprite.y)
-                text.split('\n').forEach(line => {
-
-                })
-                // ctx.fillStyle = 'white'
-                // ctx.fillRect(0,0,sprite.width,sprite.height)
-                /*
-                let dy = 0
-                view.text.split("\n").forEach(line => {
-                    this.draw_line(ctx,line,font,0,dy)
-                    dy += font.lineHeight
-                })
-                */
+                draw_canvas_text(ctx,font,sprite,text)
                 ctx.restore()
             }
         }
