@@ -50,10 +50,22 @@ export class PixelFont extends Component {
     }
 }
 
+export class CanvasFont extends Component {
+    constructor() {
+        super();
+        this.family = 'sans-serif'
+        this.size = '12pt'
+        this.weight = 'regular'
+        this.color = 'black'
+        this.halign = 'left'
+        this.valign = 'top'
+    }
+}
 export class TextSystem extends System {
     execute(delta, time) {
         this.queries.pixel_fonts.added.forEach(ent => this.load_pixel_font(ent))
         this.queries.text_views.added.forEach(ent => this.setup_text_view(ent))
+        this.queries.plain_text_views.added.forEach(ent => this.setup_plain_text_view(ent))
     }
 
     load_pixel_font(ent) {
@@ -97,6 +109,38 @@ export class TextSystem extends System {
         }
     }
 
+    setup_plain_text_view(tv) {
+        tv.getComponent(Sprite).draw_object = {
+            draw:(ctx, ent) => {
+                ctx.save()
+                let sprite = tv.getComponent(Sprite)
+                if(sprite.fixed && ent.hasComponent(Camera)) {
+                    let canvas = ent.getComponent(Canvas)
+                    let camera = ent.getComponent(Camera)
+                    ctx.translate(
+                        +camera.x - canvas.width/2,
+                        +camera.y - canvas.height/2)
+                }
+                let font = tv.getComponent(CanvasFont)
+                let text = tv.getComponent(TextBox).text
+                ctx.translate(sprite.x,sprite.y)
+                text.split('\n').forEach(line => {
+
+                })
+                // ctx.fillStyle = 'white'
+                // ctx.fillRect(0,0,sprite.width,sprite.height)
+                /*
+                let dy = 0
+                view.text.split("\n").forEach(line => {
+                    this.draw_line(ctx,line,font,0,dy)
+                    dy += font.lineHeight
+                })
+                */
+                ctx.restore()
+            }
+        }
+    }
+
     draw_line(ctx, line, font, x, y) {
         // line = line.toUpperCase()
         for(let i=0; i<line.length; i++) {
@@ -120,6 +164,12 @@ TextSystem.queries = {
     },
     text_views: {
         components: [Sprite, TextBox, PixelFont],
+        listen: {
+            added:true
+        }
+    },
+    plain_text_views: {
+        components: [Sprite, TextBox, CanvasFont],
         listen: {
             added:true
         }
