@@ -15,7 +15,7 @@ import {
 
 import {load_tilemap_from_url, TileMap, TileMapSystem} from '../../src/extensions/tiles.js'
 import {BackgroundNotes} from '../../src/music.js'
-import {ParticleSystem} from '../../src/extensions/particles.js'
+import {Emitter, ParticleSystem} from '../../src/extensions/particles.js'
 import {PlatformerPhysicsSystem, PlayerPhysics} from '../../src/extensions/platformer_controls.js'
 import {
     Dialog,
@@ -26,6 +26,7 @@ import {
 } from '../../src/extensions/dialogs.js'
 import {PixelFont, TextBox, TextSystem} from '../../src/extensions/text.js'
 import {HoverEffectSystem, TouchButton, TouchInputSystem, TouchState} from './touch.js'
+import {load_image_from_url, SpriteSheet} from '../../src/index.js'
 
 class Player extends Component {}
 
@@ -136,24 +137,6 @@ let TILE_INDEX = {}
 //             width:8,
 //             height:8,
 //             frame_duration: 250,
-//         })
-// })
-// let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
-//     let sheet = new SpriteSheet(img,8,8,4,2)
-//     TILE_INDEX[FISH1]    = sheet.sprite_to_image(0, 0)
-//
-//     let fish = world.createEntity()
-//         .addComponent(ImageSprite, { image:sheet.sprite_to_image(0,0)})
-//         .addComponent(Sprite, {width: 8, height: 8})
-//         .addComponent(Fish, {start: new Point(8,32), end: new Point(50,32), duration: 5000})
-//
-//     player.addComponent(Emitter, {
-//             image:sheet.sprite_to_image(2,1),
-//             velocityStart: new Point(0,100), // move down and to the right, pixels per second
-//             velocityJitter: 0.1, //jitter the velocity
-//             accelerationStart: new Point(0,-1), //move them up, pixels per second per second
-//             rate:1, // one sprite per second
-//             lifetime:2, //lifetime in seconds
 //         })
 // })
 
@@ -299,11 +282,25 @@ world.createEntity()
     .addComponent(FilledSprite, {color:'rgba(255,0,0,0.5)'})
     .addComponent(TouchButton, {name:'jump'})
 
+let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
+    let sheet = new SpriteSheet(img,8,8,4,2)
 
+    player.addComponent(Emitter, {
+        image:sheet.sprite_to_image(2,1),
+        velocity: 5, // move down and to the right, pixels per second
+        // velocity_jitter: 0.1, //jitter the velocity
+        angle: Math.PI/180*180,
+        angle_jitter:0,
+        // accelerationStart: new Point(0,-1), //move them up, pixels per second per second
+        tick_rate:60, // one particle per sixty frames
+        // duration: 10, //emit for 10 seconds then stop
+        lifetime:2, //lifetime in seconds
+    })
+})
 
 Promise.all([
     // prom4,
-    // prom5,
+    prom5,
     prom6,
     prom7]).then(()=>{
     let splash = null

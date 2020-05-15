@@ -66,7 +66,7 @@ export class MouseInputSystem extends System {
         })
         this.queries.mouse.removed.forEach(ent => {
             let mouse = ent.getMutableComponent(MouseState)
-            document.removeEventListener('mousemove', mouse.moveHandler)
+            if(mouse) document.removeEventListener('mousemove', mouse.moveHandler)
         })
     }
 }

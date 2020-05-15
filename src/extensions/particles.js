@@ -7,11 +7,11 @@ export class Emitter extends Component {
         this.image = null
         this.count = 0
         this.velocity = 0
+        this.velocity_jitter = 0
         this.angle = 0
         this.angle_jitter = 0
-        this.velocity_jitter = 0
         this.lifetime = 2
-        this.duration = 2
+        this.duration = -1
         this.start_time = 0
         this.tick_rate = 50
         this.count = 0
@@ -53,8 +53,8 @@ export class ParticleSystem extends System {
                 }
                 part.addComponent(Sprite, {x: loc.x, y: loc.y, width:loc.width, height: loc.height})
             }
-            if(time/1000 - emitter.start_time > emitter.duration) {
-                ent.removeAllComponents()
+            if(emitter.duration !== -1 && time/1000 - emitter.start_time > emitter.duration) {
+                ent.removeComponent(Emitter)
             }
         })
         this.queries.particles.results.forEach(ent => {
