@@ -27,6 +27,7 @@ export {GamepadSystem, SimpleGamepadState} from "./gamepad.js"
 
 export {load_tilemap_from_url, TileMap, TileMapSystem} from "./extensions/tiles.js"
 export {Dialog, DialogSystem, WaitForInput} from "./extensions/dialogs.js"
+export {ParticleSystem, Emitter} from "./extensions/particles.js"
 
 const ecsytwo = {
     initialize : function (world) {
