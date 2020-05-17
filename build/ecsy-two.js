@@ -2171,12 +2171,16 @@
 	                    lifetime: emitter.lifetime,
 	                    start_time: time/1000,
 	                });
-	                if(emitter.image) {
-	                    part.addComponent(ImageSprite, {image: emitter.image});
-	                } else {
-	                    part.addComponent(FilledSprite, { color: 'yellow'});
-	                }
 	                part.addComponent(Sprite, {x: loc.x, y: loc.y, width:loc.width, height: loc.height, layer: loc.layer});
+	                if(emitter.emit) {
+	                    emitter.emit(part);
+	                }else {
+	                    if (emitter.image) {
+	                        part.addComponent(ImageSprite, {image: emitter.image});
+	                    } else {
+	                        part.addComponent(FilledSprite, {color: 'yellow'});
+	                    }
+	                }
 	            }
 	            if(emitter.duration !== -1 && time/1000 - emitter.start_time > emitter.duration) {
 	                ent.removeComponent(Emitter);
