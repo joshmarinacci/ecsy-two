@@ -2342,10 +2342,8 @@
 	    }
 
 	    setup_plain_text_view(tv) {
-	        console.log("added a plain text view");
 	        tv.getComponent(Sprite).draw_object = {
 	            draw:(ctx, ent) => {
-	                console.log('drawing');
 	                ctx.save();
 	                let sprite = tv.getComponent(Sprite);
 	                if(sprite.fixed && ent.hasComponent(Camera)) {
