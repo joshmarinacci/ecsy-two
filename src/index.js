@@ -29,6 +29,9 @@ export {load_tilemap_from_url, TileMap, TileMapSystem} from "./extensions/tiles.
 export {Dialog, DialogSystem, WaitForInput} from "./extensions/dialogs.js"
 export {ParticleSystem, Emitter} from "./extensions/particles.js"
 
+// text
+export { TextSystem, TextBox, CanvasFont, PixelFont} from "./extensions/text.js"
+
 const ecsytwo = {
     initialize : function (world) {
         world.registerSystem(ECSYTwoSystem)

@@ -167,7 +167,7 @@ export function make_map(width, height, data) {
 
 export function load_tilemap_from_url(source) {
     let url = new URL(source, document.baseURI)
-    console.log("loading tilemap from ",url)
+    // console.log("loading tilemap from ",url)
     return fetch(url).then(res=>res.json()).then(data => {
         let tile_index = []
         let blocking = []
