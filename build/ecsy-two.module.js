@@ -2224,6 +2224,11 @@ class PixelFont extends Component {
     }
     drawCharCode(ctx,ch) {
         if(!this.stuff) return
+        // space
+        // let str = String.fromCharCode(ch)
+        // console.log('drawing',ch,str)
+        // let sx = 0
+        // let sy = 0
         let metrics = {
             x:0,
             y:0,
@@ -2237,7 +2242,7 @@ class PixelFont extends Component {
             // console.log("really drawing",ch,str)
             ctx.drawImage(this.image,
                 //src
-                this.stuff.offset + metrics.x, metrics.y, metrics.w, metrics.h,
+                metrics.x, metrics.y, metrics.w, metrics.h,
                 //dst
                 0, this.ascent-metrics.h-metrics.baseline, metrics.w, metrics.h
             );
@@ -2316,8 +2321,8 @@ class TextSystem extends System {
                 let font = tv.getComponent(PixelFont);
                 let view = tv.getComponent(TextBox);
                 ctx.translate(sprite.x,sprite.y);
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0,0,sprite.width,sprite.height);
+                // ctx.fillStyle = 'white'
+                // ctx.fillRect(0,0,sprite.width,sprite.height)
 
                 let dy = 0;
                 view.text.split("\n").forEach(line => {
