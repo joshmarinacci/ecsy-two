@@ -359,6 +359,7 @@ Play a short sequence of notes once.
 
 ### Non-core Extensions
 
+### TextView
 
 ### GamepadInput
 
