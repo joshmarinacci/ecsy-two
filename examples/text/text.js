@@ -15,8 +15,6 @@ world.createEntity()
     .addComponent(Canvas, { width: 600, height: 600, pixelMode:true})
     .addComponent(BackgroundFill, {color: 'lightGray'})
 
-
-
 world.createEntity()
     .addComponent(Sprite, { x:50, y: 100, width: 200, height: 50})
     .addComponent(TextBox, { text:"Left canvas font"})

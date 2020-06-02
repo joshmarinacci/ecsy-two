@@ -361,6 +361,21 @@ Play a short sequence of notes once.
 
 ### TextView
 
+ECSY-Two supports basic text with a single font and color, line wrapped. You can use either a standard
+canvas font, or a pixel font with custom metrics. Create a `Sprite` then add a `TextBox` to it with the text
+you want to draw. Then add either a `CanvasFont` or `PixelFont`. 
+
+This example draws red text, right aligned in the sprite bounding box.
+
+```javascript
+world.createEntity()
+    .addComponent(Sprite, { x:50, y: 100, width: 200, height: 50})
+    .addComponent(TextBox, { text:"some cool text"})
+    .addComponent(CanvasFont, { halign:'right', color:'red'})
+```
+
+See the [text example](examples/text/text.js) for more.
+
 ### GamepadInput
 
 ### Fullscreen Support
