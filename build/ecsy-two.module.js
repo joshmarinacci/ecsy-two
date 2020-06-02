@@ -2221,23 +2221,15 @@ class PixelFont extends Component {
         this.lineHeight = 10;
         this.spaceWidth = 1;
         this.ascent = 8;
+        this.halign = 'left';
+        this.valign = 'top';
     }
     drawCharCode(ctx,ch) {
         if(!this.stuff) return
         // space
-        // let str = String.fromCharCode(ch)
-        // console.log('drawing',ch,str)
-        // let sx = 0
-        // let sy = 0
-        let metrics = {
-            x:0,
-            y:0,
-            w:0,
-            h:0,
-        };
-        if(this.stuff.metrics[ch]) {
-            metrics = this.stuff.metrics[ch];
-        }
+        // console.log('drawing',ch,String.fromCharCode(ch))
+        let metrics = { x:0, y:0, w:0, h:0, };
+        if(this.stuff.metrics[ch]) metrics = this.stuff.metrics[ch];
         if(metrics.w > 0) {
             // console.log("really drawing",ch,str)
             ctx.drawImage(this.image,
@@ -2247,6 +2239,12 @@ class PixelFont extends Component {
                 0, this.ascent-metrics.h-metrics.baseline, metrics.w, metrics.h
             );
         }
+        return metrics.w + this.spaceWidth
+    }
+    measureCharCode(ch) {
+        if(!this.stuff) return 0
+        let metrics = { x:0, y:0, w:0, h:0, };
+        if(this.stuff.metrics[ch]) metrics = this.stuff.metrics[ch];
         return metrics.w + this.spaceWidth
     }
 }
@@ -2275,6 +2273,9 @@ function draw_canvas_text(ctx,font,sprite,text) {
         if(font.halign === 'right') {
             x = sprite.width - metrics.width;
         }
+        if(font.halign === 'center') {
+            x = sprite.width/2 - metrics.width/2;
+        }
         y += font.size;
         ctx.fillText(line,x,y);
         if(font.debug) {
@@ -2290,22 +2291,22 @@ function draw_canvas_text(ctx,font,sprite,text) {
 class TextSystem extends System {
     execute(delta, time) {
         this.queries.pixel_fonts.added.forEach(ent => this.load_pixel_font(ent));
-        this.queries.text_views.added.forEach(ent => this.setup_text_view(ent));
+        this.queries.pixel_text_views.added.forEach(ent => this.setup_pixel_text_view(ent));
         this.queries.plain_text_views.added.forEach(ent => this.setup_plain_text_view(ent));
     }
 
     load_pixel_font(ent) {
         let font = ent.getComponent(PixelFont);
-        console.log("setting up pixel font",font);
+        // console.log("setting up pixel font",font)
         font.image = new Image();
         font.image.src = font.src;
         if(font.metrics_src) {
-            console.log("loading ",font.metrics_src);
+            // console.log("loading ",font.metrics_src)
             fetch(font.metrics_src).then(res => res.json()).then(data=>font.stuff = data);
         }
     }
 
-    setup_text_view(tv) {
+    setup_pixel_text_view(tv) {
         let sprite = tv.getComponent(Sprite);
         sprite.draw_object = {
             draw:(ctx, ent) => {
@@ -2321,14 +2322,16 @@ class TextSystem extends System {
                 let font = tv.getComponent(PixelFont);
                 let view = tv.getComponent(TextBox);
                 ctx.translate(sprite.x,sprite.y);
-                // ctx.fillStyle = 'white'
-                // ctx.fillRect(0,0,sprite.width,sprite.height)
 
                 let dy = 0;
                 view.text.split("\n").forEach(line => {
-                    this.draw_line(ctx,line,font,0,dy);
+                    this.draw_pixel_line(ctx,line,font, sprite,0,dy);
                     dy += font.lineHeight;
                 });
+                if(font.debug) {
+                    ctx.strokeStyle = 'red';
+                    ctx.strokeRect(0,0,sprite.width,sprite.height);
+                }
 
                 ctx.restore();
             }
@@ -2356,13 +2359,13 @@ class TextSystem extends System {
         };
     }
 
-    draw_line(ctx, line, font, x, y) {
-        // line = line.toUpperCase()
+    draw_pixel_line(ctx, line, font, sprite, x, y) {
+        let width = 0;
+        for(let i=0; i<line.length; i++) width += font.measureCharCode(line.charCodeAt(i));
+        if(font.halign === 'right')   x = sprite.width - width;
+        if(font.halign === 'center')  x = sprite.width/2 - width/2;
+
         for(let i=0; i<line.length; i++) {
-            if(!font._debug_drawn) {
-                font._debug_drawn = true;
-                console.log(line.charAt(i), line.charCodeAt(i));
-            }
             ctx.save();
             ctx.translate(x,y);
             x += font.drawCharCode(ctx,line.charCodeAt(i));
@@ -2377,7 +2380,7 @@ TextSystem.queries = {
             added:true,
         }
     },
-    text_views: {
+    pixel_text_views: {
         components: [Sprite, TextBox, PixelFont],
         listen: {
             added:true
