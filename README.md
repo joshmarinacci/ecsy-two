@@ -374,7 +374,7 @@ world.createEntity()
     .addComponent(CanvasFont, { halign:'right', color:'red'})
 ```
 
-See the [text example](examples/text/text.js) for more.
+See the text example: [live](https://vr.josh.earth/ecsy-two/examples/text/text.html) | [source](examples/text/text.js) | [Glitch Remix](https://ecsy-two-text-example.glitch.me/)
 
 ### GamepadInput
 
