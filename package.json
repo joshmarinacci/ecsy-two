@@ -1,6 +1,6 @@
 {
   "name": "ecsy-two",
-  "version": "0.2.12",
+  "version": "0.2.11",
   "description": "2d HTML Canvas bindings for ECSY.io",
   "main": "build/ecsy-two.js",
   "jsnext:main": "build/ecsy-two.module.js",
