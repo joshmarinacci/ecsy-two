@@ -407,8 +407,9 @@ Use layers to make the player sprite be drawn above the other two.
 A simple Breakout game, adapted from [the MDN tutorial](https://developer.mozilla.org/en-US/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript/Create_the_Canvas_and_draw_on_it) 
 by End3r.
 
-[source](examples/breakout/)
-[live]](https://vr.josh.earth/ecsy-two/examples/breakout/breakout.html)
+[source](examples/breakout/) |
+[live](https://vr.josh.earth/ecsy-two/examples/breakout/breakout.html)
+
 ![image](screenshots/breakout.png)    
 
 ### Invaders
@@ -417,8 +418,8 @@ A space invaders clone, adapted from
 the [Space Invaders tutorial](https://www.briankoponen.com/html5-javascript-game-tutorial/) by
 [Brian Koponen](https://www.briankoponen.com/)
 
-[source](examples/invaders/)
-[live]](https://vr.josh.earth/ecsy-two/examples/invaders/invaders.html)
+[source](examples/invaders/) |
+[live](https://vr.josh.earth/ecsy-two/examples/invaders/invaders.html)
 
 
 ![screenshot of space invaders clone](screenshots/invaders.png)
@@ -427,7 +428,7 @@ the [Space Invaders tutorial](https://www.briankoponen.com/html5-javascript-game
 
 A simple platformer game using tilemaps and mario style physics. Created by joshmarinacci.
 
-[source](examples/platformer/)
+[source](examples/platformer/) | 
 [live](https://vr.josh.earth/ecsy-two/examples/platformer/game.html)
 ![screenshot of a simple platformer game](screenshots/platformer.png)
 
