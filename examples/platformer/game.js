@@ -141,42 +141,26 @@ let TILE_INDEX = {}
 // })
 
 
-const LEVELS = {}
-
-let prom6 =
-    // load_image_from_url("./imgs/castle@1x.png").then(img=>{
-    // let sheet = new SpriteSheet(img,8,8,8,8)
-    load_tilemap_from_url("./maps/vertical.json").then((data)=> {
-        LEVELS.vertical = {
-            data: data,
-            start: {
-                x: 3*8,
-                y: 60 * 8,
-            }
+const LEVELS = {
+    vertical:{
+        src:"./maps/vertical.json",
+        start: {
+            x: 3*8,
+            y: 60 * 8,
         }
-        LEVELS.vertical.data.tileSize = 8
-    }).then(()=>{
-        load_tilemap_from_url("./maps/simple.json").then(data => {
-            LEVELS.simple = {
-                data:data,
-                start: {
-                    x: 3*8,
-                    y: 10*8,
-                }
-            }
-            LEVELS.simple.data.tileSize = 8
-        })
-    })
-
-
-let prom7 = load_tilemap_from_url("./maps/dialog.json").then((data)=> {
-    console.log("loaded dialog")
-    console.log('we have the tile-map data',data)
-    LEVELS.dialog = {
-        data:data,
+    },
+    simple: {
+        src: "./maps/simple.json",
+        start: {
+            x: 3*8,
+            y: 10*8,
+        }
+    },
+    dialog: {
+        src: "./maps/dialog.json",
         start: {x:0, y:0}
     }
-})
+}
 
 let TUBE = 62
 class TubeSystem extends System {
@@ -187,9 +171,9 @@ class TubeSystem extends System {
             let input = ent.getComponent(InputState)
             this.queries.map.results.forEach(ent => {
                 let map = ent.getComponent(TileMap)
-                let px = Math.floor(loc.x/map.tileSize)
-                let py = Math.floor(loc.y/map.tileSize)
-                let tile = map.tile_at(layer_name,{x:loc.x, y:loc.y+map.tileSize})
+                let px = Math.floor(loc.x/map.tilewidth)
+                let py = Math.floor(loc.y/map.tilewidth)
+                let tile = map.tile_at(layer_name,{x:loc.x, y:loc.y+map.tilewidth})
                 if(tile === TUBE && input.states.down) {
                     console.log("pressed down on a tube!")
                     console.log("player location is",px,py)
@@ -197,7 +181,7 @@ class TubeSystem extends System {
                     if(px === 58 && py === 13 && map.source === "./maps/simple.json") {
                         console.log("going to vertical")
                         view.removeComponent(TileMap)
-                        view.addComponent(TileMap, LEVELS.vertical.data)
+                        view.addComponent(TileMap, {src: "./maps.vertical.json"})
                         player.getMutableComponent(Sprite).x = LEVELS.vertical.start.x
                         player.getMutableComponent(Sprite).y = LEVELS.vertical.start.y
                     }
@@ -298,11 +282,7 @@ let prom5 = load_image_from_url("imgs/fish@1x.png").then(img => {
     })
 })
 
-Promise.all([
-    // prom4,
-    prom5,
-    prom6,
-    prom7]).then(()=>{
+Promise.all([prom5]).then(()=>{
     let splash = null
     view.addComponent(StateMachine, {states:[
             (machine)=>{
@@ -347,7 +327,7 @@ Promise.all([
                 player.getMutableComponent(Sprite).x = LEVELS.simple.start.x
                 player.getMutableComponent(Sprite).y = LEVELS.simple.start.y
                 view.removeComponent(TileMap)
-                view.addComponent(TileMap, LEVELS.simple.data)
+                view.addComponent(TileMap, { src: "./maps/simple.json"})
                 view.addComponent(LayerParent)
                 world.getSystem(PlatformerPhysicsSystem).enabled = true
             }

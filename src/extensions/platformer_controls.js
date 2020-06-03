@@ -126,27 +126,27 @@ export class PlatformerPhysicsSystem extends System {
                 // check the tile to the left
                 let bounds = make_bounds(loc.x, loc.y, sprite_bounds.width, sprite_bounds.height)
                 {
-                    let tx = Math.floor((bounds.x) / map.tileSize)
-                    let ty = Math.floor((bounds.y) / map.tileSize)
+                    let tx = Math.floor((bounds.x) / map.tilewidth)
+                    let ty = Math.floor((bounds.y) / map.tileheight)
                     let tpt = make_point(tx, ty)
                     // this._draw_tile_overlay(tpt, map, 'red')
                     let tile = map.tile_at(layer_name, tpt)
                     // if blocked, stop the player
                     if(map.wall_types.indexOf(tile) >= 0) {
                         player.vx = 0
-                        loc.x = ((tx + 1) * map.tileSize)
+                        loc.x = ((tx + 1) * map.tilewidth)
                     }
                 }
                 {
-                    let tx = Math.floor((bounds.x) / map.tileSize)
-                    let ty = Math.floor((bounds.y + bounds.height -1) / map.tileSize)
+                    let tx = Math.floor((bounds.x) / map.tilewidth)
+                    let ty = Math.floor((bounds.y + bounds.height -1) / map.tileheight)
                     let tpt = make_point(tx, ty)
                     // this._draw_tile_overlay(tpt, map, 'red')
                     let tile = map.tile_at(layer_name,tpt)
                     // if blocked, stop the player
                     if(map.wall_types.indexOf(tile) >= 0) {
                         player.vx = 0
-                        loc.x = ((tx + 1) * map.tileSize)
+                        loc.x = ((tx + 1) * map.tilewidth)
                     }
                 }
             }
@@ -157,27 +157,27 @@ export class PlatformerPhysicsSystem extends System {
                 //check the tile to the right
                 let bounds = make_bounds(loc.x, loc.y, sprite_bounds.width, sprite_bounds.height)
                 {
-                    let tx = Math.floor((bounds.x + bounds.width) / map.tileSize)
-                    let ty = Math.floor((bounds.y) / map.tileSize)
+                    let tx = Math.floor((bounds.x + bounds.width) / map.tilewidth)
+                    let ty = Math.floor((bounds.y) / map.tileheight)
                     let tpt = make_point(tx, ty)
                     if(player.debug) this._draw_tile_overlay(tpt, map, 'yellow')
                     let tile = map.tile_at(layer_name,tpt)
                     // if blocked, stop the player
                     if(map.wall_types.indexOf(tile) >= 0) {
                         player.vx = 0
-                        loc.x = ((tx - 1) * map.tileSize)
+                        loc.x = ((tx - 1) * map.tilewidth)
                     }
                 }
                 {
-                    let tx = Math.floor((bounds.x + bounds.width) / map.tileSize)
-                    let ty = Math.floor((bounds.y + bounds.height -1) / map.tileSize)
+                    let tx = Math.floor((bounds.x + bounds.width) / map.tilewidth)
+                    let ty = Math.floor((bounds.y + bounds.height -1) / map.tileheight)
                     let tpt = make_point(tx, ty)
                     if(player.debug) this._draw_tile_overlay(tpt, map, 'yellow')
                     let tile = map.tile_at(layer_name,tpt)
                     // if blocked, stop the player
                     if(map.wall_types.indexOf(tile) >= 0) {
                         player.vx = 0
-                        loc.x = ((tx - 1) * map.tileSize)
+                        loc.x = ((tx - 1) * map.tilewidth)
                     }
                 }
             }
@@ -196,7 +196,7 @@ export class PlatformerPhysicsSystem extends System {
                     direction:DOWN,
                     stop:() => {
                         player.vy =0
-                        sprite.y = (Math.floor(tc1.y/map.tileSize)*map.tileSize-map.tileSize)
+                        sprite.y = (Math.floor(tc1.y/map.tileheight)*map.tileheight-map.tilewidth)
                     },
                 },
                 {
@@ -204,7 +204,7 @@ export class PlatformerPhysicsSystem extends System {
                     direction:DOWN,
                     stop:() => {
                         player.vy =0
-                        sprite.y = (Math.floor(tc1.y/map.tileSize)*map.tileSize-map.tileSize)
+                        sprite.y = (Math.floor(tc1.y/map.tileheight)*map.tileheight-map.tilewidth)
                     },
                 }
             ]
@@ -218,7 +218,7 @@ export class PlatformerPhysicsSystem extends System {
                     direction:UP,
                     stop:() => {
                         player.vy =0
-                        sprite.y = (Math.floor(tc1.y/map.tileSize)*map.tileSize+map.tileSize)
+                        sprite.y = (Math.floor(tc1.y/map.tileheight)*map.tileheight+map.tileheight)
                     },
                 },
                 {
@@ -226,7 +226,7 @@ export class PlatformerPhysicsSystem extends System {
                     direction:UP,
                     stop:() => {
                         player.vy =0
-                        sprite.y = (Math.floor(tc1.y/map.tileSize)*map.tileSize+map.tileSize)
+                        sprite.y = (Math.floor(tc1.y/map.tileheight)*map.tileheight+map.tilewidth)
                     },
                 }
             ]
@@ -241,7 +241,7 @@ export class PlatformerPhysicsSystem extends System {
                     direction:LEFT,
                     stop:() => {
                         player.vx = 0
-                        sprite.x = Math.floor(tpt1.x/map.tileSize)*map.tileSize + map.tileSize
+                        sprite.x = Math.floor(tpt1.x/map.tileheight)*map.tileheight + map.tilewidth
                     }
                 },
                 {
@@ -249,7 +249,7 @@ export class PlatformerPhysicsSystem extends System {
                     direction:LEFT,
                     stop:() => {
                         player.vx = 0
-                        sprite.x = Math.floor(tpt1.x/map.tileSize)*map.tileSize + map.tileSize
+                        sprite.x = Math.floor(tpt1.x/map.tileheight)*map.tileheight + map.tilewidth
                     }
                 }
             ]
@@ -266,7 +266,7 @@ export class PlatformerPhysicsSystem extends System {
                     direction:RIGHT,
                     stop:() => {
                         player.vx = 0
-                        sprite.x = Math.floor(tpt1.x/map.tileSize)*map.tileSize - map.tileSize
+                        sprite.x = Math.floor(tpt1.x/map.tilewidth)*map.tilewidth - map.tileheight
                     }
                 },
                 {
@@ -274,7 +274,7 @@ export class PlatformerPhysicsSystem extends System {
                     direction:RIGHT,
                     stop:() => {
                         player.vx = 0
-                        sprite.x = Math.floor(tpt1.x/map.tileSize)*map.tileSize - map.tileSize
+                        sprite.x = Math.floor(tpt1.x/map.tilewidth)*map.tilewidth - map.tilewidth
                     }
                 }
             ]
@@ -300,18 +300,18 @@ export class PlatformerPhysicsSystem extends System {
                 //check below tile below
                 let bounds = make_bounds(loc.x, loc.y, sprite_bounds.width, sprite_bounds.height)
                 let tc1 = make_point(
-                    Math.floor((bounds.x) / map.tileSize),
-                    Math.floor((bounds.y + bounds.height) / map.tileSize))
+                    Math.floor((bounds.x) / map.tilewidth),
+                    Math.floor((bounds.y + bounds.height) / map.tileheight))
                 let tc2 = make_point(
-                    Math.floor((bounds.x+bounds.width-1) / map.tileSize),
-                    Math.floor((bounds.y + bounds.height) / map.tileSize));
+                    Math.floor((bounds.x+bounds.width-1) / map.tilewidth),
+                    Math.floor((bounds.y + bounds.height) / map.tileheight));
                 [tc1,tc2].forEach((tpt)=>{
                     if(player.debug) this._draw_tile_overlay(tpt, map, 'blue')
                     let tile = map.tile_at(layer_name,tpt)
                     // if blocked, stop the player and set ground flag
                     if(map.wall_types.indexOf(tile) >= 0) {
                         player.vy = 0
-                        loc.y = ((tpt.y - 1) * map.tileSize)
+                        loc.y = ((tpt.y - 1) * map.tilewidth)
                         player.on_ground = true
                     }
                 })
@@ -322,18 +322,18 @@ export class PlatformerPhysicsSystem extends System {
                 player.on_ground = false
                 let bounds = make_bounds(loc.x, loc.y, sprite_bounds.width, sprite_bounds.height)
                 let tc1 = make_point(
-                    Math.floor((bounds.x) / map.tileSize),
-                    Math.floor((bounds.y) / map.tileSize));
+                    Math.floor((bounds.x) / map.tilewidth),
+                    Math.floor((bounds.y) / map.tileheight));
                 let tc2 = make_point(
-                    Math.floor((bounds.x+bounds.width-1) / map.tileSize),
-                    Math.floor((bounds.y) / map.tileSize));
+                    Math.floor((bounds.x+bounds.width-1) / map.tilewidth),
+                    Math.floor((bounds.y) / map.tileheight));
                 [tc1,tc2].forEach(tpt => {
                     if(player.debug) this._draw_tile_overlay(tpt, map, 'green')
                     let tile = map.tile_at(layer_name,tpt)
                     // if blocked, stop the player and set ground flag
                     if(map.wall_types.indexOf(tile) >= 0) {
                         player.vy = 0
-                        loc.y = ((tpt.y+1) * map.tileSize)
+                        loc.y = ((tpt.y+1) * map.tileheight)
                     }
                 })
             }

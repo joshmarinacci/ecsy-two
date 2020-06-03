@@ -1660,7 +1660,9 @@
 	class TileMap extends Component {
 	    constructor() {
 	        super();
-	        this.tileSize = 16;
+	        this.src = null;
+	        this.tilewidth = 16;
+	        this.tileheight = 16;
 	        this.width = -1;
 	        this.height = -1;
 	        this.layers = [];
@@ -1670,8 +1672,8 @@
 	    tile_at(name, canvas_coords) {
 	        let layer = this.layer_by_name(name);
 	        let tile_coords = make_point(
-	            Math.floor(canvas_coords.x / this.tileSize ),
-	            Math.floor(canvas_coords.y / this.tileSize ),
+	            Math.floor(canvas_coords.x / this.tilewidth ),
+	            Math.floor(canvas_coords.y / this.tilewidth ),
 	        );
 	        if(layer && layer.type === 'tilelayer') return layer.data[tile_coords.y*this.width+tile_coords.x]
 	        return null
@@ -1687,7 +1689,7 @@
 
 	class TileMapSystem extends System {
 	    execute(delta, time) {
-	        this.queries.maps.results.forEach(ent => {
+	        this.queries.maps.added.forEach(ent => {
 	            let map = ent.getComponent(TileMap);
 	            let layer = ent.getComponent(LayerParent);
 	            layer.draw_object = {
@@ -1695,6 +1697,13 @@
 	                    this.drawMap(map,ctx);
 	                }
 	            };
+	            if(map.src) {
+	                load_tilemap_from_url(map.src).then(json => {
+	                    Object.keys(json).forEach(key => {
+	                        map[key] = json[key];
+	                    });
+	                });
+	            }
 	        });
 	    }
 
@@ -1747,6 +1756,10 @@
 	    },
 	    maps: {
 	        components:[TileMap, LayerParent],
+	        listen: {
+	            added:true,
+	            removed:true,
+	        }
 	    }
 	};
 

@@ -11,35 +11,6 @@ function is_flipped_horizontally(index) {
     return ((index & FLIPPED_HORIZONTALLY_FLAG) !== 0)
 }
 
-// export function make_tile(size, palette, data) {
-//     if(!palette || !palette.length) throw new Error("make_tile: palette must be an array of colors")
-//     if(!data || !data.length) throw new Error("make_tile: data must be a string of numbers")
-//     let canvas = document.createElement('canvas')
-//     canvas.width = size
-//     canvas.height = size
-//     let ctx = canvas.getContext('2d')
-//     ctx.fillStyle = 'white'
-//     ctx.clearRect(0,0,size,size)
-//
-//     let x = 0
-//     let y = 0
-//     let count = 0
-//     for (let i=0; i<data.length; i++) {
-//         let ch = data[i]
-//         if(is_whitespace(ch)) continue
-//         let n = parseInt(ch,16)
-//         ctx.fillStyle = palette[n]
-//         ctx.fillRect(x,y,1,1)
-//         x = x + 1
-//         count = count + 1
-//         if( x >= size) {
-//             x = 0
-//             y = y + 1
-//         }
-//     }
-//     if(count !== size*size) console.warn("pixel count less than width x height",count,size*size)
-//     return canvas
-// }
 export function is_whitespace(ch) {
     if(ch === ' ') return true
     if(ch === '\t') return true
@@ -62,7 +33,9 @@ export function make_bounds(x, y, width, height) {
 export class TileMap extends Component {
     constructor() {
         super();
-        this.tileSize = 16
+        this.src = null
+        this.tilewidth = 16
+        this.tileheight = 16
         this.width = -1
         this.height = -1
         this.layers = []
@@ -72,8 +45,8 @@ export class TileMap extends Component {
     tile_at(name, canvas_coords) {
         let layer = this.layer_by_name(name)
         let tile_coords = make_point(
-            Math.floor(canvas_coords.x / this.tileSize ),
-            Math.floor(canvas_coords.y / this.tileSize ),
+            Math.floor(canvas_coords.x / this.tilewidth ),
+            Math.floor(canvas_coords.y / this.tilewidth ),
         )
         if(layer && layer.type === 'tilelayer') return layer.data[tile_coords.y*this.width+tile_coords.x]
         return null
@@ -89,13 +62,20 @@ export class TileMap extends Component {
 
 export class TileMapSystem extends System {
     execute(delta, time) {
-        this.queries.maps.results.forEach(ent => {
+        this.queries.maps.added.forEach(ent => {
             let map = ent.getComponent(TileMap)
             let layer = ent.getComponent(LayerParent)
             layer.draw_object = {
                 draw:(ctx)=>{
                     this.drawMap(map,ctx)
                 }
+            }
+            if(map.src) {
+                load_tilemap_from_url(map.src).then(json => {
+                    Object.keys(json).forEach(key => {
+                        map[key] = json[key]
+                    })
+                })
             }
         })
     }
@@ -149,6 +129,10 @@ TileMapSystem.queries = {
     },
     maps: {
         components:[TileMap, LayerParent],
+        listen: {
+            added:true,
+            removed:true,
+        }
     }
 }
 export function make_map(width, height, data) {
