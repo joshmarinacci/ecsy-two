@@ -183,7 +183,20 @@ let player = world.createEntity()
 
 ### AnimatedSprite
 
-Draws a sprite from a set of animation frames.
+Draws a sprite from a set of animation frames. The `src` image should be a spritesheet. The width and height
+are the size of a single sprite within the sheet. The frame duration controls the length of a single frame in
+milliseconds. 
+
+```javascript
+let enemy = world.createEntity()
+    .addComponent(Sprite, { x: 50, y: 50, width: 16, height: 16})
+    .addComponent(AnimatedSprite, {
+        width:16,
+        height:16,
+        frame_duration: 250,
+        src: 'imgs/spaceman_frames.png'
+    })
+```
 
 
 ## Layers
@@ -245,7 +258,12 @@ world.createEntity()
 #### InputState
 
 Abstract representation of the input states.  Just a set of booleans.  For example: input.states.left === true
-means the user wants to go left.
+means the user wants to go left.  Create it in some central part of your application.
+
+```javascript
+view = world.createEntity()
+    .addComponent(InputState)
+```
 
 #### KeyboardState
 
@@ -290,8 +308,8 @@ the `axis_threshold` property, which is 0.4 by default.
 See the [simple example](examples/simple) for an example
 of using both the keyboard and gamepad together.
 
-Currently recognizing the more advance states of complex controllers is not supported.
-You would have to copy and fork the the gamepad.js to get additional data. Or please
+Currently recognizing the more advanced states of complex controllers is not supported.
+You would have to copy and fork `gamepad.js` to get additional data. Or please
 [file an issue](https://github.com/joshmarinacci/ecsy-two/issues) with 
 the data you want to access.
 
@@ -299,10 +317,9 @@ the data you want to access.
 controller may not be visible to your game unless the user presses a specific
 button on the controller or disconnects and connects it to their computer.*
 
-
 ### Audio
 
-The AudioSystem plays sounds using the Audio() DOM element. Used for recorded sounds from WAV and MP3s.  Due to
+The AudioSystem plays sounds using the `Audio()` DOM element. Used for recorded sounds from WAV and MP3s.  Due to
 browser security concerns, no actual audio will be heard until the first click or touch from the user on the document.
 
 
@@ -376,15 +393,34 @@ world.createEntity()
 
 See the text example: [live](https://vr.josh.earth/ecsy-two/examples/text/text.html) | [source](examples/text/text.js) | [Glitch Remix](https://ecsy-two-text-example.glitch.me/)
 
-### GamepadInput
-
 ### Fullscreen Support
+
+enter and exit fullscreen mode. You can either add `FullscreenMode` to an entity to enter fullscreen mode, or
+add a `FullscreenButton` which will make a regular HTML button on the page that does the same thing. Either way,
+once a `FullscreenMode` component is somewhere in the world the `FullscreenSystem` will enter fullscreen mode using
+the canvas. 
+
+```javascript
+world.registerSystem(FullscreenSystem);
+let button = world.createEntity()
+    .addComponent(FullscreenButton)
+```
 
 ### Touchscreen Support
 
 ### WebXR Support
 
-### Tilemap 
+### Tilemap
+
+Draw a JSON tilemap created with the open source [Tiled map editor](https://www.mapeditor.org/). Data should be loaded
+from the JSON files, not the native TMX files. 
+
+```javascript
+let view = world.createEntity()
+    .addComponent(TileMap, { src: "level.json"})
+```
+
+ 
 
 ### Dialog
 
