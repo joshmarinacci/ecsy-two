@@ -515,6 +515,7 @@ A simple platformer game using tilemaps and mario style physics. Created by josh
 
 [source](examples/platformer/) | 
 [live](https://vr.josh.earth/ecsy-two/examples/platformer/game.html)
-<img src="screenshots/platformer.png" width="200" title="screenshot of a simple platformer game">
+
+<img src="screenshots/platformer.png" width="400" title="screenshot of a simple platformer game">
 
 
