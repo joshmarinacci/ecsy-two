@@ -238,7 +238,7 @@ let enemy = world.createEntity()
 ## Layers
 
 You can control the drawing order of objects on screen by using layers. By default all objects will draw into
-a default layer, but you can add new layers and choose the layer yourself. ex:
+a default layer (with the name 'default'), but you can add new layers and choose the layer yourself. ex:
 
 Create two layers, one containing an image and the other a filled rectangle.
 
@@ -444,7 +444,24 @@ let button = world.createEntity()
 
 ### Touchscreen Support
 
-### WebXR Support
+You can make sprites be touchable using the `TouchButton` component, giving it a name. The name
+will be used to set the boolean on your `InputState`. Also be sure to register the `TouchSystem`. For example,
+to make a translucent red square that can act as the jump button when touched.
+
+
+```javascript
+world.createEntity()
+    .addComponent(InputState)
+    .addComponent(KeyboardState, {}) // map key events to inputs
+    .addComponent(TouchState) // needed to map touch events to inputs
+
+
+world.createEntity()
+    .addComponent(Sprite, { x: 100, y: 100, width: 10, height: 10})
+    .addComponent(FilledSprite, {color:'rgba(255,0,0,0.5)'})
+    .addComponent(TouchButton, { name:'jump'})
+```
+
 
 ### Tilemap
 
