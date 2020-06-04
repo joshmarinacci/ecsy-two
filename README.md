@@ -1,7 +1,7 @@
 # ecsy-two
 
 A 2d game/app Entity Component System for HTML Canvas. 
-Built on top of ECSY.io.  A companion lib for ECSY-three.
+Built on top of [ECSY.io](https://ecsy.io/).  A companion lib for ECSY-three.
 
 # Goals
 
