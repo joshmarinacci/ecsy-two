@@ -140,7 +140,12 @@ Components and Systems you may find interesting.
 
 Creates an HTML canvas in the page. Default width and height are 100. Default scale is 1. Set pixelMode:true
 to disable image smoothing. Set the target canvas with 'target'. If no target is set, then it will create
-a new canvas and append it to the document. 
+a new canvas and append it to the document.  For example: to create a pixelated 320x200 game, zoomed in by 3x, you would do
+
+```javascript
+let view = world.createEntity()
+    .addComponent(Canvas, {width:320, height:200, pixelMode:true, scale: 3})
+``` 
 
 #### BackgroundFill
 
@@ -154,22 +159,53 @@ addComponent(BackgroundFill, { color:'yellow'})
 
 `Camera` translates the canvas drawing. Can be used with
 `CameraFollowsSprite` to make the canvas always draw
-with the player sprite in the center.
+with the player sprite in the center. It should be added to the 
+same entity that the Canvas is on. The target of `CameraFollowsSprite`
+should be an entity that has a sprite.
+
+
+```javascript
+let player = world.createEntity()
+    .addComponent(Sprite, { width: 20, height: 20} )
+    .addComponent(FilledSprite, { color:'red'})
+
+let view = world.createEntity()
+    .addComponent(Canvas, {width:200, height:200})
+    .addComponent(Camera)
+    .addComponent(CameraFollowsSprite, {target:player})
+```
+
+
+
 
 #### Sprite
 
-An object on screen with width height x and y. You must add
-another sprite component like FilledSprite to actually see it drawn
-on screen.
+Use a `Sprite` for (almost) anything that can be drawn on screen. A sprite
+has a position (x,y) and a size (w,h).  The sprite does not draw itself, however.
+You must add another component to draw the sprite. Something like `FilledSprite`
+or `ImageSprite` or custom drawing code.  You can set the target layer
+of the sprite (regardless of how it is drawn) using the `layer` parameter.
 
 #### FilledSprite
 
-Fills a sprite with a color.
+Draws a sprite as a rectangle filled with a color. ex:
+
+```javascript
+world.createEntity()
+    .addComponent(Sprite, { width: 25, height: 25})    
+    .addComponent(FilledSprite, { color: 'red' })
+```
 
 #### DebugOutline
 
 Draws a red border around a sprite. Helpfully when debugging the
 location of your sprites.
+
+```javascript
+world.createEntity()
+    .addComponent(Sprite, { width: 25, height: 25})    
+    .addComponent(DebugOutline)
+```
 
 ### ImageSprite
 
@@ -376,9 +412,9 @@ Play a short sequence of notes once.
 
 ### Non-core Extensions
 
-### TextView
+### Text
 
-ECSY-Two supports basic text with a single font and color, line wrapped. You can use either a standard
+ECSY-Two supports simple text with a single font and color, line wrapped. You can use either a standard
 canvas font, or a pixel font with custom metrics. Create a `Sprite` then add a `TextBox` to it with the text
 you want to draw. Then add either a `CanvasFont` or `PixelFont`. 
 
@@ -419,10 +455,6 @@ from the JSON files, not the native TMX files.
 let view = world.createEntity()
     .addComponent(TileMap, { src: "level.json"})
 ```
-
- 
-
-### Dialog
 
 ### platformer physics & controls
 
@@ -466,5 +498,5 @@ A simple platformer game using tilemaps and mario style physics. Created by josh
 
 [source](examples/platformer/) | 
 [live](https://vr.josh.earth/ecsy-two/examples/platformer/game.html)
-![screenshot of a simple platformer game](screenshots/platformer.png)
+![screenshot of a simple platformer game](screenshots/platformer.png | width=200)
 
