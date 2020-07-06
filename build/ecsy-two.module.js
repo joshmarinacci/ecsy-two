@@ -1286,6 +1286,7 @@ class MouseState {
         };
         this.moveHandler = (e) =>  {
             this.clientX = e.clientX;
+            this.clientY = e.clientY;
             this.lastTimestamp = e.timeStamp;
         };
         this.upHandler = (e) => {
